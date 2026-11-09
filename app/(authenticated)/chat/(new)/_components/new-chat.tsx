@@ -15,6 +15,13 @@ import {
 import { chatTitle, messageContent } from "../../_lib/message-input";
 import { api } from "@web/trpc/client";
 
+const starterPrompts = [
+  "Book 2 movie tickets tonight",
+  "Triage my unread Gmail & draft replies",
+  "Find the best flights to Tokyo next month",
+  "Monitor a product price every morning",
+] as const;
+
 export function NewChat() {
   const router = useRouter();
   const { mutateAsync: saveChat } = api.chats.save.useMutation();
@@ -57,17 +64,33 @@ export function NewChat() {
   };
 
   return (
-    <PromptInput compact onSubmit={handleSubmit}>
-      <PromptInputBody>
-        <PromptInputTextarea
-          className="min-h-0"
-          placeholder="Send a message…"
-        />
-      </PromptInputBody>
-      <PromptInputFooter>
-        <PromptInputTools />
-        <PromptInputSubmit />
-      </PromptInputFooter>
-    </PromptInput>
+    <div className="flex w-full flex-col gap-4">
+      <PromptInput compact onSubmit={handleSubmit}>
+        <PromptInputBody>
+          <PromptInputTextarea
+            className="min-h-0"
+            placeholder="Ask Blud to browse, book, research, or manage your inbox…"
+          />
+        </PromptInputBody>
+        <PromptInputFooter>
+          <PromptInputTools />
+          <PromptInputSubmit />
+        </PromptInputFooter>
+      </PromptInput>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {starterPrompts.map((prompt) => (
+          <button
+            className="rounded-full border border-border bg-muted/40 px-3 py-1.5 type-caption text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            key={prompt}
+            onClick={() => {
+              void handleSubmit({ files: [], text: prompt });
+            }}
+            type="button"
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

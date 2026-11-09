@@ -43,7 +43,7 @@ function defineShareContact() {
   return defineTool({
     availableInSubagents: false,
     description:
-      "Share OpenInstinct's saveable contact with its phone number and logo in the current conversation. Use when introducing yourself or when the user asks for your contact. Supply a brief natural introduction; it is delivered with OpenInstinct.vcf. The tool resolves the number and attachment URL itself. Successful sharing is suppressed on repeat calls in this session; failed delivery can be retried. The user must tap the attachment to save it, so never claim it was saved. Call directly without a preamble and do not duplicate the introduction or attachment through send_message. Browser chat displays the attachment without sending an iMessage.",
+      "Share Blud's saveable contact with its phone number and logo in the current conversation. Use when introducing yourself or when the user asks for your contact. Supply a brief natural introduction; it is delivered with Blud.vcf. The tool resolves the number and attachment URL itself. Successful sharing is suppressed on repeat calls in this session; failed delivery can be retried. The user must tap the attachment to save it, so never claim it was saved. Call directly without a preamble and do not duplicate the introduction or attachment through send_message. Browser chat displays the attachment without sending an iMessage.",
     inputSchema: z.object({ text: z.string().trim().min(1).max(500) }),
     async execute({ text }, context) {
       const caller =
@@ -85,7 +85,7 @@ function defineShareContact() {
             : undefined);
         if (!phone)
           throw new Error(
-            "OpenInstinct's Linq number is unavailable. Nothing was sent."
+            "Blud's Linq number is unavailable. Nothing was sent."
           );
         const { betterAuthSecret } = await getInstallationSecrets();
         delivery = {
@@ -98,7 +98,7 @@ function defineShareContact() {
               {
                 kind: "file",
                 mimeType: "text/vcard",
-                name: "OpenInstinct.vcf",
+                name: "Blud.vcf",
                 url: openInstinctContactUrl(phone, betterAuthSecret),
               },
             ],
@@ -133,7 +133,7 @@ function defineShareContact() {
       return toolOutput.text(
         output
           ? "The contact and introduction were accepted for delivery. Do not repeat them or claim the user saved the contact."
-          : "OpenInstinct's contact was already shared in this session. Nothing was sent; do not send it again."
+          : "Blud's contact was already shared in this session. Nothing was sent; do not send it again."
       );
     },
   });

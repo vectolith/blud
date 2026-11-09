@@ -12,9 +12,7 @@ export const googleWorkspaceAuthOptions = {
   connector: env.GOOGLE_CONNECTOR_UID,
   createSubject(principal) {
     if (principal.type !== "user") {
-      throw new Error(
-        "Google Workspace requires an authenticated OpenInstinct user."
-      );
+      throw new Error("Google Workspace requires an authenticated Blud user.");
     }
     return googleWorkspaceSubject(principal.id);
   },

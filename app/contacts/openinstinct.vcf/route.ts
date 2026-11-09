@@ -21,8 +21,8 @@ export async function GET(request: Request) {
   const lines = [
     "BEGIN:VCARD",
     "VERSION:3.0",
-    "N:;OpenInstinct;;;",
-    "FN:OpenInstinct",
+    "N:;Blud;;;",
+    "FN:Blud",
     `TEL;TYPE=CELL:${phone}`,
     `PHOTO;ENCODING=b;TYPE=PNG:${photo.toString("base64")}`,
     "END:VCARD",
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     headers: {
       ...headers,
       "Content-Type": "text/vcard; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="OpenInstinct.vcf"',
+      "Content-Disposition": 'attachment; filename="Blud.vcf"',
     },
   });
 }

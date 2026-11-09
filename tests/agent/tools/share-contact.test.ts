@@ -96,7 +96,7 @@ describe("share_contact", () => {
         {
           kind: "file",
           mimeType: "text/vcard",
-          name: "OpenInstinct.vcf",
+          name: "Blud.vcf",
         },
       ],
     });
