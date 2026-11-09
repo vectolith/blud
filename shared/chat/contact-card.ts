@@ -2,12 +2,12 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { isE164PhoneNumber } from "@shared/identity/phone-number";
 import { applicationOrigin } from "@shared/environment/origin";
 
-const contactPath = "/contacts/openinstinct.vcf";
+const contactPath = "/contacts/blud.vcf";
 const lifetimeSeconds = 7 * 24 * 60 * 60;
 
-export function openInstinctContactUrl(phoneNumber: string, secret: string) {
+export function bludContactUrl(phoneNumber: string, secret: string) {
   if (!isE164PhoneNumber(phoneNumber)) {
-    throw new Error("OpenInstinct's contact number must use E.164 format.");
+    throw new Error("Blud's contact number must use E.164 format.");
   }
   const url = new URL(contactPath, applicationOrigin());
   if (url.protocol !== "https:") {
@@ -22,7 +22,7 @@ export function openInstinctContactUrl(phoneNumber: string, secret: string) {
   return url.href;
 }
 
-export function verifyOpenInstinctContactUrl(url: URL, secret: string) {
+export function verifyBludContactUrl(url: URL, secret: string) {
   const phone = url.searchParams.get("phone");
   const expires = Number(url.searchParams.get("expires"));
   const now = Math.floor(Date.now() / 1000);
@@ -47,7 +47,7 @@ function signature(url: URL, secret: string) {
   return createHmac("sha256", secret)
     .update(
       JSON.stringify([
-        "openinstinct-contact-v1",
+        "blud-contact-v1",
         url.pathname,
         url.searchParams.get("phone"),
         url.searchParams.get("expires"),

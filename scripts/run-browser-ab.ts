@@ -298,7 +298,7 @@ async function startDatabase(current: ReturnType<typeof variant>) {
   const port = /:(\d+)\s*$/u.exec(address)?.[1];
   if (!port)
     throw new Error(`Could not resolve PostgreSQL port for ${current.kind}.`);
-  return `postgresql://postgres:postgres@127.0.0.1:${port}/open_instinct`;
+  return `postgresql://postgres:postgres@127.0.0.1:${port}/blud`;
 }
 
 async function startAgent(current: ReturnType<typeof variant>) {

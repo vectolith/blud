@@ -268,7 +268,7 @@ describe("Linq message delivery", () => {
       attachments: [
         {
           kind: "file",
-          url: "https://example.com/contacts/openinstinct.vcf?signed=true",
+          url: "https://example.com/contacts/blud.vcf?signed=true",
         },
       ],
     });

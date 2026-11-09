@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const fixture = await mkdtemp(join(tmpdir(), "openinstinct-runtime-"));
+const fixture = await mkdtemp(join(tmpdir(), "blud-runtime-"));
 const artifacts = join(root, ".eve", "runtime-smoke");
 
 try {
@@ -50,7 +50,7 @@ try {
   await writeFile(
     join(fixture, "package.json"),
     JSON.stringify({
-      name: "openinstinct-runtime-smoke",
+      name: "blud-runtime-smoke",
       private: true,
       type: "module",
       dependencies: { eve: "*" },

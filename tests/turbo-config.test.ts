@@ -97,7 +97,7 @@ describe("Turbo configuration", () => {
       },
     ]);
     expect(blobSetup).toContain(
-      "vercel blob create-store open-instinct-images --access private --yes"
+      "vercel blob create-store blud-images --access private --yes"
     );
     expect(blobSetup).toContain("BLOB_STORE_ID");
     expect(blobSetup).toContain("BLOB_READ_WRITE_TOKEN");

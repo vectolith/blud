@@ -16,23 +16,22 @@ describe("contact download proxy", () => {
 
   it("lets the signed contact route validate provider downloads without a cookie", async () => {
     const response = await proxy(
-      new NextRequest(
-        "https://example.com/contacts/openinstinct.vcf?signature=opaque"
-      )
+      new NextRequest("https://example.com/contacts/blud.vcf?signature=opaque")
     );
     expect(response.headers.get("x-middleware-next")).toBe("1");
     expect(auth.getSession).not.toHaveBeenCalled();
   });
 
-  it.each([
-    "/contacts/private.vcf",
-    "/contacts/openinstinct.vcf/other",
-    "/vault",
-  ])("keeps %s authenticated", async (path) => {
-    const response = await proxy(new NextRequest(`https://example.com${path}`));
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe(
-      `https://example.com/sign-in?callbackUrl=${encodeURIComponent(path)}`
-    );
-  });
+  it.each(["/contacts/private.vcf", "/contacts/blud.vcf/other", "/vault"])(
+    "keeps %s authenticated",
+    async (path) => {
+      const response = await proxy(
+        new NextRequest(`https://example.com${path}`)
+      );
+      expect(response.status).toBe(307);
+      expect(response.headers.get("location")).toBe(
+        `https://example.com/sign-in?callbackUrl=${encodeURIComponent(path)}`
+      );
+    }
+  );
 });

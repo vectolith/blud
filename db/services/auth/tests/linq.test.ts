@@ -25,13 +25,13 @@ describe("Linq delivery", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await sendLinqText({
-      connector: "linq/open-instinct",
+      connector: "linq/blud",
       idempotencyKey: "otp-idempotency-key",
       message: "Your code is 123456.",
       to: "+12025550123",
     });
 
-    expect(mocks.getToken).toHaveBeenCalledWith("linq/open-instinct", {
+    expect(mocks.getToken).toHaveBeenCalledWith("linq/blud", {
       subject: { type: "app" },
     });
     const [url, init] = fetchMock.mock.calls[0] ?? [];
@@ -50,10 +50,10 @@ describe("Linq delivery", () => {
       .mockResolvedValue(Response.json({ phone_number: "+12025550123" }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(
-      readLinqOnboardingPhoneNumber("linq/open-instinct")
-    ).resolves.toBe("+12025550123");
-    expect(mocks.getToken).toHaveBeenCalledWith("linq/open-instinct", {
+    await expect(readLinqOnboardingPhoneNumber("linq/blud")).resolves.toBe(
+      "+12025550123"
+    );
+    expect(mocks.getToken).toHaveBeenCalledWith("linq/blud", {
       subject: { type: "app" },
     });
     const [url, init] = fetchMock.mock.calls[0] ?? [];
@@ -65,7 +65,7 @@ describe("Linq delivery", () => {
     mocks.getToken.mockRejectedValue(new Error("connector unavailable"));
 
     await expect(
-      readLinqOnboardingPhoneNumber("linq/open-instinct")
+      readLinqOnboardingPhoneNumber("linq/blud")
     ).resolves.toBeUndefined();
   });
 
@@ -193,7 +193,7 @@ describe("Linq delivery", () => {
 async function captureLinqDeliveryError(): Promise<LinqDeliveryError> {
   try {
     await sendLinqText({
-      connector: "linq/open-instinct",
+      connector: "linq/blud",
       idempotencyKey: "otp-idempotency-key",
       message: "Your code is 123456.",
       to: "+12025550123",

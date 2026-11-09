@@ -130,7 +130,7 @@ function scheduledWorkerAuth(
       workspaceId: claim.job.workspaceId,
     },
     authenticator: "scheduled-worker",
-    issuer: "open-instinct",
+    issuer: "blud",
     principalId: claim.job.createdByUserId,
     principalType: "user" as const,
   };

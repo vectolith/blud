@@ -2,12 +2,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { getInstallationSecrets } from "@db/services/installation-secrets";
-import { openInstinctContactUrl } from "@shared/chat/contact-card";
+import { bludContactUrl } from "@shared/chat/contact-card";
 import { GET } from "../route";
 
 async function contactUrl() {
   const { betterAuthSecret } = await getInstallationSecrets();
-  return new URL(openInstinctContactUrl("+12025550123", betterAuthSecret));
+  return new URL(bludContactUrl("+12025550123", betterAuthSecret));
 }
 
 describe("Blud contact download", () => {
@@ -52,7 +52,7 @@ describe("Blud contact download", () => {
 
   it("rejects an unsigned download", async () => {
     const response = await GET(
-      new Request("https://example.com/contacts/openinstinct.vcf")
+      new Request("https://example.com/contacts/blud.vcf")
     );
     expect(response.status).toBe(404);
   });

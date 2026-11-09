@@ -226,7 +226,7 @@ async function capturePlaywrightScreenshot(
   signal?: AbortSignal
 ) {
   const operationKey = randomUUID();
-  const remotePath = `/tmp/openinstinct-browser-image-${operationKey}.png`;
+  const remotePath = `/tmp/blud-browser-image-${operationKey}.png`;
 
   return withVaultScreenshotMask(sessionId, signal, async () => {
     try {

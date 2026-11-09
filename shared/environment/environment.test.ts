@@ -36,7 +36,7 @@ describe("environment", () => {
 
     const { env } = await import("@shared/environment");
 
-    expect(env.GOOGLE_CONNECTOR_UID).toBe("google/open-instinct");
+    expect(env.GOOGLE_CONNECTOR_UID).toBe("google/blud");
     expect(env.LINQ_CONNECTOR).toBeUndefined();
     expect(env.LINQ_PHONE_NUMBER).toBeUndefined();
   });
@@ -52,7 +52,7 @@ describe("environment", () => {
       await import("@shared/environment");
 
     expect(env).toMatchObject({
-      BETTER_AUTH_SECRET: "openinstinct-local-auth-development-secret",
+      BETTER_AUTH_SECRET: "blud-local-auth-development-secret",
       BETTER_AUTH_URL: "http://localhost:3000",
       SECRET_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
     });
@@ -94,7 +94,7 @@ describe("environment", () => {
     vi.stubEnv("SECRET_ENCRYPTION_KEY", "");
     vi.stubEnv("NODE_ENV", "development");
     vi.stubEnv("VERCEL_ENV", "development");
-    vi.stubEnv("VERCEL_URL", "open-instinct-preview.vercel.app");
+    vi.stubEnv("VERCEL_URL", "blud-preview.vercel.app");
 
     const { env } = await import("@shared/environment");
 
@@ -155,27 +155,27 @@ describe("environment", () => {
   });
 
   it("accepts a Linq connector without a copied phone number", async () => {
-    vi.stubEnv("LINQ_CONNECTOR", "linq/open-instinct");
+    vi.stubEnv("LINQ_CONNECTOR", "linq/blud");
     vi.stubEnv("LINQ_PHONE_NUMBER", "");
 
     const { env } = await import("@shared/environment");
 
-    expect(env.LINQ_CONNECTOR).toBe("linq/open-instinct");
+    expect(env.LINQ_CONNECTOR).toBe("linq/blud");
     expect(env.LINQ_PHONE_NUMBER).toBeUndefined();
   });
 
   it("accepts Vercel OIDC Blob storage without a static token", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
-    vi.stubEnv("BLOB_STORE_ID", "store_openinstinct");
+    vi.stubEnv("BLOB_STORE_ID", "store_blud");
 
     const { env } = await import("@shared/environment");
 
     expect(env.BLOB_READ_WRITE_TOKEN).toBeUndefined();
-    expect(env.BLOB_STORE_ID).toBe("store_openinstinct");
+    expect(env.BLOB_STORE_ID).toBe("store_blud");
   });
 
   it("rejects a Linq phone number outside E.164 format", async () => {
-    vi.stubEnv("LINQ_CONNECTOR", "linq/open-instinct");
+    vi.stubEnv("LINQ_CONNECTOR", "linq/blud");
     vi.stubEnv("LINQ_PHONE_NUMBER", "(202) 555-0123");
 
     await expect(import("@shared/environment")).rejects.toThrow(
@@ -185,7 +185,7 @@ describe("environment", () => {
 
   it.each([
     ["http://localhost:3000", "development", undefined, true],
-    ["https://openinstinct.localhost", "development", undefined, true],
+    ["https://blud.localhost", "development", undefined, true],
     ["http://localhost:3000", "production", undefined, false],
     ["http://localhost:3000", "development", "development", false],
     ["https://preview.example.com", "development", undefined, false],

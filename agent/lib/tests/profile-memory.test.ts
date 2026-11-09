@@ -182,7 +182,7 @@ function memoryOperationContext(
     memory: {
       scope: {
         key: "personal-info-key",
-        namespace: "openinstinct-profile-memory-v1",
+        namespace: "blud-profile-memory-v1",
         value: "personal:workspace",
       },
       slot: "profile",
@@ -211,7 +211,7 @@ function memoryToolsContext(
     memory: {
       scope: {
         key: "personal-info-key",
-        namespace: "openinstinct-personal-info-v1",
+        namespace: "blud-personal-info-v1",
         value: derivedWorkspaceId,
       },
       slot: "personal_info",

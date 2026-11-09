@@ -11,7 +11,7 @@ export const googleWorkspaceScopes = [
 ] as const;
 
 export function googleWorkspaceSubject(userId: string): ConnectTokenSubject {
-  return { id: userId, issuer: "openinstinct", type: "user" };
+  return { id: userId, issuer: "blud", type: "user" };
 }
 
 export function googleWorkspaceTokenParams(userId: string): ConnectTokenParams {

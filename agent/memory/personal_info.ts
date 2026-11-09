@@ -56,7 +56,7 @@ async function recallUserProfile(context: MemoryOperationContext) {
 export default defineMemory({
   description:
     "Provide the current user's structured, model-readable Personal Info profile.",
-  namespace: "openinstinct-personal-info-v1",
+  namespace: "blud-personal-info-v1",
   provider: defineMemoryProvider({
     recall: {
       "turn.started": recallUserProfile,

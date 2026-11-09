@@ -264,7 +264,7 @@ describe("Kernel browser contract", () => {
     const profileName = kernelProfileNameForWorkspace(workspace);
 
     expect(profileName).toBe(kernelProfileNameForWorkspace(workspace));
-    expect(profileName).toMatch(/^openinstinct-[a-f0-9]{40}$/);
+    expect(profileName).toMatch(/^blud-[a-f0-9]{40}$/);
     expect(profileName).not.toContain("15555550123");
     expect(profileName).not.toBe(
       kernelProfileNameForWorkspace("personal:+15555550124")

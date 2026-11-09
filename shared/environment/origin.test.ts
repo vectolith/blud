@@ -27,23 +27,23 @@ describe("application origin", () => {
   });
 
   it("derives the production origin and preview allowlist from Vercel", async () => {
-    vi.stubEnv("VERCEL_BRANCH_URL", "openinstinct-git-main.vercel.app");
+    vi.stubEnv("VERCEL_BRANCH_URL", "blud-git-main.vercel.app");
     vi.stubEnv("VERCEL_ENV", "preview");
-    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "openinstinct.example.com");
-    vi.stubEnv("VERCEL_URL", "openinstinct-preview-123.vercel.app");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "blud.example.com");
+    vi.stubEnv("VERCEL_URL", "blud-preview-123.vercel.app");
 
     const { applicationOrigin, betterAuthBaseURL } =
       await import("@shared/environment/origin");
 
-    expect(applicationOrigin()).toBe("https://openinstinct.example.com");
+    expect(applicationOrigin()).toBe("https://blud.example.com");
     expect(betterAuthBaseURL()).toEqual({
       allowedHosts: [
         "*.vercel.app",
-        "openinstinct.example.com",
-        "openinstinct-git-main.vercel.app",
-        "openinstinct-preview-123.vercel.app",
+        "blud.example.com",
+        "blud-git-main.vercel.app",
+        "blud-preview-123.vercel.app",
       ],
-      fallback: "https://openinstinct.example.com",
+      fallback: "https://blud.example.com",
       protocol: "https",
     });
   });

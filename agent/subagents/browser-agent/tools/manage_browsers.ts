@@ -257,7 +257,7 @@ function lifecycleResult(browser: KernelBrowser) {
 }
 
 export function kernelProfileNameForWorkspace(workspaceId: string) {
-  return `openinstinct-${createHash("sha256")
+  return `blud-${createHash("sha256")
     .update(`kernel-profile\0${workspaceId}`)
     .digest("hex")
     .slice(0, 40)}`;

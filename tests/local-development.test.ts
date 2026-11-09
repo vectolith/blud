@@ -39,7 +39,7 @@ describe("local development", supervisorTestOptions, () => {
     expect(compose).toContain("image: postgres:17-alpine");
     expect(compose).toContain('"127.0.0.1::5432"');
     expect(compose).toContain("postgres-data:/var/lib/postgresql/data");
-    expect(compose).toContain("pg_isready -U postgres -d open_instinct");
+    expect(compose).toContain("pg_isready -U postgres -d blud");
 
     const start = developmentScript.indexOf(
       'composeArguments("up", "--detach", "--wait")'
@@ -123,8 +123,8 @@ describe("local development", supervisorTestOptions, () => {
     expect(lines).toEqual([
       `compose --project-name ${project} up --detach --wait`,
       `compose --project-name ${project} port postgres 5432`,
-      "pnpm db:migrate postgresql://postgres:postgres@127.0.0.1:49152/open_instinct",
-      "pnpm dev:app postgresql://postgres:postgres@127.0.0.1:49152/open_instinct",
+      "pnpm db:migrate postgresql://postgres:postgres@127.0.0.1:49152/blud",
+      "pnpm dev:app postgresql://postgres:postgres@127.0.0.1:49152/blud",
       `compose --project-name ${project} down`,
     ]);
   });
@@ -141,7 +141,7 @@ function expectIsolatedLifecycle(commands: string) {
 
 function projectFromComposeCommand(command: string | undefined) {
   const project = command?.match(
-    /^compose --project-name (open-instinct-[a-f0-9]{12}) /
+    /^compose --project-name (blud-[a-f0-9]{12}) /
   )?.[1];
   if (!project) {
     throw new Error(`Missing Compose project in: ${String(command)}`);
@@ -152,7 +152,7 @@ function projectFromComposeCommand(command: string | undefined) {
 async function interruptDuringStartup(
   environment: Record<string, string> = {}
 ) {
-  const directory = await mkdtemp(join(tmpdir(), "open-instinct-dev-"));
+  const directory = await mkdtemp(join(tmpdir(), "blud-dev-"));
   temporaryDirectories.push(directory);
   const logPath = join(directory, "commands.log");
   const dockerPath = join(directory, "docker");
@@ -214,7 +214,7 @@ printf 'pnpm %s\\n' "$*" >> "$DEV_SUPERVISOR_LOG"
 }
 
 async function runSuccessfulSupervisor() {
-  const directory = await mkdtemp(join(tmpdir(), "open-instinct-dev-"));
+  const directory = await mkdtemp(join(tmpdir(), "blud-dev-"));
   temporaryDirectories.push(directory);
   const logPath = join(directory, "commands.log");
   const dockerPath = join(directory, "docker");
@@ -260,7 +260,7 @@ printf 'pnpm %s %s\n' "$*" "$DATABASE_URL" >> "$DEV_SUPERVISOR_LOG"
 }
 
 async function runWithoutKernelApiKey() {
-  const directory = await mkdtemp(join(tmpdir(), "open-instinct-dev-"));
+  const directory = await mkdtemp(join(tmpdir(), "blud-dev-"));
   temporaryDirectories.push(directory);
   const logPath = join(directory, "commands.log");
   const dockerPath = join(directory, "docker");

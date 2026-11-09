@@ -3,7 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
-const composeProject = `open-instinct-evals-${createHash("sha256")
+const composeProject = `blud-evals-${createHash("sha256")
   .update(repositoryRoot)
   .digest("hex")
   .slice(0, 8)}-${randomBytes(4).toString("hex")}`;
@@ -49,7 +49,7 @@ async function runAgentEvals() {
     const port = /:(\d+)\s*$/u.exec(address)?.[1];
     if (!port) throw new Error("Could not resolve the local PostgreSQL port.");
 
-    const databaseUrl = `postgresql://postgres:postgres@127.0.0.1:${port}/open_instinct`;
+    const databaseUrl = `postgresql://postgres:postgres@127.0.0.1:${port}/blud`;
     const environment = {
       ...inheritedEnvironment,
       BETTER_AUTH_URL: "http://127.0.0.1:9",

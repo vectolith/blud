@@ -22,7 +22,7 @@ beforeAll(async () => {
     drain({ event }: DrainContext) {
       capturedEvents.push(structuredClone(event));
     },
-    env: { service: "open-instinct-test" },
+    env: { service: "blud-test" },
     redact: false,
     silent: true,
   });

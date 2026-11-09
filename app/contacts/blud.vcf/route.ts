@@ -1,14 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getInstallationSecrets } from "@db/services/installation-secrets";
-import { verifyOpenInstinctContactUrl } from "@shared/chat/contact-card";
+import { verifyBludContactUrl } from "@shared/chat/contact-card";
 
 export async function GET(request: Request) {
   const { betterAuthSecret } = await getInstallationSecrets();
-  const phone = verifyOpenInstinctContactUrl(
-    new URL(request.url),
-    betterAuthSecret
-  );
+  const phone = verifyBludContactUrl(new URL(request.url), betterAuthSecret);
   const headers = {
     "Cache-Control": "private, no-store",
     "Referrer-Policy": "no-referrer",

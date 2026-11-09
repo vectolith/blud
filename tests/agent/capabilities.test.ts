@@ -94,7 +94,7 @@ async function authoredCapabilities(authenticator: string) {
     memory: {
       scope: {
         key: "personal-info-key",
-        namespace: "openinstinct-personal-info-v1",
+        namespace: "blud-personal-info-v1",
         value: "personal:workspace",
       },
       slot: "personal_info",

@@ -11,7 +11,7 @@ const linqReplyTargetSchema = z.strictObject({
 type LinqReplyTarget = z.infer<typeof linqReplyTargetSchema>;
 
 const backgroundReplyTargets = defineState<Record<string, LinqReplyTarget>>(
-  "open-instinct.background-reply-targets",
+  "blud.background-reply-targets",
   () => ({})
 );
 

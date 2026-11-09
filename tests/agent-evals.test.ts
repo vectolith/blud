@@ -33,8 +33,8 @@ describe("agent eval supervisor", supervisorTestOptions, () => {
     expect(lines).toEqual([
       `compose --project-name ${project} up --detach --wait postgres`,
       `compose --project-name ${project} port postgres 5432`,
-      "pnpm db:migrate postgresql://postgres:postgres@127.0.0.1:49152/open_instinct development unused-by-agent-evals http://127.0.0.1:9 http://127.0.0.1:9",
-      "pnpm exec eve eval agent --strict --max-concurrency 1 --tag smoke postgresql://postgres:postgres@127.0.0.1:49152/open_instinct development unused-by-agent-evals http://127.0.0.1:9 http://127.0.0.1:9",
+      "pnpm db:migrate postgresql://postgres:postgres@127.0.0.1:49152/blud development unused-by-agent-evals http://127.0.0.1:9 http://127.0.0.1:9",
+      "pnpm exec eve eval agent --strict --max-concurrency 1 --tag smoke postgresql://postgres:postgres@127.0.0.1:49152/blud development unused-by-agent-evals http://127.0.0.1:9 http://127.0.0.1:9",
       `compose --project-name ${project} down --volumes`,
     ]);
   });
@@ -72,7 +72,7 @@ describe("agent eval supervisor", supervisorTestOptions, () => {
 
     expect(result.code).toBe(1);
     expect(result.commands.trim().split("\n").at(-1)).toMatch(
-      /^compose --project-name open-instinct-evals-[a-f0-9]{8}-[a-f0-9]{8} down --volumes$/u
+      /^compose --project-name blud-evals-[a-f0-9]{8}-[a-f0-9]{8} down --volumes$/u
     );
   });
 
@@ -103,8 +103,8 @@ describe("agent eval supervisor", supervisorTestOptions, () => {
     expect(lines).toEqual([
       `compose --project-name ${project} up --detach --wait postgres`,
       `compose --project-name ${project} port postgres 5432`,
-      "pnpm db:migrate postgresql://postgres:postgres@127.0.0.1:49152/open_instinct development unused-by-agent-evals http://127.0.0.1:9 http://127.0.0.1:9",
-      "pnpm exec eve eval agent --strict --max-concurrency 1 --tag smoke postgresql://postgres:postgres@127.0.0.1:49152/open_instinct development unused-by-agent-evals http://127.0.0.1:9 http://127.0.0.1:9",
+      "pnpm db:migrate postgresql://postgres:postgres@127.0.0.1:49152/blud development unused-by-agent-evals http://127.0.0.1:9 http://127.0.0.1:9",
+      "pnpm exec eve eval agent --strict --max-concurrency 1 --tag smoke postgresql://postgres:postgres@127.0.0.1:49152/blud development unused-by-agent-evals http://127.0.0.1:9 http://127.0.0.1:9",
       `compose --project-name ${project} down --volumes`,
     ]);
   });
@@ -112,7 +112,7 @@ describe("agent eval supervisor", supervisorTestOptions, () => {
 
 function projectFromComposeCommand(command: string | undefined) {
   const project = command?.match(
-    /^compose --project-name (open-instinct-evals-[a-f0-9]{8}-[a-f0-9]{8}) /u
+    /^compose --project-name (blud-evals-[a-f0-9]{8}-[a-f0-9]{8}) /u
   )?.[1];
   if (!project) {
     throw new Error(`Missing Compose project in: ${String(command)}`);
@@ -124,7 +124,7 @@ async function runSupervisor(
   environment: Record<string, string> = {},
   args = ["--tag", "smoke"]
 ) {
-  const directory = await mkdtemp(join(tmpdir(), "open-instinct-evals-"));
+  const directory = await mkdtemp(join(tmpdir(), "blud-evals-"));
   temporaryDirectories.push(directory);
   const logPath = join(directory, "commands.log");
   const dockerPath = join(directory, "docker");

@@ -72,7 +72,7 @@ describe("scheduled run requests", () => {
 
   it("authenticates Vercel callbacks with the deployment OIDC token", async () => {
     mocks.env.VERCEL_ENV = "preview";
-    mocks.env.VERCEL_URL = "openinstinct-preview.vercel.app";
+    mocks.env.VERCEL_URL = "blud-preview.vercel.app";
 
     await postScheduledRunRoute("/internal/scheduled-run/report", {
       runId: "run-1",
@@ -80,9 +80,7 @@ describe("scheduled run requests", () => {
 
     expect(mocks.getToken).toHaveBeenCalledOnce();
     expect(fetch).toHaveBeenCalledWith(
-      new URL(
-        "https://openinstinct-preview.vercel.app/internal/scheduled-run/report"
-      ),
+      new URL("https://blud-preview.vercel.app/internal/scheduled-run/report"),
       expect.objectContaining({
         body: JSON.stringify({ runId: "run-1" }),
         method: "POST",

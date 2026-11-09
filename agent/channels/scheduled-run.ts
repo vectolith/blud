@@ -100,7 +100,7 @@ export default defineChannel({
                 workspaceId: claimed.job.workspaceId,
               },
               authenticator: "scheduled-input",
-              issuer: "open-instinct",
+              issuer: "blud",
               principalId: claimed.job.createdByUserId,
               principalType: "user",
             },

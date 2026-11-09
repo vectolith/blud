@@ -18,11 +18,11 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubEnv("BETTER_AUTH_SECRET", "");
   vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
-  vi.stubEnv("BLOB_STORE_ID", "store_openinstinct");
+  vi.stubEnv("BLOB_STORE_ID", "store_blud");
   vi.stubEnv("DATABASE_URL", "postgresql://user:password@example.com/database");
   vi.stubEnv("KERNEL_API_KEY", "test-kernel-key");
   vi.stubEnv("SECRET_ENCRYPTION_KEY", "");
-  vi.stubEnv("VERCEL_PROJECT_ID", "prj_openinstinct");
+  vi.stubEnv("VERCEL_PROJECT_ID", "prj_blud");
 });
 
 afterEach(() => {
@@ -36,10 +36,10 @@ describe("installation secrets", () => {
       contentDisposition: "attachment",
       contentType: "application/json",
       downloadUrl:
-        "https://store.private.blob.vercel-storage.com/openinstinct/system/installation-secrets.v1.json?download=1",
+        "https://store.private.blob.vercel-storage.com/blud/system/installation-secrets.v1.json?download=1",
       etag: "etag-created",
-      pathname: "openinstinct/system/installation-secrets.v1.json",
-      url: "https://store.private.blob.vercel-storage.com/openinstinct/system/installation-secrets.v1.json",
+      pathname: "blud/system/installation-secrets.v1.json",
+      url: "https://store.private.blob.vercel-storage.com/blud/system/installation-secrets.v1.json",
     });
 
     const getInstallationSecrets = await loadInstallationSecrets();
@@ -58,7 +58,7 @@ describe("installation secrets", () => {
     if (!call) throw new Error("Expected an installation secrets upload.");
     const [pathname, body, options] = call;
     expect(pathname).toMatch(
-      /^openinstinct\/system\/[a-f0-9]{32}\/installation-secrets\.v1\.json$/u
+      /^blud\/system\/[a-f0-9]{32}\/installation-secrets\.v1\.json$/u
     );
     const serialized = z.string().parse(body);
     expect(JSON.parse(serialized)).toEqual(first);
@@ -170,12 +170,12 @@ function blobResult(value: InstallationSecretsFixture) {
       contentDisposition: "attachment",
       contentType: "application/json",
       downloadUrl:
-        "https://store.private.blob.vercel-storage.com/openinstinct/system/installation-secrets.v1.json?download=1",
+        "https://store.private.blob.vercel-storage.com/blud/system/installation-secrets.v1.json?download=1",
       etag: "etag-winner",
-      pathname: "openinstinct/system/installation-secrets.v1.json",
+      pathname: "blud/system/installation-secrets.v1.json",
       size: Buffer.byteLength(body),
       uploadedAt: new Date("2026-08-31T00:00:00.000Z"),
-      url: "https://store.private.blob.vercel-storage.com/openinstinct/system/installation-secrets.v1.json",
+      url: "https://store.private.blob.vercel-storage.com/blud/system/installation-secrets.v1.json",
     },
     headers: new Headers(),
     statusCode: 200 as const,

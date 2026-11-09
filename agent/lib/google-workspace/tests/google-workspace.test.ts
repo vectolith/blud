@@ -29,7 +29,7 @@ describe("Google Workspace", () => {
   it("uses a user-scoped connector subject", () => {
     expect(googleWorkspaceSubject(userId)).toEqual({
       id: userId,
-      issuer: "openinstinct",
+      issuer: "blud",
       type: "user",
     });
   });

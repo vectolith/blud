@@ -326,7 +326,7 @@ const replyEvals = [
       const turn = await t.send("Continue with the system announcement.", {
         clientContext: [
           "This is an internally initiated announcement turn, not a response to the trigger text or any earlier user request.",
-          "Announcement to deliver: OpenInstinct will be unavailable for scheduled maintenance tonight at 11 PM.",
+          "Announcement to deliver: Blud will be unavailable for scheduled maintenance tonight at 11 PM.",
           "Send the announcement as a brief user-visible message.",
         ],
       });

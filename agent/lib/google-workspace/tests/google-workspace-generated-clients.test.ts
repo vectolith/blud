@@ -72,7 +72,7 @@ describe("generated Google Workspace clients", () => {
       [
         "To: person@example.com",
         "Subject: Status",
-        `Message-ID: <openinstinct-${stableId}@local>`,
+        `Message-ID: <blud-${stableId}@local>`,
         "MIME-Version: 1.0",
         'Content-Type: text/plain; charset="UTF-8"',
         "Content-Transfer-Encoding: 8bit",

@@ -33,7 +33,7 @@ export async function dispatchScheduledReport(
     auth: {
       attributes,
       authenticator: "scheduled-result",
-      issuer: "open-instinct",
+      issuer: "blud",
       principalId: claimed.job.createdByUserId,
       principalType: "user" as const,
     },

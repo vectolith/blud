@@ -69,7 +69,7 @@ export const env = createEnv({
     // installation secrets in their connected private Blob store.
     BETTER_AUTH_SECRET: installationSecretWithLocalDefault(
       betterAuthSecretSchema,
-      "openinstinct-local-auth-development-secret"
+      "blud-local-auth-development-secret"
     ),
     BETTER_AUTH_URL: optionalValueWithLocalDefault(
       betterAuthUrlSchema,
@@ -83,7 +83,7 @@ export const env = createEnv({
     // Optional
     BLOB_READ_WRITE_TOKEN: requiredValue.optional(),
     BLOB_STORE_ID: requiredValue.optional(),
-    GOOGLE_CONNECTOR_UID: requiredValue.default("google/open-instinct"),
+    GOOGLE_CONNECTOR_UID: requiredValue.default("google/blud"),
     LINQ_CONNECTOR: requiredValue.optional(),
     LINK_CLIENT_ID: requiredValue.optional(),
     LINK_CLIENT_SECRET: requiredValue.optional(),

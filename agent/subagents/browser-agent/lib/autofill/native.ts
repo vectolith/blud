@@ -491,7 +491,7 @@ export async function fillKernelPaymentFields({
           "Page.createIsolatedWorld",
           {
             frameId,
-            worldName: "open-instinct-link-checkout",
+            worldName: "blud-link-checkout",
           },
           topSessionId
         )
@@ -532,7 +532,7 @@ export async function fillKernelPaymentFields({
                 "Page.createIsolatedWorld",
                 {
                   frameId: frame.id,
-                  worldName: "open-instinct-link-fields",
+                  worldName: "blud-link-fields",
                 },
                 frame.sessionId
               )
@@ -760,7 +760,7 @@ async function isPaymentFrameVisible(
           "Page.createIsolatedWorld",
           {
             frameId: parent,
-            worldName: "open-instinct-link-frame-visibility",
+            worldName: "blud-link-frame-visibility",
           },
           parentSession
         )
@@ -935,7 +935,7 @@ async function inspectNativeLoginFrame(
   const { executionContextId } = isolatedWorldSchema.parse(
     await connection.send(
       "Page.createIsolatedWorld",
-      { frameId, worldName: "open-instinct-login-autofill" },
+      { frameId, worldName: "blud-login-autofill" },
       sessionId
     )
   );
@@ -1099,7 +1099,7 @@ async function inspectFrameControls(
   const { executionContextId } = isolatedWorldSchema.parse(
     await connection.send(
       "Page.createIsolatedWorld",
-      { frameId, worldName: "open-instinct-autofill" },
+      { frameId, worldName: "blud-autofill" },
       sessionId
     )
   );

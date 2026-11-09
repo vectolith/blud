@@ -104,5 +104,5 @@ function installationSecretsPathname() {
     .update(env.VERCEL_PROJECT_ID ?? "standalone")
     .digest("hex")
     .slice(0, 32);
-  return `openinstinct/system/${scope}/installation-secrets.v1.json`;
+  return `blud/system/${scope}/installation-secrets.v1.json`;
 }

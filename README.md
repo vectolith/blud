@@ -107,7 +107,7 @@ For an existing Vercel project, link it first with
 create and connect the store:
 
 ```bash
-pnpm exec vercel blob create-store open-instinct-images --access private --yes --environment production --environment preview --environment development
+pnpm exec vercel blob create-store blud-images --access private --yes --environment production --environment preview --environment development
 ```
 
 Outside Vercel, set `BLOB_READ_WRITE_TOKEN` from a private Blob store. Memory and
@@ -134,7 +134,7 @@ tokens and inbound webhooks:
 
 ```bash
 pnpm exec eve link --project <your-vercel-project> --non-interactive
-pnpm exec vercel connect create linq --connection-method line --name open-instinct --json
+pnpm exec vercel connect create linq --connection-method line --name blud --json
 pnpm exec vercel connect attach <returned-connector-uid> --project <your-vercel-project> --environment production --triggers --trigger-path /eve/v1/linq --yes
 pnpm exec vercel env add LINQ_CONNECTOR production --value <returned-connector-uid> --yes
 ```
@@ -169,7 +169,7 @@ access deliberately uses `gmail.modify`, not the permanent-delete
    vercel link
    google_credentials_file="$(mktemp)"
    jq '{clientId: .web.client_id, clientSecret: .web.client_secret}' /absolute/path/to/downloaded-client-secret.json > "$google_credentials_file"
-   vercel connect create google --connection-method oauth --name open-instinct --data @"$google_credentials_file"
+   vercel connect create google --connection-method oauth --name blud --data @"$google_credentials_file"
    rm -f "$google_credentials_file"
    vercel connect attach <returned-connector-uid> --project <your-vercel-project> --environment production --yes
    vercel env pull
@@ -178,7 +178,7 @@ access deliberately uses `gmail.modify`, not the permanent-delete
    Never commit either credential file.
 
 4. Set `GOOGLE_CONNECTOR_UID` to the returned UID and redeploy. The default is
-   `google/open-instinct`.
+   `google/blud`.
 
 Gotchas:
 

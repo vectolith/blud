@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
-const composeProject = `open-instinct-${createHash("sha256")
+const composeProject = `blud-${createHash("sha256")
   .update(repositoryRoot)
   .digest("hex")
   .slice(0, 12)}`;
@@ -18,7 +18,7 @@ const composeArguments = (...args: string[]) => [
 const inheritedEnvironment = { ...process.env };
 
 function developmentEnvironment(port: string) {
-  const localDatabaseUrl = `postgresql://postgres:postgres@127.0.0.1:${port}/open_instinct`;
+  const localDatabaseUrl = `postgresql://postgres:postgres@127.0.0.1:${port}/blud`;
   return {
     ...inheritedEnvironment,
     DATABASE_URL: localDatabaseUrl,

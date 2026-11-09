@@ -10,7 +10,7 @@ let loggerInitialized = false;
 
 function logger(context: Parameters<typeof createLogger>[0]) {
   if (!loggerInitialized) {
-    initLogger({ env: { service: "open-instinct" }, redact: false });
+    initLogger({ env: { service: "blud" }, redact: false });
     loggerInitialized = true;
   }
   return createLogger(context);

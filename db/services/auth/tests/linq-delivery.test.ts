@@ -29,7 +29,7 @@ describe("Linq phone authentication", () => {
       "BETTER_AUTH_SECRET",
       "0123456789abcdefghijklmnopqrstuvwxyzABCD"
     );
-    vi.stubEnv("LINQ_CONNECTOR", "linq/open-instinct");
+    vi.stubEnv("LINQ_CONNECTOR", "linq/blud");
     mocks.getToken.mockResolvedValue("test-token");
     vi.stubGlobal(
       "fetch",

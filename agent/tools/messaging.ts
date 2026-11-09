@@ -6,7 +6,7 @@ import { sendNativeLinqMessage } from "@agent/lib/linq/transport";
 import { scopeFromPrincipal } from "@agent/lib/principal-scope";
 import { readLinqOnboardingPhoneNumber } from "@db/services/auth/linq";
 import { getInstallationSecrets } from "@db/services/installation-secrets";
-import { openInstinctContactUrl } from "@shared/chat/contact-card";
+import { bludContactUrl } from "@shared/chat/contact-card";
 import { env } from "@shared/environment";
 import {
   addReactionToMessageOutputSchema,
@@ -21,7 +21,7 @@ const contactDelivery = defineState<{
     { kind: "message" }
   >;
   sent: boolean;
-} | null>("openinstinct.contact-delivery", () => null);
+} | null>("blud.contact-delivery", () => null);
 
 function defineSendMessage() {
   return defineTool({
@@ -99,7 +99,7 @@ function defineShareContact() {
                 kind: "file",
                 mimeType: "text/vcard",
                 name: "Blud.vcf",
-                url: openInstinctContactUrl(phone, betterAuthSecret),
+                url: bludContactUrl(phone, betterAuthSecret),
               },
             ],
           },
@@ -112,7 +112,7 @@ function defineShareContact() {
         await sendNativeLinqMessage(
           chatId,
           {
-            idempotency_key: `openinstinct-contact:${context.session.id}`,
+            idempotency_key: `blud-contact:${context.session.id}`,
             parts: [
               ...(introduction
                 ? [{ type: "text" as const, value: introduction }]
