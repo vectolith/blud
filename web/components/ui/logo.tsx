@@ -14,13 +14,11 @@ function Logo({ className, ...props }: LogoProps) {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      {/* Blud's geometric mark with transparent cutouts for every surface. */}
+      {/* Blud's geometric B-portal mark with transparent cutouts for every surface. */}
       <path
-        d="M0 170H445V360H614V170H1059V1229H0Z M867 698.5a338.5 338.5 0 1 0-677 0a338.5 338.5 0 1 0 677 0Z"
+        d="M80 80H1149V1149H80V80ZM280 260V969H640C795 969 905 876 905 752C905 654 842 584 745 562C815 536 865 474 865 392C865 282 765 260 615 260H280ZM365 340L575 410H635C690 410 725 438 725 480C725 522 690 550 635 550H575V630H650C710 630 750 662 750 710C750 758 710 790 650 790H575L365 889V340Z"
         fillRule="evenodd"
       />
-      <rect height="170" width="169" x="445" y="0" />
-      <rect height="523" width="169" x="445" y="360" />
     </svg>
   );
 }
