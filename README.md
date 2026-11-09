@@ -311,7 +311,7 @@ Local development requires:
 First clone and install the application:
 
 ```bash
-git clone https://github.com/ganiyucall911/blud.git
+git clone https://github.com/vectolith/blud.git
 cd blud
 pnpm install --frozen-lockfile
 ```
