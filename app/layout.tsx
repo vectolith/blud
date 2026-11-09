@@ -9,9 +9,9 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(applicationOrigin()),
-  title: "OpenInstinct",
+  title: "Blud",
   description:
-    "A self-hosted personal agent with private credentials and Kernel-powered browser execution.",
+    "Blud — a self-hosted personal iMessage and web AI assistant with private encrypted vault credentials and Kernel-powered browser execution.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

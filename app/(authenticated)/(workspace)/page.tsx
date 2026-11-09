@@ -2,8 +2,10 @@ import {
   BotIcon,
   CloudIcon,
   ImageIcon,
+  KeyRoundIcon,
   MailIcon,
   MessageSquareIcon,
+  UserRoundIcon,
   WalletIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -39,7 +41,39 @@ export default async function Page({ searchParams }: PageProps<"/">) {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl min-w-0 flex-col gap-8 px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="sr-only">Workspace</h1>
+      <div className="flex flex-col gap-2 border-b border-border/50 pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="type-page-title">Blud Workspace</h1>
+          <p className="type-supporting-body text-muted-foreground">
+            Manage your iMessage &amp; WebChat channels, encrypted vault, and
+            connected cloud browsers.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            nativeButton={false}
+            render={<Link href="/vault" />}
+            size="sm"
+            variant="outline"
+          >
+            <KeyRoundIcon />
+            Vault
+          </Button>
+          <Button
+            nativeButton={false}
+            render={<Link href="/personal-info" />}
+            size="sm"
+            variant="outline"
+          >
+            <UserRoundIcon />
+            Personal info
+          </Button>
+          <Button nativeButton={false} render={<Link href="/chat" />} size="sm">
+            <MessageSquareIcon />
+            Open Chat
+          </Button>
+        </div>
+      </div>
 
       {google === "unavailable" ? (
         <Alert>

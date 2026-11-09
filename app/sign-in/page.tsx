@@ -5,6 +5,7 @@ import { PhoneOtpAuthForm } from "@app/sign-in/_components/otp-form";
 import { env, localPhoneAuthBypassEnabled } from "@shared/environment";
 import { getAuthSession } from "@db/services/auth/session";
 import { readLinqOnboardingPhoneNumber } from "@db/services/auth/linq";
+import { Logo } from "@web/components/ui/logo";
 
 export default async function SignInPage({
   searchParams,
@@ -32,11 +33,15 @@ export default async function SignInPage({
     <main className="flex min-h-svh items-center justify-center bg-background px-4 py-8 text-foreground">
       <section className="w-full max-w-sm space-y-6">
         <div className="flex flex-col gap-2">
+          <div className="mb-1 flex items-center gap-2 text-foreground">
+            <Logo className="size-5" />
+            <span className="type-label">Blud</span>
+          </div>
           <h1 className="type-page-title">
             {reauthenticate ? "Sign in again" : "Sign In"}
           </h1>
           <p className="type-supporting-body text-muted-foreground">
-            Enter your phone number to sign in.
+            Enter your phone number to sign in to your personal workspace.
           </p>
         </div>
         {!localPhoneAuthBypassEnabled && !linqConfigured ? (

@@ -14,7 +14,7 @@ function Logo({ className, ...props }: LogoProps) {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      {/* OpenInstinct's mark with transparent cutouts for every surface. */}
+      {/* Blud's geometric mark with transparent cutouts for every surface. */}
       <path
         d="M0 170H445V360H614V170H1059V1229H0Z M867 698.5a338.5 338.5 0 1 0-677 0a338.5 338.5 0 1 0 677 0Z"
         fillRule="evenodd"

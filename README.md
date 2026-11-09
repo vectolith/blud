@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src=".github/logo.png" alt="OpenInstinct" width="420">
+<img src=".github/logo.png" alt="Blud" width="420">
 
-**A personal iMessage assistant that can use a browser like you.**
+**Blud — a personal iMessage & web AI assistant that can use a browser like you.**
 
 It can do your chores, book movie tickets, or handle your groceries.
 You stay in control of your passwords, credit cards, and context.
@@ -10,9 +10,9 @@ You stay in control of your passwords, credit cards, and context.
 It's open source, self-hostable, and can use any model.
 Deploy to your own Vercel account and get rolling.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FMerit-Systems%2FOpenInstinct&project-name=open-instinct&repository-name=open-instinct&connect=%5B%7B%22type%22%3A%22linq%22%2C%22env%22%3A%22LINQ_CONNECTOR%22%2C%22triggers%22%3Atrue%2C%22triggerPath%22%3A%22%2Feve%2Fv1%2Flinq%22%7D%5D&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22other%22%2C%22productSlug%22%3A%22kernel%22%2C%22integrationSlug%22%3A%22kernel%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fpluco-dev%2Fblud&project-name=blud&repository-name=blud&connect=%5B%7B%22type%22%3A%22linq%22%2C%22env%22%3A%22LINQ_CONNECTOR%22%2C%22triggers%22%3Atrue%2C%22triggerPath%22%3A%22%2Feve%2Fv1%2Flinq%22%7D%5D&stores=%5B%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22other%22%2C%22productSlug%22%3A%22kernel%22%2C%22integrationSlug%22%3A%22kernel%22%7D%2C%7B%22type%22%3A%22integration%22%2C%22protocol%22%3A%22storage%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D)
 
-<img src=".github/demo.png" alt="OpenInstinct booking movie tickets over iMessage — it walks Fandango to checkout and reports the theater, showtime, seat, and total" width="640">
+<img src=".github/demo.png" alt="Blud booking movie tickets over iMessage — it walks Fandango to checkout and reports the theater, showtime, seat, and total" width="640">
 
 </div>
 
@@ -23,14 +23,14 @@ Deploy to your own Vercel account and get rolling.
 ## Why self-host?
 
 Personal agents are much more useful when they can sign in, book, buy, and act
-on your behalf. OpenInstinct runs in your own Vercel account. Saved vault secrets
+on your behalf. Blud runs in your own Vercel account. Saved vault secrets
 are encrypted before they reach your database, and browser autofill keeps saved
 passwords out of the model's context. You can read the code to see how it works.
 
 ## Requirements and costs
 
 You can use free tiers for the supporting services. **Vercel requires the Pro
-plan.** OpenInstinct checks for scheduled work every minute; Vercel's Hobby plan
+plan.** Blud checks for scheduled work every minute; Vercel's Hobby plan
 only allows cron jobs that run once per day, so it cannot deploy this schedule.
 See [Vercel's cron limits](https://vercel.com/docs/cron-jobs/usage-and-pricing).
 
@@ -55,7 +55,7 @@ Purchases approved through Link are paid from your wallet.
    [Google Workspace](#google-workspace-connection) for Gmail, Calendar,
    and Contacts.
 
-On first use, OpenInstinct creates independent Better Auth and vault-encryption
+On first use, Blud creates independent Better Auth and vault-encryption
 keys in the private Blob store. The deploy flow supplies the application URL
 and required service configuration automatically; you do not need to copy
 environment-variable values for the base installation.
@@ -87,7 +87,7 @@ re-encrypting existing vault values.
 The deploy button connects a private Blob store. Vercel supplies `BLOB_STORE_ID`
 and a short-lived `VERCEL_OIDC_TOKEN`, so there is no Blob credential to copy.
 
-OpenInstinct uses this store for persistent per-user memory and browser images.
+Blud uses this store for persistent per-user memory and browser images.
 Production conversations require it because memory is recalled before each agent
 turn. Local Eve development uses process-local memory instead.
 
@@ -149,9 +149,9 @@ but cannot receive them.
 
 ## Google Workspace connection
 
-OpenInstinct can use a user's Gmail, Calendar, and read-only Contacts through a
+Blud can use a user's Gmail, Calendar, and read-only Contacts through a
 user-scoped Google OAuth grant. Vercel Connect stores and refreshes the tokens;
-OpenInstinct stores only the stable user identity used to request them. Gmail
+Blud stores only the stable user identity used to request them. Gmail
 access deliberately uses `gmail.modify`, not the permanent-delete
 `mail.google.com` scope.
 
@@ -191,7 +191,7 @@ Gotchas:
 - The scopes requested here must also be declared on the Google consent screen.
   After changing scopes or enabled APIs, disconnect and reconnect the account so
   Google issues a grant with the new access.
-- The grant is keyed to the authenticated OpenInstinct user. iMessage reaches
+- The grant is keyed to the authenticated Blud user. iMessage reaches
   the same grant only when its verified phone number maps to that Better Auth
   account.
 - Google Contacts search uses a provider-side lazy cache, so a contact created
@@ -251,14 +251,14 @@ it. Stripe currently supports Link Agent Wallet for US and Canadian consumers.
 
 ### Connect your wallet
 
-Sign in to OpenInstinct with your phone number, open **Link wallet** in the
+Sign in to Blud with your phone number, open **Link wallet** in the
 sidebar, and choose **Connect Link**. Approve the connection on Link's consent
 screen. When you return, the page should say **Your Link wallet is connected**.
 If it still says Link is unavailable, check that all three Stripe variables are
 set on the deployed environment and that you redeployed after adding them.
 
 Connecting a wallet does not approve a purchase. Each spend request requires
-your approval in Link. You can connect one wallet per OpenInstinct account;
+your approval in Link. You can connect one wallet per Blud account;
 disconnect it before switching wallets. Disconnecting revokes wallet access and
 leaves phone sign-in available.
 
@@ -311,8 +311,8 @@ Local development requires:
 First clone and install the application:
 
 ```bash
-git clone https://github.com/Merit-Systems/OpenInstinct.git
-cd OpenInstinct
+git clone https://github.com/pluco-dev/blud.git
+cd blud
 pnpm install --frozen-lockfile
 ```
 
@@ -334,7 +334,7 @@ pnpm exec eve link --project <your-vercel-project> --non-interactive
 pnpm exec vercel integration add kernel --plan FREE
 ```
 
-Then start OpenInstinct:
+Then start Blud:
 
 ```bash
 pnpm dev

@@ -35,7 +35,7 @@ export default async function Page({ searchParams }: PageProps<"/link">) {
           {configured
             ? connected
               ? "Your Link wallet is connected. Purchases still require approval in Link."
-              : "Connect your Link wallet to use it with OpenInstinct. Purchases require your approval in Link."
+              : "Connect your Link wallet to use it with Blud. Purchases require your approval in Link."
             : "Link is not available on this installation yet."}
         </p>
       </div>
@@ -45,8 +45,8 @@ export default async function Page({ searchParams }: PageProps<"/link">) {
             Set up Link for this installation
           </h2>
           <p className="type-supporting-body text-muted-foreground">
-            OpenInstinct works without Link. To enable wallet connections, the
-            person managing this deployment needs to complete these steps.
+            Blud works without Link. To enable wallet connections, the person
+            managing this deployment needs to complete these steps.
           </p>
           <ol className="type-supporting-body list-decimal space-y-4 pl-5">
             <li className="space-y-2">
@@ -151,14 +151,14 @@ export default async function Page({ searchParams }: PageProps<"/link">) {
             Using your wallet
           </h2>
           <p className="type-supporting-body text-muted-foreground">
-            After connecting, ask OpenInstinct to help with a purchase. It will
-            send you a Link approval request before using payment credentials.
-            Connecting your wallet does not approve a purchase.
+            After connecting, ask Blud to help with a purchase. It will send you
+            a Link approval request before using payment credentials. Connecting
+            your wallet does not approve a purchase.
           </p>
           <p className="type-supporting-body text-muted-foreground">
-            You can connect one Link wallet to your OpenInstinct account. To
-            switch wallets, disconnect the current one first. Disconnecting
-            revokes OpenInstinct’s access; your phone sign-in still works.
+            You can connect one Link wallet to your Blud account. To switch
+            wallets, disconnect the current one first. Disconnecting revokes
+            Blud’s access; your phone sign-in still works.
           </p>
         </section>
       )}

@@ -65,7 +65,7 @@ describe("Turbo configuration", () => {
       ?.split("### Linq iMessage setup", 1)[0];
 
     expect(deployButton?.searchParams.get("repository-url")).toBe(
-      "https://github.com/Merit-Systems/OpenInstinct"
+      "https://github.com/pluco-dev/blud"
     );
     expect(deployButton?.searchParams.has("env")).toBe(false);
     expect(deployButton?.searchParams.has("products")).toBe(false);
