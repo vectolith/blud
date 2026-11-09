@@ -10,18 +10,17 @@ function Logo({ className, ...props }: LogoProps) {
       data-slot="logo"
       fill="currentColor"
       focusable="false"
-      viewBox="-85 0 1229 1229"
+      viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      {/* Blud's abstract Bauhaus geometric mark (interlocking arcs, pill quadrants, and stepped corner). */}
+      {/* Blud's structured geometric mark: rounded square frame, diamond aperture, and circular core. */}
       <path
-        d="M80 80H620A340 340 0 0 1 880 320H960V460H1149V1149H80V80ZM360 240A190 190 0 1 0 360 620A190 190 0 1 0 360 240ZM760 560A210 210 0 1 0 760 980A210 210 0 1 0 760 560ZM200 720A300 300 0 0 0 620 1060L540 920A170 170 0 0 1 320 680L200 720Z"
+        clipRule="evenodd"
+        d="M7 2H17C19.7614 2 22 4.23858 22 7V17C22 19.7614 19.7614 22 17 22H7C4.23858 22 2 19.7614 2 17V7C2 4.23858 4.23858 2 7 2ZM12 4.75L19.25 12L12 19.25L4.75 12L12 4.75Z"
         fillRule="evenodd"
       />
-      <path d="M840 80H1149V390H1000V230H840V80Z" />
-      <rect height="170" width="170" x="450" y="380" />
-      <rect height="170" rx="85" width="240" x="620" y="550" />
+      <circle cx="12" cy="12" r="3.25" />
     </svg>
   );
 }
