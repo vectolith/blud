@@ -31,7 +31,7 @@ describe("auth route initialization", () => {
       .mockResolvedValueOnce({});
     const { GET } = await import("@app/api/auth/[...all]/route");
     const request = new Request(
-      "https://openinstinct.example/api/auth/session"
+      "https://blud.example/api/auth/session"
     );
 
     await expect(GET(request)).rejects.toThrow("Blob temporarily unavailable");
