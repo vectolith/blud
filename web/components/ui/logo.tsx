@@ -14,11 +14,14 @@ function Logo({ className, ...props }: LogoProps) {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      {/* Blud's geometric B-portal mark with transparent cutouts for every surface. */}
+      {/* Blud's abstract Bauhaus geometric mark (interlocking arcs, pill quadrants, and stepped corner). */}
       <path
-        d="M80 80H1149V1149H80V80ZM280 260V969H640C795 969 905 876 905 752C905 654 842 584 745 562C815 536 865 474 865 392C865 282 765 260 615 260H280ZM365 340L575 410H635C690 410 725 438 725 480C725 522 690 550 635 550H575V630H650C710 630 750 662 750 710C750 758 710 790 650 790H575L365 889V340Z"
+        d="M80 80H620A340 340 0 0 1 880 320H960V460H1149V1149H80V80ZM360 240A190 190 0 1 0 360 620A190 190 0 1 0 360 240ZM760 560A210 210 0 1 0 760 980A210 210 0 1 0 760 560ZM200 720A300 300 0 0 0 620 1060L540 920A170 170 0 0 1 320 680L200 720Z"
         fillRule="evenodd"
       />
+      <path d="M840 80H1149V390H1000V230H840V80Z" />
+      <rect height="170" width="170" x="450" y="380" />
+      <rect height="170" rx="85" width="240" x="620" y="550" />
     </svg>
   );
 }
