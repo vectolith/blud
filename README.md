@@ -2,7 +2,7 @@
 
 <img src=".github/logo.png" alt="Blud" width="420">
 
-**Blud — a personal iMessage & web AI assistant that can use a browser like you.**
+**Blud — a headless personal iMessage AI assistant that can use a browser like you.**
 
 It can do your chores, book movie tickets, or handle your groceries.
 You stay in control of your passwords, credit cards, and context.

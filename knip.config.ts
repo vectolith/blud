@@ -22,8 +22,10 @@ export default {
   ],
   ignoreDependencies: [
     // Imported through the owning Tailwind stylesheet rather than TypeScript.
+    "@tailwindcss/postcss",
     "shadcn",
     "tailwindcss",
+    "use-stick-to-bottom",
     // Loaded as jsPlugins from .oxlintrc.jsonc rather than TypeScript.
     "eslint-plugin-react-hooks",
     "eslint-plugin-turbo",
@@ -32,10 +34,10 @@ export default {
     "vercel",
   ],
   ignoreIssues: {
-    // Eve AI Elements and shadcn registry primitives intentionally expose
-    // a reusable component surface wider than this minimal chat consumes.
-    "web/components/ai-elements/**/*.tsx": ["exports", "files", "types"],
-    "web/components/ui/**/*.tsx": ["exports", "files", "types"],
+    // Headless messaging mode retains shared web/trpc/auth/component primitives without mounting web UI pages.
+    "db/services/**/*.ts": ["exports", "types"],
+    "shared/**/*.ts": ["exports", "files", "types"],
+    "web/**/*.{ts,tsx}": ["exports", "files", "types"],
   },
   project: ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}"],
 } satisfies KnipConfig;
