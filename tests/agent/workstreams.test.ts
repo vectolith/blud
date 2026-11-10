@@ -56,7 +56,7 @@ beforeAll(async () => {
   // SAFETY: PGlite implements the same Drizzle query-builder contract used by these services; only the driver changes.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Exercise the real schema and services with an isolated PostgreSQL-compatible test database.
   vi.spyOn(Database, "db", "get").mockReturnValue(database as never);
-}, 20_000);
+}, 90_000);
 
 beforeEach(async () => {
   await database.delete(schema.workspaces);

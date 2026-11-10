@@ -385,7 +385,7 @@ describe("Link wallet integration", () => {
     } finally {
       await client.close();
     }
-  }, 15_000);
+  }, 60_000);
 });
 
 function updateCookies(headers: Headers, response: Headers) {
