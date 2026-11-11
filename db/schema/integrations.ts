@@ -29,9 +29,9 @@ export const integrationConnections = pgTable("integration_connections", {
   unique("integration_connections_id_owner_uidx").on(table.id, table.ownerUserId),
   unique("integration_connections_owner_provider_account_uidx").on(table.ownerUserId, table.providerKey, table.providerAccountId),
   index("integration_connections_owner_idx").on(table.ownerUserId, table.createdAt),
-  check("integration_connections_provider_check", sql\`\${table.providerKey} IN ('github', 'google_workspace')\`),
-  check("integration_connections_status_check", sql\`\${table.status} IN ('active', 'reauthorization_required', 'revoked', 'failed')\`),
-  check("integration_connections_revocation_check", sql\`\${table.status} = 'revoked' OR \${table.revokedAt} IS NULL\`),
+  check("integration_connections_provider_check", sql`${table.providerKey} IN ('github', 'google_workspace')`),
+  check("integration_connections_status_check", sql`${table.status} IN ('active', 'reauthorization_required', 'revoked', 'failed')`),
+  check("integration_connections_revocation_check", sql`${table.status} = 'revoked' OR ${table.revokedAt} IS NULL`),
 ]);
 
 export const integrationCredentials = pgTable("integration_credentials", {
@@ -50,8 +50,8 @@ export const integrationCredentials = pgTable("integration_credentials", {
 }, (table) => [
   unique("integration_credentials_connection_type_uidx").on(table.connectionId, table.credentialType),
   foreignKey({ name: "integration_credentials_connection_owner_fkey", columns: [table.connectionId, table.ownerUserId], foreignColumns: [integrationConnections.id, integrationConnections.ownerUserId] }).onDelete("cascade"),
-  check("integration_credentials_type_check", sql\`\${table.credentialType} IN ('oauth_tokens', 'api_token')\`),
-  check("integration_credentials_algorithm_check", sql\`\${table.algorithm} = 'aes-256-gcm'\`),
+  check("integration_credentials_type_check", sql`${table.credentialType} IN ('oauth_tokens', 'api_token')`),
+  check("integration_credentials_algorithm_check", sql`${table.algorithm} = 'aes-256-gcm'`),
   index("integration_credentials_owner_idx").on(table.ownerUserId),
 ]);
 
@@ -77,8 +77,8 @@ export const integrationActionGrants = pgTable("integration_action_grants", {
 }, (table) => [
   primaryKey({ name: "integration_action_grants_pkey", columns: [table.connectionId, table.actionKey] }),
   foreignKey({ name: "integration_action_grants_connection_owner_fkey", columns: [table.connectionId, table.ownerUserId], foreignColumns: [integrationConnections.id, integrationConnections.ownerUserId] }).onDelete("cascade"),
-  check("integration_action_grants_decision_check", sql\`\${table.decision} IN ('allow', 'deny')\`),
-  check("integration_action_grants_owner_only_check", sql\`\${table.grantedByUserId} = \${table.ownerUserId}\`),
+  check("integration_action_grants_decision_check", sql`${table.decision} IN ('allow', 'deny')`),
+  check("integration_action_grants_owner_only_check", sql`${table.grantedByUserId} = ${table.ownerUserId}`),
   index("integration_action_grants_owner_idx").on(table.ownerUserId),
 ]);
 
@@ -97,8 +97,8 @@ export const integrationAuthorizationAttempts = pgTable("integration_authorizati
   consumedAt: timestamp("consumed_at", { withTimezone: true }),
   createdAt: createdAt(),
 }, (table) => [
-  check("integration_authorization_attempts_provider_check", sql\`\${table.providerKey} IN ('github', 'google_workspace')\`),
-  check("integration_authorization_attempts_status_check", sql\`\${table.status} IN ('pending', 'completed', 'failed', 'expired')\`),
+  check("integration_authorization_attempts_provider_check", sql`${table.providerKey} IN ('github', 'google_workspace')`),
+  check("integration_authorization_attempts_status_check", sql`${table.status} IN ('pending', 'completed', 'failed', 'expired')`),
   index("integration_authorization_attempts_owner_idx").on(table.ownerUserId, table.createdAt),
   index("integration_authorization_attempts_expiry_idx").on(table.status, table.expiresAt),
 ]);
