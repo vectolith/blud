@@ -3,6 +3,7 @@ import { and, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@db";
 import {
+  integrationActionGrants,
   integrationAuthorizationAttempts,
   integrationConnectionScopes,
   integrationConnections,
@@ -231,6 +232,16 @@ export async function saveGitHubConnection(input: {
           updatedAt: now,
         },
       });
+
+    // Reauthorization must not silently restore prior Blud action consent.
+    await tx
+      .delete(integrationActionGrants)
+      .where(
+        and(
+          eq(integrationActionGrants.connectionId, connection.id),
+          eq(integrationActionGrants.ownerUserId, input.ownerUserId)
+        )
+      );
 
     await tx
       .delete(integrationConnectionScopes)
