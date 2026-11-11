@@ -2,7 +2,15 @@ import { createHash } from "node:crypto";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import * as Database from "@db";
 import * as schema from "@db/schema";
 import {
@@ -36,7 +44,7 @@ const token = {
 beforeAll(async () => {
   await migrate(database, { migrationsFolder: "db/migrations" });
   // SAFETY: PGlite exercises the real Drizzle schema and transaction behavior.
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Swap only the PostgreSQL driver for an isolated compatible test database.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PGlite driver swap.
   vi.spyOn(Database, "db", "get").mockReturnValue(database as never);
 }, 90_000);
 
@@ -64,7 +72,7 @@ afterAll(async () => {
 });
 
 describe("GitHub OAuth persistence", () => {
-  it("binds state and encrypted PKCE material to the initiating user and consumes it once", async () => {
+  it("binds and consumes PKCE state for its owner only", async () => {
     const attempt = await createGitHubAuthorizationAttempt({
       ownerUserId: "alice",
       redirectUri: "https://blud.example/api/integrations/github/callback",
@@ -106,7 +114,7 @@ describe("GitHub OAuth persistence", () => {
     ).resolves.toBeNull();
   });
 
-  it("stores GitHub tokens encrypted and keeps connections isolated by owner", async () => {
+  it("encrypts GitHub tokens and isolates connections by owner", async () => {
     const connectionId = await saveGitHubConnection({
       ownerUserId: "alice",
       account: { id: 1234, login: "octocat", name: "The Octocat" },
@@ -155,7 +163,7 @@ describe("GitHub OAuth persistence", () => {
     ]);
   });
 
-  it("marks a consumed failed authorization attempt as failed for its owner only", async () => {
+  it("marks consumed failed attempts as failed only for their owner", async () => {
     const attempt = await createGitHubAuthorizationAttempt({
       ownerUserId: "alice",
       redirectUri: "https://blud.example/api/integrations/github/callback",
@@ -185,7 +193,8 @@ describe("GitHub OAuth persistence", () => {
       .from(schema.integrationAuthorizationAttempts);
     expect(failed?.status).toBe("failed");
   });
-  it("rotates expiring tokens once and persists the replacement pair encrypted", async () => {
+
+  it("rotates expiring tokens once and stores the new pair encrypted", async () => {
     const connectionId = await saveGitHubConnection({
       ownerUserId: "alice",
       account: { id: 1234, login: "octocat" },
@@ -303,7 +312,7 @@ describe("GitHub OAuth persistence", () => {
     }
   });
 
-  it("still disconnects locally when GitHub revocation cannot be confirmed", async () => {
+  it("disconnects locally when GitHub revocation cannot be confirmed", async () => {
     const connectionId = await saveGitHubConnection({
       ownerUserId: "alice",
       account: { id: 1234, login: "octocat" },
