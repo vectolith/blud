@@ -62,7 +62,7 @@ export async function storeIntegrationCredential(input: {
         iv: encrypted.iv,
         authTag: encrypted.authTag,
         keyVersion: encrypted.keyVersion,
-        expiresAt: input.expiresAt,
+        expiresAt: input.expiresAt ?? null,
       })
       .onConflictDoUpdate({
         target: [
