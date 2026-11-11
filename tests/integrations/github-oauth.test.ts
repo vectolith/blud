@@ -114,7 +114,7 @@ describe("GitHub OAuth persistence", () => {
     ).resolves.toBeNull();
   });
 
-  it("fails a consumed attempt when its encrypted PKCE verifier is corrupt", async () => {
+  it("fails consumed attempts on corrupt PKCE", async () => {
     const attempt = await createGitHubAuthorizationAttempt({
       ownerUserId: "alice",
       redirectUri: "https://blud.example/api/integrations/github/callback",
