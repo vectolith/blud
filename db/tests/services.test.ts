@@ -5,6 +5,11 @@ import { drizzle } from "drizzle-orm/pglite";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as Database from "@db";
 import * as schema from "../schema";
+import { createCredentialKeyring } from "../../integrations/credential-encryption";
+import {
+  encryptVaultSecret,
+  vaultSecretKeyVersion,
+} from "../../integrations/vault-encryption";
 import {
   browserTraceDomains as browserTraceDomainsTable,
   browserTraces as browserTracesTable,
@@ -15,11 +20,24 @@ const databases: PGlite[] = [];
 afterEach(async () => {
   vi.restoreAllMocks();
   vi.resetModules();
+  vi.unstubAllEnvs();
   await Promise.all(databases.splice(0).map((database) => database.close()));
 });
 
 describe("database services", () => {
   it("preserves workspace ownership across application domains", async () => {
+    vi.resetModules();
+    const oldEncryptionKey = Buffer.alloc(32, 1);
+    const activeEncryptionKey = Buffer.alloc(32, 2);
+    vi.stubEnv("BETTER_AUTH_SECRET", Buffer.alloc(32, 3).toString("base64"));
+    vi.stubEnv("SECRET_ENCRYPTION_KEY", activeEncryptionKey.toString("base64"));
+    vi.stubEnv("SECRET_ENCRYPTION_KEY_VERSION", "v2");
+    vi.stubEnv(
+      "SECRET_ENCRYPTION_KEYRING",
+      JSON.stringify({
+        "installation-v1": oldEncryptionKey.toString("base64"),
+      })
+    );
     const client = new PGlite();
     databases.push(client);
     await applyInitialMigration(client);
@@ -62,6 +80,36 @@ describe("database services", () => {
 
     await scope.ensureScope(alice);
     await scope.ensureScope(bob);
+
+    const legacyVaultSecretId = "vault-legacy-key-version";
+    const legacyVaultKeyring = createCredentialKeyring(
+      "installation-v1",
+      new Map([["installation-v1", oldEncryptionKey]])
+    );
+    const legacyVaultCiphertext = encryptVaultSecret(
+      alice,
+      legacyVaultSecretId,
+      "legacy vault secret",
+      legacyVaultKeyring
+    );
+    await pgliteDatabase.insert(schema.encryptedSecrets).values({
+      workspaceId: alice.workspaceId,
+      namespace: "vault",
+      id: legacyVaultSecretId,
+      encryptedValue: legacyVaultCiphertext,
+      updatedAt: new Date(),
+    });
+    await expect(vault.rewrapVaultSecrets(alice)).resolves.toBe(1);
+    await expect(
+      vault.readVaultSecret(alice, legacyVaultSecretId)
+    ).resolves.toBe("legacy vault secret");
+    const [rewrappedVaultSecret] = await pgliteDatabase
+      .select()
+      .from(schema.encryptedSecrets)
+      .where(eq(schema.encryptedSecrets.id, legacyVaultSecretId));
+    expect(
+      vaultSecretKeyVersion(rewrappedVaultSecret?.encryptedValue ?? "")
+    ).toBe("v2");
 
     const imageInput = {
       browserSessionId: "browser-alice",
