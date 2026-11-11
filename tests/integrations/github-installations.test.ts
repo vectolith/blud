@@ -7,8 +7,8 @@ import {
 
 function requestUrl(input: RequestInfo | URL): string {
   if (input instanceof URL) return input.href;
-  if (typeof input === "string") return input;
-  return input.url;
+  if (input instanceof Request) return input.url;
+  return input;
 }
 
 describe("GitHub App installation discovery", () => {
@@ -31,8 +31,7 @@ describe("GitHub App installation discovery", () => {
         },
         {
           headers: {
-            link:
-              '<https://api.github.com/user/installations?per_page=100&page=2>; rel="next"',
+            link: '<https://api.github.com/user/installations?per_page=100&page=2>; rel="next"',
           },
         }
       )
