@@ -10,6 +10,7 @@ import {
   createGitHubAuthorizationAttempt,
   failGitHubAuthorizationAttempt,
   getFreshGitHubAccessToken,
+  revokeGitHubConnection,
   saveGitHubConnection,
 } from "@db/services/integrations/github";
 import {
@@ -257,6 +258,81 @@ describe("GitHub OAuth persistence", () => {
         keyring,
       })
     ).resolves.toBeNull();
+  });
+
+  it("revokes the provider grant and removes local credentials", async () => {
+    const connectionId = await saveGitHubConnection({
+      ownerUserId: "alice",
+      account: { id: 1234, login: "octocat" },
+      token,
+      keyring,
+    });
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(null, { status: 204 })
+    );
+    vi.stubGlobal("fetch", fetcher);
+
+    try {
+      await expect(
+        revokeGitHubConnection({
+          ownerUserId: "alice",
+          connectionId,
+          keyring,
+          clientId: "client",
+          clientSecret: "secret",
+        })
+      ).resolves.toEqual({ found: true, remoteRevoked: true });
+
+      const [connection] = await database
+        .select()
+        .from(schema.integrationConnections);
+      expect(connection?.status).toBe("revoked");
+      expect(connection?.revokedAt).toBeInstanceOf(Date);
+      expect(
+        await database.select().from(schema.integrationCredentials)
+      ).toEqual([]);
+      const [revokeCall] = fetcher.mock.calls;
+      expect(revokeCall?.[1]?.method).toBe("DELETE");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("still disconnects locally when GitHub revocation cannot be confirmed", async () => {
+    const connectionId = await saveGitHubConnection({
+      ownerUserId: "alice",
+      account: { id: 1234, login: "octocat" },
+      token,
+      keyring,
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response("provider unavailable", { status: 503 })
+      )
+    );
+
+    try {
+      await expect(
+        revokeGitHubConnection({
+          ownerUserId: "alice",
+          connectionId,
+          keyring,
+          clientId: "client",
+          clientSecret: "secret",
+        })
+      ).resolves.toEqual({ found: true, remoteRevoked: false });
+
+      const [connection] = await database
+        .select()
+        .from(schema.integrationConnections);
+      expect(connection?.status).toBe("revoked");
+      expect(
+        await database.select().from(schema.integrationCredentials)
+      ).toEqual([]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
 });
