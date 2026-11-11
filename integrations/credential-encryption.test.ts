@@ -93,7 +93,9 @@ describe("integration credential encryption", () => {
   });
 
   it("rejects missing active keys and malformed key lengths", () => {
-    expect(() => createCredentialKeyring("missing", new Map())).toThrow(/active credential key version/);
+    expect(() => createCredentialKeyring("missing", new Map())).toThrow(
+      /active credential key version/
+    );
     expect(() =>
       createCredentialKeyring("v1", new Map([["v1", Buffer.alloc(16)]]))
     ).toThrow(/32-byte key/);
