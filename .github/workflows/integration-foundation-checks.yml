@@ -9,6 +9,7 @@ permissions:
   contents: read
 
 jobs:
+  # Temporary targeted validation; remove after this run.
   focused-checks:
     if: contains(github.event.head_commit.message, 'focused integration checks')
     runs-on: ubuntu-latest
