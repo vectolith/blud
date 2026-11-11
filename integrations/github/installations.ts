@@ -204,9 +204,9 @@ export async function listGitHubInstallationRepositories(input: {
       "GitHub installation identifier is invalid."
     );
   }
-  const url = new URL(
-    `https://api.github.com/user/installations/${input.installationId}/repositories`
-  );
+  const url = new URL("https://api.github.com");
+  url.pathname =
+    "/user/installations/" + input.installationId + "/repositories";
   url.searchParams.set("per_page", "100");
   url.searchParams.set("page", String(input.page));
 
