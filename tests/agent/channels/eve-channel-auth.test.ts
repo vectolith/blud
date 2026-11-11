@@ -53,6 +53,32 @@ describe("Eve channel authentication", () => {
     );
   });
 
+  it("authenticates phone-less browser users and scopes their Eve sessions", async () => {
+    getAuthSessionMock.mockResolvedValue(authSessionFor({ id: "email-user" }));
+    const route = eveChannel.routes.find(
+      (candidate) =>
+        candidate.transport !== "websocket" &&
+        candidate.method === "GET" &&
+        candidate.path === "/eve/v1/session/:sessionId/stream"
+    );
+    if (!route || route.transport === "websocket") {
+      throw new Error("The Eve session stream route is unavailable.");
+    }
+
+    const responsePromise = route.handler(
+      new Request("https://assistant.example/eve/v1/session/session-1/stream"),
+      unexpectedRouteContext()
+    );
+    await vi.runAllTimersAsync();
+    const response = await responsePromise;
+
+    expect(response.status).toBe(403);
+    expect(isSessionOwnedMock).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: "better-auth:email-user" }),
+      "session-1"
+    );
+  });
+
   it("checks hook-resume routes against the session named in the token", async () => {
     const route = findRoute("POST", "/eve/v1/callback/:token");
 
