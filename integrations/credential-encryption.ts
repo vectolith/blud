@@ -118,12 +118,6 @@ export function decryptCredential(
   keyring: CredentialKeyring,
   associatedData: string
 ): string {
-  if (encrypted.algorithm !== ALGORITHM) {
-    throw new CredentialEncryptionError(
-      "Unsupported credential encryption algorithm."
-    );
-  }
-
   const key = keyring.keys.get(encrypted.keyVersion);
   if (!key) {
     throw new CredentialEncryptionError(
