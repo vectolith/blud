@@ -46,6 +46,8 @@ jobs:
       - name: Database migration consistency
         id: dbcheck
         if: always()
+        env:
+          DATABASE_URL_UNPOOLED: postgresql://ci:ci@127.0.0.1:5432/blud
         run: pnpm db:check
 
       - name: TypeScript
