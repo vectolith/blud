@@ -1,24 +1,27 @@
-CREATE FUNCTION "cleanup_better_auth_user_workspaces"()
+CREATE OR REPLACE FUNCTION "cleanup_better_auth_user_workspaces"()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  removed_workspace_ids TEXT[];
 BEGIN
-  WITH removed_memberships AS (
-    DELETE FROM "workspace_memberships"
-    WHERE "user_id" = 'better-auth:' || OLD."id"
-    RETURNING "workspace_id"
-  )
-  DELETE FROM "workspaces" AS workspace
-  USING (
-    SELECT DISTINCT "workspace_id"
-    FROM removed_memberships
-  ) AS removed_workspace
-  WHERE workspace."id" = removed_workspace."workspace_id"
-    AND NOT EXISTS (
-      SELECT 1
-      FROM "workspace_memberships" AS membership
-      WHERE membership."workspace_id" = workspace."id"
-    );
+  SELECT array_agg(DISTINCT "workspace_id")
+  INTO removed_workspace_ids
+  FROM "workspace_memberships"
+  WHERE "user_id" = 'better-auth:' || OLD."id";
+
+  DELETE FROM "workspace_memberships"
+  WHERE "user_id" = 'better-auth:' || OLD."id";
+
+  IF removed_workspace_ids IS NOT NULL THEN
+    DELETE FROM "workspaces" AS workspace
+    WHERE workspace."id" = ANY(removed_workspace_ids)
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "workspace_memberships" AS membership
+        WHERE membership."workspace_id" = workspace."id"
+      );
+  END IF;
 
   RETURN OLD;
 END;
