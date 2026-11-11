@@ -5,6 +5,7 @@ import {
   fetchGitHubAccount,
   GitHubOAuthError,
   refreshGitHubUserAccessToken,
+  revokeGitHubGrant,
 } from "./oauth";
 
 describe("GitHub App OAuth client", () => {
@@ -158,4 +159,33 @@ describe("GitHub App OAuth client", () => {
       "GitHub returned an invalid account response."
     );
   });
+  it("revokes the complete GitHub App grant using server-side basic authentication", async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(null, { status: 204 })
+    );
+
+    await expect(
+      revokeGitHubGrant({
+        clientId: "client-id",
+        clientSecret: "client-secret",
+        accessToken: "ghu_access",
+        fetcher,
+      })
+    ).resolves.toBeUndefined();
+
+    const revokeCall = fetcher.mock.calls.at(0);
+    if (!revokeCall) throw new Error("Expected a GitHub revocation request.");
+    const [url, init] = revokeCall;
+    expect(url).toBe(
+      "https://api.github.com/applications/client-id/grant"
+    );
+    expect(init?.method).toBe("DELETE");
+    expect(new Headers(init?.headers).get("authorization")).toBe(
+      `Basic ${Buffer.from("client-id:client-secret").toString("base64")}`
+    );
+    expect(JSON.parse(String(init?.body))).toEqual({
+      access_token: "ghu_access",
+    });
+  });
+
 });
