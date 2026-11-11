@@ -119,8 +119,13 @@ export function listIntegrationActions(provider?: IntegrationProviderKey) {
   );
 }
 
+function isProviderEnabled(
+  provider: IntegrationProviderDefinition | undefined
+): boolean {
+  return provider?.status === "enabled";
+}
+
 export function isIntegrationActionAvailable(key: IntegrationActionKey) {
   const action = integrationActions[key];
-  const provider = getIntegrationProvider(action.provider);
-  return provider?.status === "enabled";
+  return isProviderEnabled(getIntegrationProvider(action.provider));
 }
