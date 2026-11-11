@@ -127,12 +127,17 @@ describe("database schema", () => {
   it("anchors workspace memberships to existing Better Auth users", () => {
     const foreignKeys = getTableConfig(workspaceMemberships).foreignKeys;
     const userForeignKey = foreignKeys.find(
-      (foreignKey) => foreignKey.getName() === "workspace_memberships_user_id_fkey"
+      (foreignKey) =>
+        foreignKey.getName() === "workspace_memberships_user_id_fkey"
     );
     const reference = userForeignKey?.reference();
 
-    expect(reference?.columns.map((column) => column.name)).toEqual(["user_id"]);
-    expect(reference?.foreignColumns.map((column) => column.name)).toEqual(["id"]);
+    expect(reference?.columns.map((column) => column.name)).toEqual([
+      "user_id",
+    ]);
+    expect(reference?.foreignColumns.map((column) => column.name)).toEqual([
+      "id",
+    ]);
     expect(reference?.foreignTable).toBe(user);
     expect(reference?.onDelete).toBe("cascade");
   });

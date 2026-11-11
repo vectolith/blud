@@ -153,12 +153,8 @@
           "name": "account_userId_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -245,12 +241,8 @@
           "name": "session_userId_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["userId"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -260,9 +252,7 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -338,16 +328,12 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "user_phoneNumber_unique": {
           "name": "user_phoneNumber_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "phoneNumber"
-          ]
+          "columns": ["phoneNumber"]
         }
       },
       "policies": {},
@@ -573,14 +559,8 @@
           "name": "browser_image_artifacts_membership_fkey",
           "tableFrom": "browser_image_artifacts",
           "tableTo": "workspace_memberships",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "user_id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_user_id"],
+          "columnsTo": ["workspace_id", "user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -689,14 +669,8 @@
           "name": "browser_sessions_membership_fkey",
           "tableFrom": "browser_sessions",
           "tableTo": "workspace_memberships",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "user_id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_user_id"],
+          "columnsTo": ["workspace_id", "user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -752,12 +726,8 @@
           "name": "browser_trace_domains_trace_fkey",
           "tableFrom": "browser_trace_domains",
           "tableTo": "browser_traces",
-          "columnsFrom": [
-            "trace_session_id"
-          ],
-          "columnsTo": [
-            "session_id"
-          ],
+          "columnsFrom": ["trace_session_id"],
+          "columnsTo": ["session_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -765,10 +735,7 @@
       "compositePrimaryKeys": {
         "browser_trace_domains_pkey": {
           "name": "browser_trace_domains_pkey",
-          "columns": [
-            "trace_session_id",
-            "domain"
-          ]
+          "columns": ["trace_session_id", "domain"]
         }
       },
       "uniqueConstraints": {},
@@ -845,12 +812,8 @@
           "name": "browser_trace_events_trace_fkey",
           "tableFrom": "browser_trace_events",
           "tableTo": "browser_traces",
-          "columnsFrom": [
-            "trace_session_id"
-          ],
-          "columnsTo": [
-            "session_id"
-          ],
+          "columnsFrom": ["trace_session_id"],
+          "columnsTo": ["session_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -948,14 +911,8 @@
           "name": "browser_traces_membership_fkey",
           "tableFrom": "browser_traces",
           "tableTo": "workspace_memberships",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "user_id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_user_id"],
+          "columnsTo": ["workspace_id", "user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1066,12 +1023,8 @@
           "name": "chats_workspace_id_fkey",
           "tableFrom": "chats",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1269,14 +1222,8 @@
           "name": "scheduled_agent_jobs_membership_fkey",
           "tableFrom": "scheduled_agent_jobs",
           "tableTo": "workspace_memberships",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "user_id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_user_id"],
+          "columnsTo": ["workspace_id", "user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1512,12 +1459,8 @@
           "name": "scheduled_agent_runs_job_id_scheduled_agent_jobs_id_fk",
           "tableFrom": "scheduled_agent_runs",
           "tableTo": "scheduled_agent_jobs",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1595,14 +1538,8 @@
           "name": "agent_sessions_membership_fkey",
           "tableFrom": "agent_sessions",
           "tableTo": "workspace_memberships",
-          "columnsFrom": [
-            "workspace_id",
-            "created_by_user_id"
-          ],
-          "columnsTo": [
-            "workspace_id",
-            "user_id"
-          ],
+          "columnsFrom": ["workspace_id", "created_by_user_id"],
+          "columnsTo": ["workspace_id", "user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1655,12 +1592,8 @@
           "name": "encrypted_secrets_workspace_id_fkey",
           "tableFrom": "encrypted_secrets",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1668,11 +1601,7 @@
       "compositePrimaryKeys": {
         "encrypted_secrets_pkey": {
           "name": "encrypted_secrets_pkey",
-          "columns": [
-            "workspace_id",
-            "namespace",
-            "id"
-          ]
+          "columns": ["workspace_id", "namespace", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -1762,12 +1691,8 @@
           "name": "vault_items_workspace_id_fkey",
           "tableFrom": "vault_items",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1812,12 +1737,8 @@
           "name": "settings_workspace_id_fkey",
           "tableFrom": "settings",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1825,10 +1746,7 @@
       "compositePrimaryKeys": {
         "settings_pkey": {
           "name": "settings_pkey",
-          "columns": [
-            "workspace_id",
-            "key"
-          ]
+          "columns": ["workspace_id", "key"]
         }
       },
       "uniqueConstraints": {},
@@ -1931,12 +1849,8 @@
           "name": "user_profiles_workspace_id_fkey",
           "tableFrom": "user_profiles",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1988,12 +1902,8 @@
           "name": "workspace_memberships_workspace_id_fkey",
           "tableFrom": "workspace_memberships",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2001,12 +1911,8 @@
           "name": "workspace_memberships_user_id_fkey",
           "tableFrom": "workspace_memberships",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2014,10 +1920,7 @@
       "compositePrimaryKeys": {
         "workspace_memberships_pkey": {
           "name": "workspace_memberships_pkey",
-          "columns": [
-            "workspace_id",
-            "user_id"
-          ]
+          "columns": ["workspace_id", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -2144,12 +2047,8 @@
           "name": "workstreams_workspace_id_workspaces_id_fk",
           "tableFrom": "workstreams",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2157,11 +2056,7 @@
       "compositePrimaryKeys": {
         "workstreams_workspace_id_scope_key_id_pk": {
           "name": "workstreams_workspace_id_scope_key_id_pk",
-          "columns": [
-            "workspace_id",
-            "scope_key",
-            "id"
-          ]
+          "columns": ["workspace_id", "scope_key", "id"]
         }
       },
       "uniqueConstraints": {},
@@ -2318,12 +2213,8 @@
           "name": "integration_connections_owner_user_fkey",
           "tableFrom": "integration_connections",
           "tableTo": "user",
-          "columnsFrom": [
-            "owner_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2470,14 +2361,8 @@
           "name": "integration_credentials_connection_owner_fkey",
           "tableFrom": "integration_credentials",
           "tableTo": "integration_connections",
-          "columnsFrom": [
-            "connection_id",
-            "owner_user_id"
-          ],
-          "columnsTo": [
-            "id",
-            "owner_user_id"
-          ],
+          "columnsFrom": ["connection_id", "owner_user_id"],
+          "columnsTo": ["id", "owner_user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2549,14 +2434,8 @@
           "name": "integration_connection_scopes_connection_owner_fkey",
           "tableFrom": "integration_connection_scopes",
           "tableTo": "integration_connections",
-          "columnsFrom": [
-            "connection_id",
-            "owner_user_id"
-          ],
-          "columnsTo": [
-            "id",
-            "owner_user_id"
-          ],
+          "columnsFrom": ["connection_id", "owner_user_id"],
+          "columnsTo": ["id", "owner_user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2564,10 +2443,7 @@
       "compositePrimaryKeys": {
         "integration_connection_scopes_pkey": {
           "name": "integration_connection_scopes_pkey",
-          "columns": [
-            "connection_id",
-            "scope"
-          ]
+          "columns": ["connection_id", "scope"]
         }
       },
       "uniqueConstraints": {},
@@ -2647,14 +2523,8 @@
           "name": "integration_action_grants_connection_owner_fkey",
           "tableFrom": "integration_action_grants",
           "tableTo": "integration_connections",
-          "columnsFrom": [
-            "connection_id",
-            "owner_user_id"
-          ],
-          "columnsTo": [
-            "id",
-            "owner_user_id"
-          ],
+          "columnsFrom": ["connection_id", "owner_user_id"],
+          "columnsTo": ["id", "owner_user_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2662,12 +2532,8 @@
           "name": "integration_action_grants_grantor_user_fkey",
           "tableFrom": "integration_action_grants",
           "tableTo": "user",
-          "columnsFrom": [
-            "granted_by_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["granted_by_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2675,10 +2541,7 @@
       "compositePrimaryKeys": {
         "integration_action_grants_pkey": {
           "name": "integration_action_grants_pkey",
-          "columns": [
-            "connection_id",
-            "action_key"
-          ]
+          "columns": ["connection_id", "action_key"]
         }
       },
       "uniqueConstraints": {},
@@ -2844,12 +2707,8 @@
           "name": "integration_authorization_attempts_owner_user_fkey",
           "tableFrom": "integration_authorization_attempts",
           "tableTo": "user",
-          "columnsFrom": [
-            "owner_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

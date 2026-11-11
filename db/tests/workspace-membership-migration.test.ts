@@ -91,7 +91,10 @@ async function createLegacyWorkspaceSchema(database: PGlite) {
 
 async function applyMigration(database: PGlite) {
   const migration = await readFile(
-    new URL("../migrations/0016_workspace_membership_user_fk.sql", import.meta.url),
+    new URL(
+      "../migrations/0016_workspace_membership_user_fk.sql",
+      import.meta.url
+    ),
     "utf8"
   );
   /* oxlint-disable eslint/no-await-in-loop -- migration statements must remain ordered. */
