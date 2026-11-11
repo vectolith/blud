@@ -21,6 +21,11 @@ export async function getIntegrationCredentialKeyring() {
       Buffer.from(secretEncryptionKey, "base64")
     );
   } else {
+    if (!env.SECRET_ENCRYPTION_KEY) {
+      throw new Error(
+        "A non-legacy encryption key version requires an explicitly configured active SECRET_ENCRYPTION_KEY."
+      );
+    }
     if (!keys.has(legacyKeyVersion)) {
       throw new Error(
         "Encryption key rotation requires retaining the installation-v1 key until all legacy ciphertext has been rewrapped."
