@@ -1,6 +1,6 @@
 # Consumer Platform Migration Plan
 
-**Status:** Architecture baseline; implementation has not started.
+**Status:** Architecture baseline complete; provider-independent session milestone implemented. Consumer sign-in UI and provider setup remain pending.
 **Target:** A consumer-facing Blud product with managed AI access, account-based sign-in, first-party service authorization, and an optional self-hosted edition.
 **Branch:** `architecture/consumer-platform-foundation`
 
@@ -18,7 +18,7 @@ The current Better Auth configuration:
 - Enables verified phone-number authentication.
 - Disables email sign-in, email sign-up, and social sign-in routes.
 - Uses Linq through Vercel Connect to deliver phone OTPs.
-- Requires an authenticated session to contain a verified phone number; `db/services/auth/session.ts` currently encodes that assumption.
+- The original session helper required a verified phone number. The first runtime milestone now accepts authenticated sessions by stable user ID; phone verification remains specific to phone-dependent channels.
 
 The current deployment is materially Vercel-coupled:
 - `vercel.json` routes scheduled-run endpoints to the Eve service.
@@ -59,7 +59,7 @@ The application must depend on internal interfaces rather than Vercel-specific S
 
 - Keep Better Auth and its existing database tables unless a tested migration demonstrates a concrete need to change them.
 - Add Apple and Google social providers and an email sign-in path using server-side credentials. Do not enable an OAuth provider until its callback URLs, credentials, account-linking rules, and verification behavior are configured and tested.
-- Replace the phone-only session schema with a canonical authenticated-user schema. Phone number and verification status become optional profile/authentication attributes rather than universal session prerequisites.
+- [x] Replace the phone-only session schema with a canonical authenticated-user schema. Phone number and verification status are no longer universal session prerequisites.
 - Preserve existing phone-auth users and sessions where possible. Design and test a migration path before changing the session contract.
 - Establish explicit account-linking rules to prevent account takeover through unverified email addresses or conflicting provider identities.
 - Require verified email or provider-verified identity before enabling recovery and sensitive account changes.
