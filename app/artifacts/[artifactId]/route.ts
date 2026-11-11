@@ -9,13 +9,10 @@ export const runtime = "nodejs";
 
 export async function GET(
   request: Request,
-  context: {
-    params: Promise<{ artifactId: string }>;
-  }
+  context: RouteContext<"/artifacts/[artifactId]">
 ) {
   const session = await getAuthSession(request.headers);
-  const { artifactId } = await context.params;
-  const parsedId = z.uuid().safeParse(artifactId);
+  const parsedId = z.uuid().safeParse((await context.params).artifactId);
   if (!session || !parsedId.success) return notFound();
 
   const scope = accessScopeForUser(`better-auth:${session.user.id}`);
@@ -82,8 +79,6 @@ function privateImageHeaders() {
 }
 
 function contentDisposition(filename: string) {
-  const ascii = filename
-    .replace(/[^\x20-\x7e]/gu, "_")
-    .replace(/["\\]/gu, "_");
+  const ascii = filename.replace(/[^\x20-\x7e]/gu, "_").replace(/["\\]/gu, "_");
   return `inline; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
 }
