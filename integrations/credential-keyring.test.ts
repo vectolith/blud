@@ -5,7 +5,7 @@ import {
   type CredentialKeyring,
 } from "./credential-encryption";
 
-type MockInstallationSecrets = {
+interface MockInstallationSecrets {
   betterAuthSecret: string;
   secretEncryptionKey: string;
   version: 1;
