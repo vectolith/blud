@@ -418,7 +418,10 @@ The current GitHub authorization foundation implements:
 3. PKCE S256 with the verifier encrypted at rest and bound to the owner and
    attempt ID.
 4. GitHub App user authorization using `offline_access`, the exact configured
-   callback URI, and the server-side client secret.
+   callback URI, and the server-side client secret. For GitHub Apps this scope
+   requests expiring tokens and refresh capability; it does not grant API
+   permissions. GitHub App permissions are configured on the app and access to
+   repositories is constrained by the user's access and the app's installation.
 5. An owner-bound, atomic, single-use callback that validates the current Blud
    session, consumes state once, exchanges the code, and verifies the durable
    GitHub numeric user ID through `GET /user`.
