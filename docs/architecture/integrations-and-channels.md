@@ -1,7 +1,6 @@
 # Integration and Channel Authorization Architecture
 
-**Status:** Proposed architecture decision; no runtime schema or authorization
-changes are included in this document.
+**Status:** Architecture decision with personal integration persistence and the GitHub App authorization foundation implemented. Provider action execution remains disabled.
 **Scope:** Consumer Blud accounts, connected external services, and interaction
 channels.
 **Depends on:** `consumer-platform-migration.md`
@@ -392,3 +391,56 @@ active. Reads join against the connection and repeat the owner and active-state
 checks before decrypting. Upserts replace the encrypted payload and key version
 atomically; deletion is scoped by owner, connection, and credential type. The
 repository never returns ciphertext records to its callers.
+
+## Implemented personal integration foundation
+
+The consumer-platform branch now includes the personal integration persistence
+schema and server-side credential boundary:
+
+- `integration_connections`, `integration_credentials`,
+  `integration_connection_scopes`, `integration_action_grants`, and
+  `integration_authorization_attempts` are represented in Drizzle and
+  migration `0015_personal_integrations.sql`.
+- Composite owner/connection foreign keys prevent credentials, scopes, and
+  action grants from being attached to a connection owned by another user.
+- Credentials and PKCE verifiers use AES-256-GCM with versioned keys and
+  owner-bound associated data.
+- Personal connections are not shared through workspace or channel membership.
+- OAuth consent does not automatically create Blud action grants. Write actions
+  remain unavailable until a separate owner-granted action policy is enforced.
+
+### GitHub App user authorization
+
+The current GitHub authorization foundation implements:
+
+1. Authenticated `POST /api/integrations/github/authorize`, protected by an
+   exact same-origin check.
+2. A ten-minute owner-bound state record. Only a SHA-256 state hash is stored.
+3. PKCE S256 with the verifier encrypted at rest and bound to the owner and
+   attempt ID.
+4. GitHub App user authorization using `offline_access`, the exact configured
+   callback URI, and the server-side client secret.
+5. An owner-bound, atomic, single-use callback that validates the current Blud
+   session, consumes state once, exchanges the code, and verifies the durable
+   GitHub numeric user ID through `GET /user`.
+6. Encrypted access/refresh token storage. Refresh rotation is serialized with a
+   database row lock because GitHub invalidates a refresh token after use.
+7. Authenticated `DELETE /api/integrations/github/{connectionId}`. Blud removes
+   the local credential even if remote revocation cannot be confirmed; the
+   response distinguishes local disconnection from confirmed GitHub grant
+   revocation.
+
+The callback returns a minimal JSON result because the current application is
+headless and does not contain a settings UI. It never returns provider tokens.
+
+Configure `GITHUB_APP_CLIENT_ID` and `GITHUB_APP_CLIENT_SECRET` as protected
+server-side environment variables. Register the exact callback URL
+`https://<application-origin>/api/integrations/github/callback` in the GitHub
+App settings. The credentials are forwarded only to the application runtime
+tasks by Turbo.
+
+**Important:** GitHub remains `planned` in the provider registry. The OAuth
+identity and token lifecycle are not yet a complete GitHub action integration.
+Repository discovery/installation access, action-level authorization checks,
+provider adapters, audit events, and end-to-end live-provider verification are
+still required before enabling GitHub actions.
