@@ -137,6 +137,7 @@ imports its SDK directly.
 
 - Extend Better Auth for Apple, Google, and email authentication.
 - [x] Make the session contract independent of phone-number presence.
+- [x] Keep phone verification specific to phone-dependent channels.
 - Add account linking, verification, recovery, rate limits, and session
   management.
 - Add migration tests proving existing phone-auth accounts remain accessible.
