@@ -90,7 +90,7 @@ describe("GitHub App installation discovery", () => {
     await expect(
       listGitHubInstallationRepositories({
         accessToken: "ghu_user-token",
-        installationId: 987,
+        installationId: "987",
         page: 3,
         fetcher,
       })
