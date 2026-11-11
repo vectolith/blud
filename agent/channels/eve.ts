@@ -33,7 +33,7 @@ const authenticate: Parameters<typeof routeAuth>[1] = [
     return {
       attributes: {
         conversationChannel: "eve",
-        phoneNumber,
+        ...(phoneNumber ? { phoneNumber } : {}),
         workspaceId: scope.workspaceId,
       },
       authenticator: "authjs",
@@ -193,10 +193,9 @@ async function requestIdentityFromRequest(request: Request) {
   const session = await getAuthSession(request.headers);
   if (!session) return undefined;
   const phoneNumber = z.string().safeParse(session.user.phoneNumber);
-  if (!phoneNumber.success) return undefined;
 
   return {
-    phoneNumber: phoneNumber.data,
+    phoneNumber: phoneNumber.success ? phoneNumber.data : undefined,
     scope: accessScopeForUser(`better-auth:${session.user.id}`),
   };
 }
