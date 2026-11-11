@@ -6,10 +6,11 @@ on:
       - architecture/consumer-platform-foundation
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   format:
+    if: github.event.head_commit.message != 'style: apply oxfmt to auth migration files'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +19,13 @@ jobs:
           node-version: 24
       - run: corepack enable && corepack prepare pnpm@11.24.0 --activate
       - run: pnpm install --frozen-lockfile
-      - name: Print exact formatter changes
+      - name: Apply repository formatter
         run: |
           pnpm exec oxfmt docs/architecture/consumer-platform-migration.md tests/internal/browser-worker.test.ts
-          git diff -- docs/architecture/consumer-platform-migration.md tests/internal/browser-worker.test.ts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/architecture/consumer-platform-migration.md tests/internal/browser-worker.test.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "style: apply oxfmt to auth migration files"
+            git push
+          fi
