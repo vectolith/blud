@@ -30,6 +30,10 @@ export default {
     "eslint-plugin-react-hooks",
     "eslint-plugin-turbo",
     "oxlint-tailwindcss",
+    // Retained by web/trpc/client.tsx; the headless app does not mount web UI.
+    "@tanstack/react-query",
+    "@trpc/client",
+    "@trpc/react-query",
     // Invoked as a CLI.
     "vercel",
   ],
