@@ -5,11 +5,22 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   check:
-    name: Lint, Typecheck & Unit Tests
+    name: Lint, typecheck, tests & production build
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/blud
+      BETTER_AUTH_SECRET: ci-only-auth-secret-not-used-for-real-authentication
+      BETTER_AUTH_URL: https://blud-ci.invalid
+      BLUD_INTERNAL_KEY: ci-only-internal-key-not-used-for-real-authentication
+      KERNEL_API_KEY: ci-only-kernel-key-not-used-for-real-browser-execution
+      SECRET_ENCRYPTION_KEY: AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,5 +39,65 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run full check suite (oxlint, typecheck, vitest, oxfmt, knip)
-        run: pnpm check
+      - name: Generate Next.js route types
+        id: typegen
+        run: pnpm types:generate
+        continue-on-error: true
+
+      - name: TypeScript
+        id: typecheck
+        if: always()
+        run: pnpm types:check:app
+        continue-on-error: true
+
+      - name: Oxlint
+        id: lint
+        if: always()
+        run: pnpm lint:app
+        continue-on-error: true
+
+      - name: Unit tests
+        id: tests
+        if: always()
+        run: pnpm test:app
+        continue-on-error: true
+
+      - name: Formatting
+        id: formatting
+        if: always()
+        run: pnpm format:check
+        continue-on-error: true
+
+      - name: Knip
+        id: knip
+        if: always()
+        run: pnpm knip
+        continue-on-error: true
+
+      - name: Production build
+        id: build
+        if: always()
+        run: pnpm build:app
+        continue-on-error: true
+
+      - name: Fail if any verification stage failed
+        if: always()
+        env:
+          TYPEGEN_OUTCOME: ${{ steps.typegen.outcome }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          LINT_OUTCOME: ${{ steps.lint.outcome }}
+          TESTS_OUTCOME: ${{ steps.tests.outcome }}
+          FORMATTING_OUTCOME: ${{ steps.formatting.outcome }}
+          KNIP_OUTCOME: ${{ steps.knip.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+        run: |
+          failed=0
+          for result in "$TYPEGEN_OUTCOME" "$TYPECHECK_OUTCOME" "$LINT_OUTCOME" "$TESTS_OUTCOME" "$FORMATTING_OUTCOME" "$KNIP_OUTCOME" "$BUILD_OUTCOME"; do
+            if [ "$result" != "success" ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more verification stages failed."
+            exit 1
+          fi
