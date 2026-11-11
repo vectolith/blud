@@ -5,8 +5,14 @@ import {
   type CredentialKeyring,
 } from "./credential-encryption";
 
+type MockInstallationSecrets = {
+  betterAuthSecret: string;
+  secretEncryptionKey: string;
+  version: 1;
+};
+
 const mocks = vi.hoisted(() => ({
-  getInstallationSecrets: vi.fn(),
+  getInstallationSecrets: vi.fn<() => Promise<MockInstallationSecrets>>(),
 }));
 
 vi.mock("@db/services/installation-secrets", () => ({
