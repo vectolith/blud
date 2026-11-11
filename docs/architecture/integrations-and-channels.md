@@ -403,8 +403,10 @@ schema and server-side credential boundary:
   migration `0015_personal_integrations.sql`.
 - Composite owner/connection foreign keys prevent credentials, scopes, and
   action grants from being attached to a connection owned by another user.
-- Credentials and PKCE verifiers use AES-256-GCM with versioned keys and
-  owner-bound associated data.
+- Credentials and PKCE verifiers use AES-256-GCM with a persisted key version
+  and owner-bound associated data. The current runtime loads one active key
+  from installation secrets; multi-key rotation/rewrapping is still a release
+  hardening task.
 - Personal connections are not shared through workspace or channel membership.
 - OAuth consent does not automatically create Blud action grants. Write actions
   remain unavailable until a separate owner-granted action policy is enforced.
