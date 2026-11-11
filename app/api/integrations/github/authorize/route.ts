@@ -1,13 +1,7 @@
 import { getAuthSession } from "@db/services/auth/session";
-import {
-  createGitHubAuthorizationAttempt,
-} from "@db/services/integrations/github";
-import {
-  getIntegrationCredentialKeyring,
-} from "../../../../../integrations/credential-keyring";
-import {
-  buildGitHubAuthorizationUrl,
-} from "../../../../../integrations/github/oauth";
+import { createGitHubAuthorizationAttempt } from "@db/services/integrations/github";
+import { getIntegrationCredentialKeyring } from "../../../../../integrations/credential-keyring";
+import { buildGitHubAuthorizationUrl } from "../../../../../integrations/github/oauth";
 import { env } from "@shared/environment";
 import { applicationOrigin } from "@shared/environment/origin";
 
