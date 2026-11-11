@@ -9,6 +9,7 @@ import {
   consumeGitHubAuthorizationAttempt,
   createGitHubAuthorizationAttempt,
   failGitHubAuthorizationAttempt,
+  getFreshGitHubAccessToken,
   saveGitHubConnection,
 } from "@db/services/integrations/github";
 import {
