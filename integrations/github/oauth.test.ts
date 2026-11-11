@@ -121,6 +121,21 @@ describe("GitHub App OAuth client", () => {
       })
     ).rejects.toThrow(GitHubOAuthError);
 
+    const expiredRefresh = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        error: "bad_refresh_token",
+        error_description: "private provider detail",
+      })
+    );
+    await expect(
+      refreshGitHubUserAccessToken({
+        clientId: "client",
+        clientSecret: "secret",
+        refreshToken: "expired-refresh",
+        fetcher: expiredRefresh,
+      })
+    ).rejects.toMatchObject({ reauthorizationRequired: true });
+
     const rejected = vi.fn<typeof fetch>().mockResolvedValue(
       new Response("access_token=provider-secret", { status: 401 })
     );
