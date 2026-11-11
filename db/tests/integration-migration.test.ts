@@ -13,7 +13,7 @@ describe("personal integration migration", () => {
     const database = new PGlite();
     databases.push(database);
     await database.exec(legacyAuthSchema);
-    await database.exec(\`
+    await database.exec(`
       INSERT INTO "user" (id, name, email, "createdAt", "updatedAt")
       VALUES
         ('owner-a', 'Owner A', 'owner-a@example.com', now(), now()),
@@ -28,10 +28,10 @@ describe("personal integration migration", () => {
       ) VALUES (
         'session-a', now() + interval '1 day', 'session-token-a', now(), now(), 'owner-a'
       );
-    \`);
+    `);
     await applyMigration(database);
 
-    await database.exec(\`
+    await database.exec(`
       INSERT INTO integration_connections (
         id, owner_user_id, provider_key, provider_account_id, display_name
       ) VALUES ('connection-a', 'owner-a', 'github', 'github-account-1', 'Personal GitHub');
@@ -55,16 +55,16 @@ describe("personal integration migration", () => {
         'pkce-ciphertext', 'pkce-iv', 'pkce-tag', 'v1',
         'https://blud.example/api/integrations/github/callback', now() + interval '5 minutes'
       );
-    \`);
+    `);
 
-    const authRows = await database.query(\`
+    const authRows = await database.query(`
       SELECT
         (SELECT count(*)::int FROM "user") AS users,
         (SELECT count(*)::int FROM "account") AS accounts,
         (SELECT count(*)::int FROM "session") AS sessions,
         (SELECT id FROM "user" WHERE id = 'owner-a') AS owner_id,
         (SELECT id FROM "session" WHERE id = 'session-a') AS session_id
-    \`);
+    `);
     expect(authRows.rows[0]).toMatchObject({
       users: 2,
       accounts: 1,
@@ -74,7 +74,7 @@ describe("personal integration migration", () => {
     });
 
     await expect(
-      database.exec(\`
+      database.exec(`
         INSERT INTO integration_credentials (
           id, connection_id, owner_user_id, credential_type,
           ciphertext, iv, auth_tag, key_version
@@ -82,34 +82,34 @@ describe("personal integration migration", () => {
           'credential-cross-owner', 'connection-a', 'owner-b', 'oauth_tokens',
           'ciphertext', 'iv', 'tag', 'v1'
         )
-      \`)
+      `)
     ).rejects.toThrow(/foreign key constraint/);
 
     await expect(
-      database.exec(\`
+      database.exec(`
         INSERT INTO integration_action_grants (
           connection_id, owner_user_id, action_key, granted_by_user_id
         ) VALUES ('connection-a', 'owner-a', 'github.issue.create', 'owner-b')
-      \`)
+      `)
     ).rejects.toThrow(/check constraint/);
 
     await expect(
-      database.exec(\`
+      database.exec(`
         INSERT INTO integration_connections (
           id, owner_user_id, provider_key, provider_account_id
         ) VALUES ('connection-orphan', 'missing-user', 'github', 'orphan')
-      \`)
+      `)
     ).rejects.toThrow(/foreign key constraint/);
 
-    await database.exec(\`DELETE FROM "user" WHERE id = 'owner-a'\`);
-    const remaining = await database.query(\`
+    await database.exec(`DELETE FROM "user" WHERE id = 'owner-a'`);
+    const remaining = await database.query(`
       SELECT
         (SELECT count(*)::int FROM integration_connections) AS connections,
         (SELECT count(*)::int FROM integration_credentials) AS credentials,
         (SELECT count(*)::int FROM integration_connection_scopes) AS scopes,
         (SELECT count(*)::int FROM integration_action_grants) AS grants,
         (SELECT count(*)::int FROM integration_authorization_attempts) AS attempts
-    \`);
+    `);
     expect(remaining.rows[0]).toEqual({
       connections: 0,
       credentials: 0,
@@ -132,7 +132,7 @@ async function applyMigration(database: PGlite) {
   /* oxlint-enable eslint/no-await-in-loop */
 }
 
-const legacyAuthSchema = \`
+const legacyAuthSchema = `
   CREATE TABLE "user" (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -176,4 +176,4 @@ const legacyAuthSchema = \`
     "createdAt" TIMESTAMPTZ DEFAULT now() NOT NULL,
     "updatedAt" TIMESTAMPTZ DEFAULT now() NOT NULL
   );
-\`;
+`;
