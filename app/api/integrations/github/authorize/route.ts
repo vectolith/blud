@@ -46,10 +46,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const redirectUri = new URL(
-      "/api/integrations/github/callback",
-      appOrigin
-    ).href;
+    const redirectUri = new URL("/api/integrations/github/callback", appOrigin)
+      .href;
     const keyring = await getIntegrationCredentialKeyring();
     const attempt = await createGitHubAuthorizationAttempt({
       ownerUserId: session.user.id,
