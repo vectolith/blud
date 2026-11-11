@@ -159,3 +159,41 @@ export async function fetchGitHubAccount(
   }
   return parsed.data;
 }
+
+export async function revokeGitHubGrant(input: {
+  clientId: string;
+  clientSecret: string;
+  accessToken: string;
+  fetcher?: typeof fetch;
+}): Promise<void> {
+  let response: Response;
+  try {
+    response = await (input.fetcher ?? fetch)(
+      `https://api.github.com/applications/${encodeURIComponent(input.clientId)}/grant`,
+      {
+        method: "DELETE",
+        headers: {
+          accept: "application/vnd.github+json",
+          authorization: `Basic ${Buffer.from(
+            `${input.clientId}:${input.clientSecret}`
+          ).toString("base64")}`,
+          "content-type": "application/json",
+          "x-github-api-version": "2026-03-10",
+        },
+        body: JSON.stringify({ access_token: input.accessToken }),
+        cache: "no-store",
+        redirect: "error",
+        signal: AbortSignal.timeout(15_000),
+      }
+    );
+  } catch {
+    throw new GitHubOAuthError("GitHub revocation service is unavailable.");
+  }
+
+  if (response.status !== 204) {
+    throw new GitHubOAuthError(
+      "GitHub did not confirm grant revocation.",
+      response.status === 404 || response.status === 401
+    );
+  }
+}
