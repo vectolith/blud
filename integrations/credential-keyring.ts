@@ -1,5 +1,5 @@
 import { getInstallationSecrets } from "@db/services/installation-secrets";
-import { createCredentialKeyring } from "@integrations/credential-encryption";
+import { createCredentialKeyring } from "./credential-encryption";
 
 const installationKeyVersion = "installation-v1";
 
