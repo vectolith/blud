@@ -335,3 +335,47 @@ writes, provider filtering, and the fail-closed availability state. The next
 implementation step is the persistence model and encrypted credential
 boundary. Provider activation must wait until an adapter and its complete
 OAuth, refresh, execution, and revocation tests are in place.
+
+## Personal integration persistence implementation
+
+The personal-only persistence migration is implemented in
+`db/migrations/0015_personal_integrations.sql`, with Drizzle definitions in
+`db/schema/integrations.ts`. It adds five tables:
+
+- `integration_connections`: user-owned provider account and lifecycle state.
+- `integration_credentials`: AES-256-GCM ciphertext, nonce, authentication tag,
+  algorithm, credential type, and key version.
+- `integration_connection_scopes`: provider scopes attached to the same
+  connection owner.
+- `integration_action_grants`: allow/deny decisions tied to the connection
+  owner; the initial schema requires the owner to be the grantor.
+- `integration_authorization_attempts`: owner-bound, one-time state hash,
+  encrypted PKCE verifier, redirect URI, status, and expiry.
+
+The connection owner is a foreign key to the existing Better Auth `user.id`.
+Child records use composite foreign keys to `(connection_id, owner_user_id)`,
+so a credential, scope, or action grant cannot be attached to a connection
+under a different user ID. Deleting a Blud user cascades through their personal
+connections and authorization records. No Better Auth identity, account, or
+session table is altered by this migration.
+
+Credential encryption is implemented in
+`integrations/credential-encryption.ts` using Node's AES-256-GCM. Ciphertext
+records persist the key version. The keyring accepts an active version plus
+older decryption keys, allowing gradual rotation: new ciphertext uses the
+active version while older records remain decryptable. Associated data binds
+ciphertext to the Blud owner, connection, and credential type; authorization
+attempt PKCE material has a separate owner/attempt binding. Key material is
+injected into the encryption boundary and must come from a production secret
+manager or equivalent protected runtime configuration. Do not use the
+development fallback key in a deployed environment.
+
+This milestone does not yet add OAuth routes, provider adapters, credential
+refresh jobs, or an application repository/service that reads and writes these
+tables. Provider execution remains disabled until those layers enforce
+ownership, provider scopes, action grants, and approval at runtime.
+
+Migration and encryption tests cover owner isolation, foreign-key rejection,
+grantor ownership, cascade deletion, preservation of Better Auth user/account/
+session rows, authenticated encryption, tamper detection, associated-data
+binding, and key-version rotation.
