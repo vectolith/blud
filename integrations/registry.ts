@@ -89,9 +89,7 @@ export const integrationActions = {
     provider: "google_workspace",
     description: "Send an email message.",
     risk: "write",
-    requiredProviderPermissions: [
-      "https://www.googleapis.com/auth/gmail.send",
-    ],
+    requiredProviderPermissions: ["https://www.googleapis.com/auth/gmail.send"],
     approval: "required",
   },
 } as const satisfies Record<string, IntegrationActionDefinition>;
