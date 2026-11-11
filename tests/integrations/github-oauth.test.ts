@@ -163,7 +163,9 @@ describe("GitHub OAuth persistence", () => {
     ]);
   });
 
-  it("marks consumed failed attempts as failed only for their owner", async () => {
+  it(
+    "marks consumed failed attempts as failed only for their owner",
+    async () => {
     const attempt = await createGitHubAuthorizationAttempt({
       ownerUserId: "alice",
       redirectUri: "https://blud.example/api/integrations/github/callback",
@@ -194,7 +196,9 @@ describe("GitHub OAuth persistence", () => {
     expect(failed?.status).toBe("failed");
   });
 
-  it("rotates expiring tokens once and stores the new pair encrypted", async () => {
+  it(
+    "rotates expiring tokens once and stores the new pair encrypted",
+    async () => {
     const connectionId = await saveGitHubConnection({
       ownerUserId: "alice",
       account: { id: 1234, login: "octocat" },
@@ -312,7 +316,9 @@ describe("GitHub OAuth persistence", () => {
     }
   });
 
-  it("disconnects locally when GitHub revocation cannot be confirmed", async () => {
+  it(
+    "disconnects locally when GitHub revocation cannot be confirmed",
+    async () => {
     const connectionId = await saveGitHubConnection({
       ownerUserId: "alice",
       account: { id: 1234, login: "octocat" },
