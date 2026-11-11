@@ -109,9 +109,9 @@ describe("GitHub App OAuth client", () => {
   });
 
   it("rejects malformed token responses without leaking secrets", async () => {
-    const malformed = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({ access_token: "partial-secret" })
-    );
+    const malformed = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ access_token: "partial-secret" }));
     await expect(
       refreshGitHubUserAccessToken({
         clientId: "client",
@@ -136,9 +136,11 @@ describe("GitHub App OAuth client", () => {
       })
     ).rejects.toMatchObject({ reauthorizationRequired: true });
 
-    const rejected = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response("access_token=provider-secret", { status: 401 })
-    );
+    const rejected = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response("access_token=provider-secret", { status: 401 })
+      );
     await expect(
       exchangeGitHubAuthorizationCode({
         clientId: "client",
@@ -152,9 +154,11 @@ describe("GitHub App OAuth client", () => {
   });
 
   it("validates the GitHub account using its access token", async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({ id: 1234, login: "octocat", name: "The Octocat" })
-    );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        Response.json({ id: 1234, login: "octocat", name: "The Octocat" })
+      );
 
     await expect(fetchGitHubAccount("ghu_access", fetcher)).resolves.toEqual({
       id: 1234,
@@ -173,18 +177,18 @@ describe("GitHub App OAuth client", () => {
   });
 
   it("rejects an unverified or malformed account response", async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({ id: "not-an-id", login: "octocat" })
-    );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ id: "not-an-id", login: "octocat" }));
     await expect(fetchGitHubAccount("ghu_access", fetcher)).rejects.toThrow(
       "GitHub returned an invalid account response."
     );
   });
 
   it("revokes GitHub grants with server-side authentication", async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(null, { status: 204 })
-    );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 204 }));
 
     await expect(
       revokeGitHubGrant({
