@@ -19,6 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      # Focused migration, encryption, and registry tests.
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vitest run db/tests/integration-migration.test.ts integrations/credential-encryption.test.ts integrations/registry.test.ts
