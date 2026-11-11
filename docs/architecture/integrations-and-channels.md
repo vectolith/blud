@@ -86,7 +86,7 @@ created through those providers.
 | `channel_identities`            | Mapping from an external channel identity to a Blud user      | Installation                    |
 | `audit_events`                  | Security-relevant authorization and execution history         | User/workspace context          |
 
-The names above are proposed table names, not existing schema objects.
+The personal integration tables in this model are implemented in Drizzle and migration `0015_personal_integrations.sql`. Channel installation, channel identity, and audit-event tables remain proposed and are not implemented.
 
 ### Integration connection fields
 
@@ -193,8 +193,7 @@ reference. It should not receive raw tokens or arbitrary database access.
 
 ## API contracts
 
-The following are proposed application contracts. They are not implemented
-routes.
+The following contracts are a mixture of implemented and proposed routes. The GitHub authorization, callback, and disconnect routes listed below are implemented; catalog, connection listing, and other provider routes remain proposed.
 
 ### Integration catalog and connections
 
@@ -318,8 +317,7 @@ Before enabling a provider in the consumer product, cover:
 - OAuth secrets remain server-side and encrypted at rest.
 - The tests above are mapped to implementation tests before runtime rollout.
 
-No integration schema, OAuth route, provider adapter, or channel mapping table
-is claimed to exist as a result of this document.
+The implementation status below identifies the integration schema and GitHub OAuth routes that now exist. Provider action adapters and channel mapping tables remain unimplemented.
 
 ## Implementation status
 
@@ -369,10 +367,7 @@ injected into the encryption boundary and must come from a production secret
 manager or equivalent protected runtime configuration. Do not use the
 development fallback key in a deployed environment.
 
-This milestone does not yet add OAuth routes, provider adapters, credential
-refresh jobs, or an application repository/service that reads and writes these
-tables. Provider execution remains disabled until those layers enforce
-ownership, provider scopes, action grants, and approval at runtime.
+The persistence milestone was followed by a GitHub OAuth lifecycle implementation. The OAuth routes and owner-scoped credential repository now exist. Provider action adapters and runtime enforcement of provider permissions, Blud action grants, and approvals remain incomplete; GitHub stays disabled in the registry.
 
 Migration and encryption tests cover owner isolation, foreign-key rejection,
 grantor ownership, cascade deletion, preservation of Better Auth user/account/
