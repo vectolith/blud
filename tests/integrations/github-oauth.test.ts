@@ -45,7 +45,7 @@ beforeAll(async () => {
   await migrate(database, { migrationsFolder: "db/migrations" });
   // SAFETY: PGlite exercises the real Drizzle schema and transaction behavior.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Swap only the PostgreSQL driver for an isolated compatible test database.
-  vi.spyOn(Database, "db", "get").mockReturnValue(database as never);
+  vi.spyOn(Database, "db", "get").mockReturnValue(database as unknown as typeof Database.db);
 }, 90_000);
 
 beforeEach(async () => {
