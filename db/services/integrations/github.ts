@@ -4,6 +4,7 @@ import {
   randomUUID,
 } from "node:crypto";
 import { and, eq, gt } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "@db";
 import {
   integrationAuthorizationAttempts,
@@ -18,7 +19,11 @@ import {
   integrationCredentialAad,
   type CredentialKeyring,
 } from "../../../integrations/credential-encryption";
-import type { GitHubUserAccessToken } from "../../../integrations/github/oauth";
+import {
+  GitHubOAuthError,
+  refreshGitHubUserAccessToken,
+  type GitHubUserAccessToken,
+} from "../../../integrations/github/oauth";
 
 const attemptLifetimeMs = 10 * 60 * 1000;
 
@@ -251,5 +256,189 @@ export async function saveGitHubConnection(input: {
     }
 
     return connection.id;
+  });
+}
+
+
+const storedGitHubTokenBundleSchema = z.object({
+  accessToken: z.string().min(1),
+  accessTokenExpiresAt: z.iso.datetime().nullable(),
+  refreshToken: z.string().min(1).nullable(),
+  refreshTokenExpiresAt: z.iso.datetime().nullable(),
+  tokenType: z.literal("bearer"),
+});
+
+export async function getFreshGitHubAccessToken(input: {
+  ownerUserId: string;
+  connectionId: string;
+  clientId: string;
+  clientSecret: string;
+  keyring: CredentialKeyring;
+}): Promise<string | null> {
+  // Keep the row lock while rotating: GitHub invalidates a refresh token as soon
+  // as it is used, so concurrent requests must not exchange the same token.
+  return db.transaction(async (tx) => {
+    const [record] = await tx
+      .select({
+        connectionId: integrationConnections.id,
+        credential: {
+          algorithm: integrationCredentials.algorithm,
+          ciphertext: integrationCredentials.ciphertext,
+          iv: integrationCredentials.iv,
+          authTag: integrationCredentials.authTag,
+          keyVersion: integrationCredentials.keyVersion,
+        },
+      })
+      .from(integrationConnections)
+      .innerJoin(
+        integrationCredentials,
+        and(
+          eq(integrationCredentials.connectionId, integrationConnections.id),
+          eq(integrationCredentials.ownerUserId, integrationConnections.ownerUserId),
+          eq(integrationCredentials.credentialType, "oauth_tokens")
+        )
+      )
+      .where(
+        and(
+          eq(integrationConnections.id, input.connectionId),
+          eq(integrationConnections.ownerUserId, input.ownerUserId),
+          eq(integrationConnections.providerKey, "github"),
+          eq(integrationConnections.status, "active")
+        )
+      )
+      .for("update")
+      .limit(1);
+
+    if (!record) return null;
+    if (record.credential.algorithm !== "aes-256-gcm") {
+      throw new Error("Unsupported GitHub credential algorithm.");
+    }
+
+    const plaintext = decryptCredential(
+      {
+        algorithm: "aes-256-gcm",
+        ...record.credential,
+      },
+      input.keyring,
+      integrationCredentialAad(
+        input.ownerUserId,
+        record.connectionId,
+        "oauth_tokens"
+      )
+    );
+    const parsed = storedGitHubTokenBundleSchema.safeParse(
+      JSON.parse(plaintext) as unknown
+    );
+    if (!parsed.success) {
+      throw new Error("Stored GitHub token bundle is invalid.");
+    }
+
+    const bundle = parsed.data;
+    const now = Date.now();
+    const accessExpiry = bundle.accessTokenExpiresAt
+      ? Date.parse(bundle.accessTokenExpiresAt)
+      : Number.POSITIVE_INFINITY;
+    if (accessExpiry > now + 60_000) return bundle.accessToken;
+
+    const refreshExpiry = bundle.refreshTokenExpiresAt
+      ? Date.parse(bundle.refreshTokenExpiresAt)
+      : 0;
+    if (!bundle.refreshToken || refreshExpiry <= now) {
+      await tx
+        .update(integrationConnections)
+        .set({ status: "reauthorization_required", updatedAt: new Date() })
+        .where(
+          and(
+            eq(integrationConnections.id, record.connectionId),
+            eq(integrationConnections.ownerUserId, input.ownerUserId)
+          )
+        );
+      return null;
+    }
+
+    let rotated: GitHubUserAccessToken;
+    try {
+      rotated = await refreshGitHubUserAccessToken({
+        clientId: input.clientId,
+        clientSecret: input.clientSecret,
+        refreshToken: bundle.refreshToken,
+      });
+    } catch (error) {
+      if (error instanceof GitHubOAuthError && error.reauthorizationRequired) {
+        await tx
+          .update(integrationConnections)
+          .set({ status: "reauthorization_required", updatedAt: new Date() })
+          .where(
+            and(
+              eq(integrationConnections.id, record.connectionId),
+              eq(integrationConnections.ownerUserId, input.ownerUserId)
+            )
+          );
+        return null;
+      }
+      throw error;
+    }
+
+    if (
+      !rotated.refresh_token ||
+      !rotated.expires_in ||
+      !rotated.refresh_token_expires_in
+    ) {
+      await tx
+        .update(integrationConnections)
+        .set({ status: "reauthorization_required", updatedAt: new Date() })
+        .where(
+          and(
+            eq(integrationConnections.id, record.connectionId),
+            eq(integrationConnections.ownerUserId, input.ownerUserId)
+          )
+        );
+      return null;
+    }
+
+    const rotatedAt = new Date();
+    const accessTokenExpiresAt = new Date(
+      rotatedAt.getTime() + rotated.expires_in * 1000
+    );
+    const refreshTokenExpiresAt = new Date(
+      rotatedAt.getTime() + rotated.refresh_token_expires_in * 1000
+    );
+    const nextBundle = JSON.stringify({
+      accessToken: rotated.access_token,
+      accessTokenExpiresAt: accessTokenExpiresAt.toISOString(),
+      refreshToken: rotated.refresh_token,
+      refreshTokenExpiresAt: refreshTokenExpiresAt.toISOString(),
+      tokenType: rotated.token_type,
+    });
+    const encrypted = encryptCredential(
+      nextBundle,
+      input.keyring,
+      integrationCredentialAad(
+        input.ownerUserId,
+        record.connectionId,
+        "oauth_tokens"
+      )
+    );
+
+    await tx
+      .update(integrationCredentials)
+      .set({
+        algorithm: encrypted.algorithm,
+        ciphertext: encrypted.ciphertext,
+        iv: encrypted.iv,
+        authTag: encrypted.authTag,
+        keyVersion: encrypted.keyVersion,
+        expiresAt: accessTokenExpiresAt,
+        updatedAt: rotatedAt,
+      })
+      .where(
+        and(
+          eq(integrationCredentials.connectionId, record.connectionId),
+          eq(integrationCredentials.ownerUserId, input.ownerUserId),
+          eq(integrationCredentials.credentialType, "oauth_tokens")
+        )
+      );
+
+    return rotated.access_token;
   });
 }
