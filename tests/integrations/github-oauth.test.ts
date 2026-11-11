@@ -11,7 +11,6 @@ import {
   it,
   vi,
 } from "vitest";
-import * as Database from "@db";
 import * as schema from "@db/schema";
 import {
   consumeGitHubAuthorizationAttempt,
@@ -25,6 +24,22 @@ import {
   createCredentialKeyring,
   generateCredentialKey,
 } from "../../integrations/credential-encryption";
+
+const testDatabase = vi.hoisted(() => {
+  let database: unknown;
+  return {
+    get: () => database,
+    set: (value: unknown) => {
+      database = value;
+    },
+  };
+});
+
+vi.mock("@db", () => ({
+  get db() {
+    return testDatabase.get();
+  },
+}));
 
 const client = new PGlite();
 const database = drizzle(client, { schema });
