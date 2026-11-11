@@ -22,7 +22,7 @@ describe("Internal Blud Browser Worker RPC", () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
+          "x-blud-key": "test-internal-key-0123456789abcdefghijklmnop",
         },
         body: JSON.stringify({}),
       }
@@ -38,7 +38,7 @@ describe("Internal Blud Browser Worker RPC", () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
+          "x-blud-key": "test-internal-key-0123456789abcdefghijklmnop",
         },
         body: JSON.stringify({
           message: "Verify homepage load",
