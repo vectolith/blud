@@ -183,9 +183,7 @@ describe("GitHub App OAuth client", () => {
     expect(new Headers(init?.headers).get("authorization")).toBe(
       `Basic ${Buffer.from("client-id:client-secret").toString("base64")}`
     );
-    expect(JSON.parse(String(init?.body))).toEqual({
-      access_token: "ghu_access",
-    });
+    expect(init?.body).toBe(JSON.stringify({ access_token: "ghu_access" }));
   });
 
 });
