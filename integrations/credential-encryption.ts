@@ -1,8 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-} from "node:crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
 const ALGORITHM = "aes-256-gcm" as const;
 const IV_BYTES = 12;
@@ -34,9 +30,17 @@ export function integrationCredentialAad(
   credentialType: string
 ): string {
   if (!ownerUserId.trim() || !connectionId.trim() || !credentialType.trim()) {
-    throw new CredentialEncryptionError("Credential ownership context is incomplete.");
+    throw new CredentialEncryptionError(
+      "Credential ownership context is incomplete."
+    );
   }
-  return ["blud", "integration-credential", ownerUserId, connectionId, credentialType].join(":");
+  return [
+    "blud",
+    "integration-credential",
+    ownerUserId,
+    connectionId,
+    credentialType,
+  ].join(":");
 }
 
 export function authorizationAttemptAad(
@@ -44,9 +48,16 @@ export function authorizationAttemptAad(
   attemptId: string
 ): string {
   if (!ownerUserId.trim() || !attemptId.trim()) {
-    throw new CredentialEncryptionError("Authorization attempt context is incomplete.");
+    throw new CredentialEncryptionError(
+      "Authorization attempt context is incomplete."
+    );
   }
-  return ["blud", "integration-authorization-attempt", ownerUserId, attemptId].join(":");
+  return [
+    "blud",
+    "integration-authorization-attempt",
+    ownerUserId,
+    attemptId,
+  ].join(":");
 }
 
 export function createCredentialKeyring(
@@ -54,7 +65,9 @@ export function createCredentialKeyring(
   keys: ReadonlyMap<string, Buffer>
 ): CredentialKeyring {
   if (!activeKeyVersion.trim()) {
-    throw new CredentialEncryptionError("An active credential key version is required.");
+    throw new CredentialEncryptionError(
+      "An active credential key version is required."
+    );
   }
   for (const [version, key] of keys) {
     if (!version.trim() || key.length !== KEY_BYTES) {
@@ -78,7 +91,9 @@ export function encryptCredential(
 ): EncryptedCredential {
   const key = keyring.keys.get(keyring.activeKeyVersion);
   if (!key) {
-    throw new CredentialEncryptionError("The active credential key is unavailable.");
+    throw new CredentialEncryptionError(
+      "The active credential key is unavailable."
+    );
   }
 
   const iv = randomBytes(IV_BYTES);
@@ -104,7 +119,9 @@ export function decryptCredential(
   associatedData: string
 ): string {
   if (encrypted.algorithm !== ALGORITHM) {
-    throw new CredentialEncryptionError("Unsupported credential encryption algorithm.");
+    throw new CredentialEncryptionError(
+      "Unsupported credential encryption algorithm."
+    );
   }
 
   const key = keyring.keys.get(encrypted.keyVersion);

@@ -75,17 +75,17 @@ provider registry defines supported OAuth endpoints, scopes, capabilities,
 and adapter implementation. Database records represent grants and connections
 created through those providers.
 
-| Entity | Purpose | Ownership |
-| --- | --- | --- |
-| Blud `user` | Stable identity and account profile | Blud account |
-| Better Auth `account` | Login identity/provider link, such as Apple or Google sign-in | User |
-| `integration_connections` | One authorized external service account | User initially; workspace later |
-| `integration_credentials` | Encrypted access/refresh credentials for a connection | Same owner as connection |
-| `integration_connection_scopes` | Exact provider scopes granted by OAuth | Connection |
-| `integration_action_grants` | Blud-level allowed/denied action policy | Connection and owner |
-| `channel_installations` | A bot/app installation or channel-level credential | User or workspace |
-| `channel_identities` | Mapping from an external channel identity to a Blud user | Installation |
-| `audit_events` | Security-relevant authorization and execution history | User/workspace context |
+| Entity                          | Purpose                                                       | Ownership                       |
+| ------------------------------- | ------------------------------------------------------------- | ------------------------------- |
+| Blud `user`                     | Stable identity and account profile                           | Blud account                    |
+| Better Auth `account`           | Login identity/provider link, such as Apple or Google sign-in | User                            |
+| `integration_connections`       | One authorized external service account                       | User initially; workspace later |
+| `integration_credentials`       | Encrypted access/refresh credentials for a connection         | Same owner as connection        |
+| `integration_connection_scopes` | Exact provider scopes granted by OAuth                        | Connection                      |
+| `integration_action_grants`     | Blud-level allowed/denied action policy                       | Connection and owner            |
+| `channel_installations`         | A bot/app installation or channel-level credential            | User or workspace               |
+| `channel_identities`            | Mapping from an external channel identity to a Blud user      | Installation                    |
+| `audit_events`                  | Security-relevant authorization and execution history         | User/workspace context          |
 
 The names above are proposed table names, not existing schema objects.
 

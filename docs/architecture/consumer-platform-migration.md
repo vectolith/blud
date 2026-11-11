@@ -237,4 +237,3 @@ Do not migrate Google Workspace away from Vercel Connect until the new adapter
 has equivalent authorization, refresh, and revocation coverage. Do not claim
 that the proposed tables, routes, or provider interfaces exist until code and
 migration tests prove they do.
-
