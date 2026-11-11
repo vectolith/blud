@@ -2,11 +2,11 @@ import { z } from "zod";
 import { getAuthSession } from "@db/services/auth/session";
 import { getFreshGitHubAccessToken } from "@db/services/integrations/github";
 import { env } from "@shared/environment";
-import { getIntegrationCredentialKeyring } from "../../../../../../integrations/credential-keyring";
+import { getIntegrationCredentialKeyring } from "../../../../../../../integrations/credential-keyring";
 import {
   GitHubInstallationApiError,
   listGitHubInstallationRepositories,
-} from "../../../../../../integrations/github/installations";
+} from "../../../../../../../integrations/github/installations";
 
 const privateHeaders = {
   "cache-control": "no-store",
