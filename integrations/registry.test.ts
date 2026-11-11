@@ -36,13 +36,16 @@ describe("integration registry", () => {
   });
 
   it("keeps reads separate from writes and requires approval for writes", () => {
-    for (const action of Object.values(integrationActions)) {
-      if (action.risk === "write") {
-        expect(action.approval).toBe("required");
-      } else {
-        expect(action.approval).toBe("not_required");
-      }
-    }
+    const actions = Object.values(integrationActions);
+    const writeActions = actions.filter((action) => action.risk === "write");
+    const readActions = actions.filter((action) => action.risk === "read");
+
+    expect(writeActions.every((action) => action.approval === "required")).toBe(
+      true
+    );
+    expect(readActions.every((action) => action.approval === "not_required")).toBe(
+      true
+    );
   });
 
   it("filters actions by provider", () => {
@@ -53,16 +56,13 @@ describe("integration registry", () => {
   });
 
   it("does not advertise planned providers as executable", () => {
-    expect(
-      Object.values(integrationProviders).every(
-        (provider) => provider.status === "planned"
-      )
-    ).toBe(true);
+    expect(listIntegrationProviders().map((provider) => provider.status)).toEqual([
+      "planned",
+      "planned",
+    ]);
 
-    for (const key of Object.keys(integrationActions) as Array<
-      keyof typeof integrationActions
-    >) {
-      expect(isIntegrationActionAvailable(key)).toBe(false);
+    for (const action of Object.values(integrationActions)) {
+      expect(isIntegrationActionAvailable(action.key)).toBe(false);
     }
   });
 });
