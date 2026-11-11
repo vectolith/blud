@@ -191,10 +191,16 @@ export async function listGitHubUserInstallations(input: {
 
 export async function listGitHubInstallationRepositories(input: {
   accessToken: string;
-  installationId: number;
+  installationId: string;
   page: number;
   fetcher?: typeof fetch;
 }): Promise<GitHubRepositoryPage> {
+  if (!/^[1-9]\\d{0,19}$/u.test(input.installationId)) {
+    throw new GitHubInstallationApiError(
+      400,
+      "GitHub installation identifier is invalid."
+    );
+  }
   const url = new URL(
     `https://api.github.com/user/installations/${input.installationId}/repositories`
   );
