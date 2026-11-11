@@ -1,8 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-} from "node:crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import type { AccessScope } from "@shared/identity/access-scope";
 import type { CredentialKeyring } from "./credential-encryption";
 
