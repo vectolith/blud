@@ -17,7 +17,7 @@ export interface CredentialKeyring {
   readonly keys: ReadonlyMap<string, Buffer>;
 }
 
-export class CredentialEncryptionError extends Error {
+class CredentialEncryptionError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = "CredentialEncryptionError";
