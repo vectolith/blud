@@ -31,9 +31,7 @@ describe("GitHub App OAuth client", () => {
     expect(url.searchParams.get("allow_signup")).toBe("false");
   });
 
-  it(
-    "exchanges a code with the stored redirect URI and PKCE verifier",
-    async () => {
+  it("exchanges authorization codes with PKCE", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         access_token: "ghu_access",
@@ -110,9 +108,7 @@ describe("GitHub App OAuth client", () => {
     expect(body.get("refresh_token")).toBe("ghr_old");
   });
 
-  it(
-    "rejects malformed token responses without exposing provider bodies",
-    async () => {
+  it("rejects malformed token responses without leaking provider data", async () => {
     const malformed = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({ access_token: "partial-secret" })
     );
@@ -170,9 +166,7 @@ describe("GitHub App OAuth client", () => {
     );
   });
 
-  it(
-    "revokes the GitHub App grant with server-side basic authentication",
-    async () => {
+  it("revokes GitHub grants with server-side authentication", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(null, { status: 204 })
     );
