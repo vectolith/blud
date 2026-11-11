@@ -408,8 +408,9 @@ schema and server-side credential boundary:
   from installation secrets; multi-key rotation/rewrapping is still a release
   hardening task.
 - Personal connections are not shared through workspace or channel membership.
-- OAuth consent does not automatically create Blud action grants. Write actions
-  remain unavailable until a separate owner-granted action policy is enforced.
+- OAuth consent does not automatically create Blud action grants. Reauthorizing
+  a connection clears its previous action grants; every action must be granted
+  again explicitly before execution.
 
 ### GitHub App user authorization
 
