@@ -13,7 +13,7 @@ export interface IntegrationProviderDefinition {
 
 export interface IntegrationActionDefinition {
   readonly key: string;
-  readonly provider: string;
+  readonly provider: IntegrationProviderKey;
   readonly description: string;
   readonly risk: IntegrationRisk;
   readonly requiredProviderPermissions: readonly string[];
@@ -34,6 +34,8 @@ export const integrationProviders = {
     status: "planned",
   },
 } as const satisfies Record<string, IntegrationProviderDefinition>;
+
+export type IntegrationProviderKey = keyof typeof integrationProviders;
 
 export const integrationActions = {
   "github.repository.read": {
@@ -94,7 +96,6 @@ export const integrationActions = {
   },
 } as const satisfies Record<string, IntegrationActionDefinition>;
 
-export type IntegrationProviderKey = keyof typeof integrationProviders;
 export type IntegrationActionKey = keyof typeof integrationActions;
 
 export function getIntegrationProvider(key: string) {
