@@ -5,7 +5,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import * as Database from "@db";
 import * as schema from "../schema";
 import {
+  authorizationAttemptAad,
   createCredentialKeyring,
+  decryptCredential,
   encryptCredential,
   integrationCredentialAad,
 } from "../../integrations/credential-encryption";
@@ -74,6 +76,25 @@ describe("integration credential key rotation", () => {
       authTag: encrypted.authTag,
       keyVersion: encrypted.keyVersion,
     });
+    const verifierAad = authorizationAttemptAad("owner-a", "attempt-a");
+    const encryptedVerifier = encryptCredential(
+      "pkce-verifier-secret",
+      oldKeyring,
+      verifierAad
+    );
+    await pgliteDatabase.insert(schema.integrationAuthorizationAttempts).values({
+      id: "attempt-a",
+      ownerUserId: "owner-a",
+      providerKey: "github",
+      stateHash: "state-hash-a",
+      pkceVerifierCiphertext: encryptedVerifier.ciphertext,
+      pkceVerifierIv: encryptedVerifier.iv,
+      pkceVerifierAuthTag: encryptedVerifier.authTag,
+      keyVersion: encryptedVerifier.keyVersion,
+      redirectUri: "https://blud.example/api/integrations/github/callback",
+      status: "pending",
+      expiresAt: new Date(Date.now() + 60_000),
+    });
 
     const credentials = await import("@db/services/integrations/credentials");
     await expect(
@@ -81,7 +102,7 @@ describe("integration credential key rotation", () => {
         ownerUserId: "owner-a",
         keyring: rotatingKeyring,
       })
-    ).resolves.toBe(1);
+    ).resolves.toBe(2);
     await expect(
       credentials.readIntegrationCredential({
         ownerUserId: "owner-a",
@@ -95,6 +116,24 @@ describe("integration credential key rotation", () => {
       .select()
       .from(schema.integrationCredentials);
     expect(rewrapped?.keyVersion).toBe("v2");
+
+    const [rewrappedAttempt] = await pgliteDatabase
+      .select()
+      .from(schema.integrationAuthorizationAttempts);
+    expect(rewrappedAttempt?.keyVersion).toBe("v2");
+    expect(
+      decryptCredential(
+        {
+          algorithm: "aes-256-gcm",
+          ciphertext: rewrappedAttempt?.pkceVerifierCiphertext ?? "",
+          iv: rewrappedAttempt?.pkceVerifierIv ?? "",
+          authTag: rewrappedAttempt?.pkceVerifierAuthTag ?? "",
+          keyVersion: rewrappedAttempt?.keyVersion ?? "",
+        },
+        rotatingKeyring,
+        verifierAad
+      )
+    ).toBe("pkce-verifier-secret");
   });
 
   it("rolls back the rotation when a historical key is missing", async () => {
