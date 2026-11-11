@@ -73,13 +73,19 @@ describe("personal integration migration", () => {
       session_id: "session-a",
     });
 
+    await database.exec(`
+      INSERT INTO integration_connections (
+        id, owner_user_id, provider_key, provider_account_id
+      ) VALUES ('connection-b', 'owner-a', 'github', 'github-account-2')
+    `);
+
     await expect(
       database.exec(`
         INSERT INTO integration_credentials (
           id, connection_id, owner_user_id, credential_type,
           ciphertext, iv, auth_tag, key_version
         ) VALUES (
-          'credential-cross-owner', 'connection-a', 'owner-b', 'oauth_tokens',
+          'credential-cross-owner', 'connection-b', 'owner-b', 'oauth_tokens',
           'ciphertext', 'iv', 'tag', 'v1'
         )
       `)
