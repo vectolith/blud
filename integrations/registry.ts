@@ -1,8 +1,8 @@
-export type IntegrationProviderStatus = "planned" | "enabled";
+type IntegrationProviderStatus = "planned" | "enabled";
 
-export type IntegrationRisk = "read" | "write";
+type IntegrationRisk = "read" | "write";
 
-export type IntegrationApprovalPolicy = "not_required" | "required";
+type IntegrationApprovalPolicy = "not_required" | "required";
 
 export interface IntegrationProviderDefinition {
   readonly key: string;
