@@ -30,9 +30,7 @@ describe("auth route initialization", () => {
       .mockRejectedValueOnce(new Error("Blob temporarily unavailable"))
       .mockResolvedValueOnce({});
     const { GET } = await import("@app/api/auth/[...all]/route");
-    const request = new Request(
-      "https://blud.example/api/auth/session"
-    );
+    const request = new Request("https://blud.example/api/auth/session");
 
     await expect(GET(request)).rejects.toThrow("Blob temporarily unavailable");
     await expect(GET(request)).resolves.toMatchObject({ status: 200 });
