@@ -108,7 +108,7 @@ describe("GitHub App OAuth client", () => {
     expect(body.get("refresh_token")).toBe("ghr_old");
   });
 
-  it("rejects malformed token responses without leaking provider data", async () => {
+  it("rejects malformed token responses without leaking secrets", async () => {
     const malformed = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({ access_token: "partial-secret" })
     );
