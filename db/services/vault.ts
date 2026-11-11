@@ -10,6 +10,7 @@ import {
   type VaultCreateItem,
 } from "@shared/vault/schema";
 import type { AccessScope } from "@shared/identity/access-scope";
+import type { CredentialKeyring } from "../../integrations/credential-encryption";
 import { db, encryptedSecrets, vaultItems } from "@db";
 import {
   deleteEncryptedSecret,
@@ -128,10 +129,14 @@ export async function saveVaultItem(
   }
 }
 
-export async function readVaultSecret(scope: AccessScope, id: string) {
+export async function readVaultSecret(
+  scope: AccessScope,
+  id: string,
+  keyringOverride?: CredentialKeyring
+) {
   const encrypted = await readEncryptedSecret(scope, id);
   if (!encrypted) return undefined;
-  const keyring = await getIntegrationCredentialKeyring();
+  const keyring = keyringOverride ?? (await getIntegrationCredentialKeyring());
   return decryptVaultSecret(scope, id, encrypted, keyring);
 }
 
@@ -139,9 +144,12 @@ export async function hasVaultSecret(scope: AccessScope, id: string) {
   return (await readEncryptedSecret(scope, id)) !== undefined;
 }
 
-export async function rewrapVaultSecrets(scope: AccessScope): Promise<number> {
+export async function rewrapVaultSecrets(
+  scope: AccessScope,
+  keyringOverride?: CredentialKeyring
+): Promise<number> {
   await ensureScope(scope);
-  const keyring = await getIntegrationCredentialKeyring();
+  const keyring = keyringOverride ?? (await getIntegrationCredentialKeyring());
   if (keyring.keys.size === 1) return 0;
 
   return db.transaction(async (tx) => {
