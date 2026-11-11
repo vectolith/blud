@@ -95,9 +95,9 @@ async function main() {
   }
 }
 
-main().catch((error: unknown) => {
-  const message =
-    error instanceof Error ? error.message : "Unknown key rewrapping failure.";
-  console.error(message);
+main().catch(() => {
+  console.error(
+    "Encryption key rewrapping failed. Retain all historical keys and inspect the failing database operation."
+  );
   process.exitCode = 1;
 });
