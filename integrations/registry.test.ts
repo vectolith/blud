@@ -40,12 +40,16 @@ describe("integration registry", () => {
     const writeActions = actions.filter((action) => action.risk === "write");
     const readActions = actions.filter((action) => action.risk === "read");
 
-    expect(writeActions.every((action) => action.approval === "required")).toBe(
-      true
-    );
-    expect(
-      readActions.every((action) => action.approval === "not_required")
-    ).toBe(true);
+    expect(writeActions.map((action) => action.approval)).toEqual([
+      "required",
+      "required",
+      "required",
+    ]);
+    expect(readActions.map((action) => action.approval)).toEqual([
+      "not_required",
+      "not_required",
+      "not_required",
+    ]);
   });
 
   it("filters actions by provider", () => {
