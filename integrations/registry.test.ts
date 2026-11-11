@@ -43,9 +43,9 @@ describe("integration registry", () => {
     expect(writeActions.every((action) => action.approval === "required")).toBe(
       true
     );
-    expect(readActions.every((action) => action.approval === "not_required")).toBe(
-      true
-    );
+    expect(
+      readActions.every((action) => action.approval === "not_required")
+    ).toBe(true);
   });
 
   it("filters actions by provider", () => {
@@ -56,10 +56,9 @@ describe("integration registry", () => {
   });
 
   it("does not advertise planned providers as executable", () => {
-    expect(listIntegrationProviders().map((provider) => provider.status)).toEqual([
-      "planned",
-      "planned",
-    ]);
+    expect(
+      listIntegrationProviders().map((provider) => provider.status)
+    ).toEqual(["planned", "planned"]);
 
     for (const action of Object.values(integrationActions)) {
       expect(isIntegrationActionAvailable(action.key)).toBe(false);
