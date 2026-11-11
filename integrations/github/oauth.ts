@@ -143,7 +143,9 @@ export async function fetchGitHubAccount(
   }
 
   if (!response.ok) {
-    throw new GitHubOAuthError("GitHub could not verify the authorized account.");
+    throw new GitHubOAuthError(
+      "GitHub could not verify the authorized account."
+    );
   }
 
   let payload: unknown;
@@ -169,7 +171,9 @@ export async function revokeGitHubGrant(input: {
   let response: Response;
   try {
     response = await (input.fetcher ?? fetch)(
-      `https://api.github.com/applications/${encodeURIComponent(input.clientId)}/grant`,
+      `https://api.github.com/applications/${encodeURIComponent(
+        input.clientId
+      )}/grant`,
       {
         method: "DELETE",
         headers: {
