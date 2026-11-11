@@ -13,7 +13,7 @@ const installationSchema = z.object({
   target_type: z.string().min(1).max(64),
   permissions: z.record(z.string(), permissionSchema),
   repository_selection: z.enum(["all", "selected"]),
-  suspended_at: z.iso.datetime().nullable().optional(),
+  suspended_at: z.string().nullable().optional(),
 });
 
 const installationsResponseSchema = z.object({
