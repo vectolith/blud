@@ -22,6 +22,7 @@ import {
 import {
   GitHubOAuthError,
   refreshGitHubUserAccessToken,
+  revokeGitHubGrant,
   type GitHubUserAccessToken,
 } from "../../../integrations/github/oauth";
 
@@ -443,4 +444,77 @@ export async function getFreshGitHubAccessToken(input: {
 
     return rotated.access_token;
   });
+}
+
+
+export async function revokeGitHubConnection(input: {
+  ownerUserId: string;
+  connectionId: string;
+  keyring: CredentialKeyring;
+  clientId?: string;
+  clientSecret?: string;
+}): Promise<{ found: boolean; remoteRevoked: boolean }> {
+  const [connection] = await db
+    .select({ id: integrationConnections.id })
+    .from(integrationConnections)
+    .where(
+      and(
+        eq(integrationConnections.id, input.connectionId),
+        eq(integrationConnections.ownerUserId, input.ownerUserId),
+        eq(integrationConnections.providerKey, "github")
+      )
+    )
+    .limit(1);
+
+  if (!connection) return { found: false, remoteRevoked: false };
+
+  let remoteRevoked = false;
+  if (input.clientId && input.clientSecret) {
+    try {
+      const accessToken = await getFreshGitHubAccessToken({
+        ownerUserId: input.ownerUserId,
+        connectionId: input.connectionId,
+        clientId: input.clientId,
+        clientSecret: input.clientSecret,
+        keyring: input.keyring,
+      });
+      if (accessToken) {
+        await revokeGitHubGrant({
+          clientId: input.clientId,
+          clientSecret: input.clientSecret,
+          accessToken,
+        });
+        remoteRevoked = true;
+      }
+    } catch {
+      // Local disconnection must still remove Blud's ability to use the grant.
+    }
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(integrationConnections)
+      .set({
+        status: "revoked",
+        revokedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(integrationConnections.id, input.connectionId),
+          eq(integrationConnections.ownerUserId, input.ownerUserId),
+          eq(integrationConnections.providerKey, "github")
+        )
+      );
+    await tx
+      .delete(integrationCredentials)
+      .where(
+        and(
+          eq(integrationCredentials.connectionId, input.connectionId),
+          eq(integrationCredentials.ownerUserId, input.ownerUserId)
+        )
+      );
+  });
+
+  return { found: true, remoteRevoked };
 }
