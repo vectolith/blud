@@ -16,7 +16,7 @@ function isAuthorized(request: Request): boolean {
 
   const token =
     request.headers.get("x-blud-key") ??
-    request.headers.get("authorization")?.replace(/^Bearer\\s+/iu, "") ??
+    request.headers.get("authorization")?.replace(/^Bearer\s+/iu, "") ??
     "";
   const expected = Buffer.from(secret);
   const supplied = Buffer.from(token);
