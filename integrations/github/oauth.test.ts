@@ -9,7 +9,7 @@ import {
 } from "./oauth";
 
 describe("GitHub App OAuth client", () => {
-  it("builds a PKCE authorization request without requesting broad repository scopes", () => {
+  it("builds a least-privilege PKCE authorization URL", () => {
     const url = buildGitHubAuthorizationUrl({
       clientId: "github-client-id",
       redirectUri: "https://blud.example/api/integrations/github/callback",
@@ -31,7 +31,7 @@ describe("GitHub App OAuth client", () => {
     expect(url.searchParams.get("allow_signup")).toBe("false");
   });
 
-  it("exchanges an authorization code using the exact redirect URI and PKCE verifier", async () => {
+  it("exchanges a code with the stored redirect URI and PKCE verifier", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         access_token: "ghu_access",
@@ -55,7 +55,9 @@ describe("GitHub App OAuth client", () => {
     expect(token.access_token).toBe("ghu_access");
     expect(token.refresh_token).toBe("ghr_refresh");
     const tokenExchangeCall = fetcher.mock.calls.at(0);
-    if (!tokenExchangeCall) throw new Error("Expected a token exchange request.");
+    if (!tokenExchangeCall) {
+      throw new Error("Expected a token exchange request.");
+    }
     const [url, init] = tokenExchangeCall;
     expect(url).toBe("https://github.com/login/oauth/access_token");
     expect(init?.method).toBe("POST");
@@ -72,7 +74,7 @@ describe("GitHub App OAuth client", () => {
     expect(body.get("client_secret")).toBe("server-secret");
   });
 
-  it("rotates an expiring GitHub App user token with its refresh token", async () => {
+  it("rotates an expiring GitHub App user token", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         access_token: "ghu_rotated",
@@ -94,7 +96,9 @@ describe("GitHub App OAuth client", () => {
     expect(token.access_token).toBe("ghu_rotated");
     expect(token.refresh_token).toBe("ghr_rotated");
     const refreshCall = fetcher.mock.calls.at(0);
-    if (!refreshCall) throw new Error("Expected a token refresh request.");
+    if (!refreshCall) {
+      throw new Error("Expected a token refresh request.");
+    }
     const [, init] = refreshCall;
     const body = init?.body;
     if (!(body instanceof URLSearchParams)) {
@@ -104,7 +108,7 @@ describe("GitHub App OAuth client", () => {
     expect(body.get("refresh_token")).toBe("ghr_old");
   });
 
-  it("rejects malformed or unsuccessful token responses without exposing provider bodies", async () => {
+  it("rejects malformed token responses without exposing provider bodies", async () => {
     const malformed = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({ access_token: "partial-secret" })
     );
@@ -132,7 +136,7 @@ describe("GitHub App OAuth client", () => {
     ).rejects.toThrow("GitHub rejected the token request.");
   });
 
-  it("validates the GitHub account using the returned access token", async () => {
+  it("validates the GitHub account using its access token", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({ id: 1234, login: "octocat", name: "The Octocat" })
     );
@@ -143,7 +147,9 @@ describe("GitHub App OAuth client", () => {
       name: "The Octocat",
     });
     const identityCall = fetcher.mock.calls.at(0);
-    if (!identityCall) throw new Error("Expected a GitHub identity request.");
+    if (!identityCall) {
+      throw new Error("Expected a GitHub identity request.");
+    }
     const [, init] = identityCall;
     expect(new Headers(init?.headers).get("authorization")).toBe(
       "Bearer ghu_access"
@@ -159,7 +165,8 @@ describe("GitHub App OAuth client", () => {
       "GitHub returned an invalid account response."
     );
   });
-  it("revokes the complete GitHub App grant using server-side basic authentication", async () => {
+
+  it("revokes the GitHub App grant with server-side basic authentication", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(null, { status: 204 })
     );
@@ -174,7 +181,9 @@ describe("GitHub App OAuth client", () => {
     ).resolves.toBeUndefined();
 
     const revokeCall = fetcher.mock.calls.at(0);
-    if (!revokeCall) throw new Error("Expected a GitHub revocation request.");
+    if (!revokeCall) {
+      throw new Error("Expected a GitHub revocation request.");
+    }
     const [url, init] = revokeCall;
     expect(url).toBe(
       "https://api.github.com/applications/client-id/grant"
@@ -185,5 +194,4 @@ describe("GitHub App OAuth client", () => {
     );
     expect(init?.body).toBe(JSON.stringify({ access_token: "ghu_access" }));
   });
-
 });
