@@ -148,7 +148,7 @@ describe("GitHub OAuth persistence", () => {
       .select()
       .from(schema.integrationConnections);
     expect(connections).toHaveLength(2);
-    expect(connections.map((item) => item.ownerUserId).sort()).toEqual([
+    expect(connections.map((item) => item.ownerUserId).toSorted()).toEqual([
       "alice",
       "bob",
     ]);
