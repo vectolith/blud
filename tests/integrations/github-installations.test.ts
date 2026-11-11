@@ -5,6 +5,12 @@ import {
   listGitHubUserInstallations,
 } from "../../integrations/github/installations";
 
+function requestUrl(input: RequestInfo | URL): string {
+  if (input instanceof URL) return input.href;
+  if (typeof input === "string") return input;
+  return input.url;
+}
+
 describe("GitHub App installation discovery", () => {
   it("lists only installations visible to the authorized user", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
@@ -25,7 +31,8 @@ describe("GitHub App installation discovery", () => {
         },
         {
           headers: {
-            link: '<https://api.github.com/user/installations?per_page=100&page=2>; rel="next"',
+            link:
+              '<https://api.github.com/user/installations?per_page=100&page=2>; rel="next"',
           },
         }
       )
@@ -54,8 +61,12 @@ describe("GitHub App installation discovery", () => {
       ],
     });
 
-    const [url, init] = fetcher.mock.calls[0] ?? [];
-    expect(String(url)).toBe(
+    const installationRequest = fetcher.mock.calls[0];
+    if (!installationRequest) {
+      throw new Error("Expected a GitHub installation request.");
+    }
+    const [url, init] = installationRequest;
+    expect(requestUrl(url)).toBe(
       "https://api.github.com/user/installations?per_page=100&page=1"
     );
     expect(new Headers(init?.headers).get("authorization")).toBe(
@@ -63,7 +74,7 @@ describe("GitHub App installation discovery", () => {
     );
   });
 
-  it("lists repositories with the user's effective permissions", async () => {
+  it("lists repositories with effective user permissions", async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         total_count: 1,
@@ -117,10 +128,16 @@ describe("GitHub App installation discovery", () => {
       ],
     });
 
-    const [url] = fetcher.mock.calls[0] ?? [];
-    expect(String(url)).toBe(
-      "https://api.github.com/user/installations/987/repositories?per_page=100&page=3"
+    const repositoryRequest = fetcher.mock.calls[0];
+    if (!repositoryRequest) {
+      throw new Error("Expected a GitHub repository request.");
+    }
+    const [url] = repositoryRequest;
+    const expectedUrl = new URL(
+      "/user/installations/987/repositories?per_page=100&page=3",
+      "https://api.github.com"
     );
+    expect(requestUrl(url)).toBe(expectedUrl.href);
   });
 
   it("requires reauthorization when GitHub rejects the user token", async () => {
