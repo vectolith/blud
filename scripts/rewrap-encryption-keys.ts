@@ -33,6 +33,7 @@ async function main() {
   ]);
 
   let integrationRecordsRewrapped = 0;
+  /* oxlint-disable eslint/no-await-in-loop -- Rewrap one owner/workspace at a time to bound database pressure and isolate failures. */
   for (const ownerUserId of owners) {
     integrationRecordsRewrapped += await rewrapIntegrationCredentials({
       ownerUserId,
@@ -53,6 +54,7 @@ async function main() {
   for (const scope of workspaces.values()) {
     vaultRecordsRewrapped += await rewrapVaultSecrets(scope);
   }
+  /* oxlint-enable eslint/no-await-in-loop */
 
   const oldCredentials = await db
     .select({ id: integrationCredentials.id })
