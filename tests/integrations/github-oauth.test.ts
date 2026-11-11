@@ -319,6 +319,18 @@ describe("GitHub OAuth persistence", () => {
       token,
       keyring,
     });
+    await database.insert(schema.integrationConnectionScopes).values({
+      connectionId,
+      ownerUserId: "alice",
+      scope: "read:user",
+    });
+    await database.insert(schema.integrationActionGrants).values({
+      connectionId,
+      ownerUserId: "alice",
+      actionKey: "github.issue.create",
+      decision: "allow",
+      grantedByUserId: "alice",
+    });
     vi.stubGlobal(
       "fetch",
       vi.fn<typeof fetch>().mockResolvedValue(
@@ -344,11 +356,16 @@ describe("GitHub OAuth persistence", () => {
       expect(
         await database.select().from(schema.integrationCredentials)
       ).toEqual([]);
+      expect(
+        await database.select().from(schema.integrationConnectionScopes)
+      ).toEqual([]);
+      expect(
+        await database.select().from(schema.integrationActionGrants)
+      ).toEqual([]);
     } finally {
       vi.unstubAllGlobals();
     }
   });
-
 
   it("clears prior Blud action consent when the GitHub account is reauthorized", async () => {
     const connectionId = await saveGitHubConnection({
@@ -377,5 +394,4 @@ describe("GitHub OAuth persistence", () => {
       database.select().from(schema.integrationActionGrants)
     ).resolves.toEqual([]);
   });
-
 });
