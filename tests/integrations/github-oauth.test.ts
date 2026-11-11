@@ -281,9 +281,9 @@ describe("GitHub OAuth persistence", () => {
       token,
       keyring,
     });
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(null, { status: 204 })
-    );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 204 }));
     vi.stubGlobal("fetch", fetcher);
 
     try {
@@ -333,9 +333,11 @@ describe("GitHub OAuth persistence", () => {
     });
     vi.stubGlobal(
       "fetch",
-      vi.fn<typeof fetch>().mockResolvedValue(
-        new Response("provider unavailable", { status: 503 })
-      )
+      vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(
+          new Response("provider unavailable", { status: 503 })
+        )
     );
 
     try {
