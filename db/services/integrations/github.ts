@@ -156,16 +156,6 @@ export async function saveGitHubConnection(input: {
     tokenType: input.token.token_type,
   });
   const connectionId = randomUUID();
-  const encrypted = encryptCredential(
-    tokenBundle,
-    input.keyring,
-    integrationCredentialAad(
-      input.ownerUserId,
-      connectionId,
-      "oauth_tokens"
-    )
-  );
-
   return db.transaction(async (tx) => {
     const [connection] = await tx
       .insert(integrationConnections)
