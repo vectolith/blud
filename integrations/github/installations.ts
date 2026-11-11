@@ -60,7 +60,7 @@ export interface GitHubInstallationPage {
   readonly totalCount: number;
   readonly page: number;
   readonly hasNextPage: boolean;
-  readonly installations: Array<{
+  readonly installations: {
     id: number;
     account: { id: number; login: string; type: string };
     appId: number;
@@ -75,7 +75,7 @@ export interface GitHubRepositoryPage {
   readonly totalCount: number;
   readonly page: number;
   readonly hasNextPage: boolean;
-  readonly repositories: Array<{
+  readonly repositories: {
     id: number;
     name: string;
     fullName: string;
@@ -175,17 +175,20 @@ export async function listGitHubUserInstallations(input: {
     totalCount: parsed.data.total_count,
     page: input.page,
     hasNextPage: hasNextPage(response.linkHeader),
-    installations: parsed.data.installations.map((installation) => ({
-      id: installation.id,
-      account: installation.account,
-      appId: installation.app_id,
-      targetType: installation.target_type,
-      permissions: installation.permissions,
-      repositorySelection: installation.repository_selection,
-      ...(installation.suspended_at === undefined
-        ? {}
-        : { suspendedAt: installation.suspended_at }),
-    })),
+    installations: parsed.data.installations.map((installation) => {
+      const mapped: GitHubInstallationPage["installations"][number] = {
+        id: installation.id,
+        account: installation.account,
+        appId: installation.app_id,
+        targetType: installation.target_type,
+        permissions: installation.permissions,
+        repositorySelection: installation.repository_selection,
+      };
+      if (installation.suspended_at !== undefined) {
+        mapped.suspendedAt = installation.suspended_at;
+      }
+      return mapped;
+    }),
   };
 }
 
@@ -195,7 +198,7 @@ export async function listGitHubInstallationRepositories(input: {
   page: number;
   fetcher?: typeof fetch;
 }): Promise<GitHubRepositoryPage> {
-  if (!/^[1-9]\\d{0,19}$/u.test(input.installationId)) {
+  if (!/^[1-9][0-9]{0,19}$/u.test(input.installationId)) {
     throw new GitHubInstallationApiError(
       400,
       "GitHub installation identifier is invalid."
@@ -224,18 +227,21 @@ export async function listGitHubInstallationRepositories(input: {
     totalCount: parsed.data.total_count,
     page: input.page,
     hasNextPage: hasNextPage(response.linkHeader),
-    repositories: parsed.data.repositories.map((repository) => ({
-      id: repository.id,
-      name: repository.name,
-      fullName: repository.full_name,
-      private: repository.private,
-      archived: repository.archived,
-      ...(repository.default_branch === undefined
-        ? {}
-        : { defaultBranch: repository.default_branch }),
-      ...(repository.permissions === undefined
-        ? {}
-        : { permissions: repository.permissions }),
-    })),
+    repositories: parsed.data.repositories.map((repository) => {
+      const mapped: GitHubRepositoryPage["repositories"][number] = {
+        id: repository.id,
+        name: repository.name,
+        fullName: repository.full_name,
+        private: repository.private,
+        archived: repository.archived,
+      };
+      if (repository.default_branch !== undefined) {
+        mapped.defaultBranch = repository.default_branch;
+      }
+      if (repository.permissions !== undefined) {
+        mapped.permissions = repository.permissions;
+      }
+      return mapped;
+    }),
   };
 }
