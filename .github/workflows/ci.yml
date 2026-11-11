@@ -83,13 +83,13 @@ jobs:
       - name: Fail if any verification stage failed
         if: always()
         env:
-          TYPEGEN_OUTCOME: ${{ steps.typegen.conclusion }}
-          TYPECHECK_OUTCOME: ${{ steps.typecheck.conclusion }}
-          LINT_OUTCOME: ${{ steps.lint.conclusion }}
-          TESTS_OUTCOME: ${{ steps.tests.conclusion }}
-          FORMATTING_OUTCOME: ${{ steps.formatting.conclusion }}
-          KNIP_OUTCOME: ${{ steps.knip.conclusion }}
-          BUILD_OUTCOME: ${{ steps.build.conclusion }}
+          TYPEGEN_OUTCOME: ${{ steps.typegen.outcome }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          LINT_OUTCOME: ${{ steps.lint.outcome }}
+          TESTS_OUTCOME: ${{ steps.tests.outcome }}
+          FORMATTING_OUTCOME: ${{ steps.formatting.outcome }}
+          KNIP_OUTCOME: ${{ steps.knip.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
         run: |
           failed=0
           for result in "$TYPEGEN_OUTCOME" "$TYPECHECK_OUTCOME" "$LINT_OUTCOME" "$TESTS_OUTCOME" "$FORMATTING_OUTCOME" "$KNIP_OUTCOME" "$BUILD_OUTCOME"; do
