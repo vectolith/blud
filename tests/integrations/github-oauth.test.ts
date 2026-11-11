@@ -163,7 +163,7 @@ describe("GitHub OAuth persistence", () => {
     ]);
   });
 
-  it("fails only the owner’s consumed authorization attempt", async () => {
+  it("fails only the owner's consumed authorization attempt", async () => {
     const attempt = await createGitHubAuthorizationAttempt({
       ownerUserId: "alice",
       redirectUri: "https://blud.example/api/integrations/github/callback",
@@ -370,30 +370,30 @@ describe("GitHub OAuth persistence", () => {
   });
 
   it("clears old action grants on GitHub reauthorization", async () => {
-      const connectionId = await saveGitHubConnection({
+    const connectionId = await saveGitHubConnection({
+      ownerUserId: "alice",
+      account: { id: 1234, login: "octocat" },
+      token,
+      keyring,
+    });
+    await database.insert(schema.integrationActionGrants).values({
+      connectionId,
+      ownerUserId: "alice",
+      actionKey: "github.issue.create",
+      decision: "allow",
+      grantedByUserId: "alice",
+    });
+
+    await expect(
+      saveGitHubConnection({
         ownerUserId: "alice",
         account: { id: 1234, login: "octocat" },
-        token,
+        token: { ...token, access_token: "ghu_reauthorized" },
         keyring,
-      });
-      await database.insert(schema.integrationActionGrants).values({
-        connectionId,
-        ownerUserId: "alice",
-        actionKey: "github.issue.create",
-        decision: "allow",
-        grantedByUserId: "alice",
-      });
-
-      await expect(
-        saveGitHubConnection({
-          ownerUserId: "alice",
-          account: { id: 1234, login: "octocat" },
-          token: { ...token, access_token: "ghu_reauthorized" },
-          keyring,
-        })
-      ).resolves.toBe(connectionId);
-      await expect(
-        database.select().from(schema.integrationActionGrants)
-      ).resolves.toEqual([]);
+      })
+    ).resolves.toBe(connectionId);
+    await expect(
+      database.select().from(schema.integrationActionGrants)
+    ).resolves.toEqual([]);
   });
 });
