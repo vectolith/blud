@@ -349,6 +349,7 @@ describe("GitHub OAuth persistence", () => {
     }
   });
 
+
   it("clears prior Blud action consent when the GitHub account is reauthorized", async () => {
     const connectionId = await saveGitHubConnection({
       ownerUserId: "alice",
