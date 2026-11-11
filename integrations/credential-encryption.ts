@@ -110,7 +110,7 @@ export function decryptCredential(
   const key = keyring.keys.get(encrypted.keyVersion);
   if (!key) {
     throw new CredentialEncryptionError(
-      \`Credential key version "\${encrypted.keyVersion}" is unavailable.\`
+      `Credential key version "${encrypted.keyVersion}" is unavailable.`
     );
   }
 
