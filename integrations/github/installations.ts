@@ -88,7 +88,8 @@ export interface GitHubRepositoryPage {
       push?: boolean;
       triage?: boolean;
       pull?: boolean;
-    }[];
+    };
+  }[];
 }
 
 function hasNextPage(linkHeader: string | null): boolean {
