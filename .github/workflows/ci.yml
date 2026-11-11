@@ -42,43 +42,36 @@ jobs:
       - name: Generate Next.js route types
         id: typegen
         run: pnpm types:generate
-        continue-on-error: true
 
       - name: TypeScript
         id: typecheck
         if: always()
         run: pnpm types:check:app
-        continue-on-error: true
 
       - name: Oxlint
         id: lint
         if: always()
         run: pnpm lint:app
-        continue-on-error: true
 
       - name: Unit tests
         id: tests
         if: always()
         run: pnpm test:app
-        continue-on-error: true
 
       - name: Formatting
         id: formatting
         if: always()
         run: pnpm format:check
-        continue-on-error: true
 
       - name: Knip
         id: knip
         if: always()
         run: pnpm knip
-        continue-on-error: true
 
       - name: Production build
         id: build
         if: always()
         run: pnpm build:app
-        continue-on-error: true
 
       - name: Fail if any verification stage failed
         if: always()
