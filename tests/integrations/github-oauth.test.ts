@@ -369,9 +369,7 @@ describe("GitHub OAuth persistence", () => {
     }
   });
 
-  it(
-    "clears prior Blud action consent when the GitHub account is reauthorized",
-    async () => {
+  it("clears old action grants on GitHub reauthorization", async () => {
       const connectionId = await saveGitHubConnection({
         ownerUserId: "alice",
         account: { id: 1234, login: "octocat" },
@@ -397,6 +395,5 @@ describe("GitHub OAuth persistence", () => {
       await expect(
         database.select().from(schema.integrationActionGrants)
       ).resolves.toEqual([]);
-    }
-  );
+  });
 });
