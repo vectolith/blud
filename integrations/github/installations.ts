@@ -68,7 +68,7 @@ export interface GitHubInstallationPage {
     permissions: Record<string, "read" | "write" | "admin">;
     repositorySelection: "all" | "selected";
     suspendedAt?: string | null;
-  }>;
+  }[];
 }
 
 export interface GitHubRepositoryPage {
@@ -88,8 +88,7 @@ export interface GitHubRepositoryPage {
       push?: boolean;
       triage?: boolean;
       pull?: boolean;
-    };
-  }>;
+    }[];
 }
 
 function hasNextPage(linkHeader: string | null): boolean {
