@@ -46,14 +46,6 @@ export async function GET(
     );
   }
 
-  const installationId = Number(parsedInstallationId.data);
-  if (!Number.isSafeInteger(installationId)) {
-    return Response.json(
-      { error: "GitHub installation was not found." },
-      { status: 404, headers: privateHeaders }
-    );
-  }
-
   const { GITHUB_APP_CLIENT_ID, GITHUB_APP_CLIENT_SECRET } = env;
   if (!GITHUB_APP_CLIENT_ID || !GITHUB_APP_CLIENT_SECRET) {
     return Response.json(
@@ -80,7 +72,7 @@ export async function GET(
 
     const result = await listGitHubInstallationRepositories({
       accessToken,
-      installationId,
+      installationId: parsedInstallationId.data,
       page: query.data.page,
     });
     return Response.json(result, { headers: privateHeaders });
