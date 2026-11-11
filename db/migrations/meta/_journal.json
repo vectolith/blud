@@ -113,6 +113,13 @@
       "when": 1794392102819,
       "tag": "0015_personal_integrations",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794396000000,
+      "tag": "0016_better_auth_workspace_cleanup",
+      "breakpoints": true
     }
   ]
 }
