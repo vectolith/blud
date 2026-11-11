@@ -53,11 +53,16 @@ describe("GitHub App OAuth client", () => {
 
     expect(token.access_token).toBe("ghu_access");
     expect(token.refresh_token).toBe("ghr_refresh");
-    const [url, init] = fetcher.mock.calls[0]!;
+    const tokenExchangeCall = fetcher.mock.calls.at(0);
+    if (!tokenExchangeCall) throw new Error("Expected a token exchange request.");
+    const [url, init] = tokenExchangeCall;
     expect(url).toBe("https://github.com/login/oauth/access_token");
     expect(init?.method).toBe("POST");
     expect(init?.redirect).toBe("error");
-    const body = new URLSearchParams(String(init?.body));
+    const body = init?.body;
+    if (!(body instanceof URLSearchParams)) {
+      throw new Error("Expected a URL-encoded token request.");
+    }
     expect(body.get("code")).toBe("one-time-code");
     expect(body.get("code_verifier")).toBe("original-verifier");
     expect(body.get("redirect_uri")).toBe(
@@ -87,8 +92,13 @@ describe("GitHub App OAuth client", () => {
 
     expect(token.access_token).toBe("ghu_rotated");
     expect(token.refresh_token).toBe("ghr_rotated");
-    const [, init] = fetcher.mock.calls[0]!;
-    const body = new URLSearchParams(String(init?.body));
+    const refreshCall = fetcher.mock.calls.at(0);
+    if (!refreshCall) throw new Error("Expected a token refresh request.");
+    const [, init] = refreshCall;
+    const body = init?.body;
+    if (!(body instanceof URLSearchParams)) {
+      throw new Error("Expected a URL-encoded refresh request.");
+    }
     expect(body.get("grant_type")).toBe("refresh_token");
     expect(body.get("refresh_token")).toBe("ghr_old");
   });
@@ -131,7 +141,9 @@ describe("GitHub App OAuth client", () => {
       login: "octocat",
       name: "The Octocat",
     });
-    const [, init] = fetcher.mock.calls[0]!;
+    const identityCall = fetcher.mock.calls.at(0);
+    if (!identityCall) throw new Error("Expected a GitHub identity request.");
+    const [, init] = identityCall;
     expect(new Headers(init?.headers).get("authorization")).toBe(
       "Bearer ghu_access"
     );
