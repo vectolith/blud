@@ -58,22 +58,6 @@ jobs:
         if: always()
         run: pnpm test:app
 
-      - name: Capture formatter diff
-        if: always()
-        run: |
-          pnpm exec oxfmt \
-            app/api/integrations/github/authorize/route.ts \
-            db/services/integrations/github.ts \
-            integrations/github/oauth.test.ts \
-            integrations/github/oauth.ts \
-            tests/integrations/github-oauth.test.ts
-          git diff --no-color -- \
-            app/api/integrations/github/authorize/route.ts \
-            db/services/integrations/github.ts \
-            integrations/github/oauth.test.ts \
-            integrations/github/oauth.ts \
-            tests/integrations/github-oauth.test.ts
-
       - name: Formatting
         id: formatting
         if: always()
