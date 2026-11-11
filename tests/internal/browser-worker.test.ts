@@ -15,7 +15,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(401);
   });
 
-  it("rejects invalid json payload when authorized", async () => {
+  it("rejects invalid task payload when authorized", async () => {
     const req = new Request(
       "http://localhost:3000/api/internal/browser-worker",
       {
@@ -31,7 +31,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(400);
   });
 
-  it("accepts valid browser delegation task and returns coordinator status", async () => {
+  it("does not claim to execute a valid browser task", async () => {
     const req = new Request(
       "http://localhost:3000/api/internal/browser-worker",
       {
