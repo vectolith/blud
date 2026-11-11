@@ -97,15 +97,13 @@ export const integrationActions = {
 export type IntegrationActionKey = keyof typeof integrationActions;
 
 export function getIntegrationProvider(key: string) {
-  return Object.hasOwn(integrationProviders, key)
-    ? integrationProviders[key as IntegrationProviderKey]
-    : undefined;
+  return Object.values(integrationProviders).find(
+    (provider) => provider.key === key
+  );
 }
 
 export function getIntegrationAction(key: string) {
-  return Object.hasOwn(integrationActions, key)
-    ? integrationActions[key as IntegrationActionKey]
-    : undefined;
+  return Object.values(integrationActions).find((action) => action.key === key);
 }
 
 export function listIntegrationProviders() {
