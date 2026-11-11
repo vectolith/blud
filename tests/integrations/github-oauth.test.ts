@@ -226,8 +226,13 @@ describe("GitHub OAuth persistence", () => {
       ).resolves.toBe("ghu_rotated-access");
 
       expect(fetcher).toHaveBeenCalledTimes(1);
-      const [, init] = fetcher.mock.calls[0]!;
-      const body = new URLSearchParams(String(init?.body));
+      const refreshCall = fetcher.mock.calls.at(0);
+      if (!refreshCall) throw new Error("Expected a GitHub token refresh.");
+      const [, init] = refreshCall;
+      const body = init?.body;
+      if (!(body instanceof URLSearchParams)) {
+        throw new Error("Expected a URL-encoded refresh request.");
+      }
       expect(body.get("grant_type")).toBe("refresh_token");
       expect(body.get("refresh_token")).toBe(token.refresh_token);
 
