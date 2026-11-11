@@ -1,4 +1,4 @@
-import { and, ne } from "drizzle-orm";
+import { ne } from "drizzle-orm";
 import {
   db,
   encryptedSecrets,
@@ -72,8 +72,7 @@ async function main() {
     );
   const vaultRows = await db
     .select({ encryptedValue: encryptedSecrets.encryptedValue })
-    .from(encryptedSecrets)
-    .where(and(ne(encryptedSecrets.namespace, "vault")));
+    .from(encryptedSecrets);
   const oldVaultRecords = vaultRows.filter(
     (row) =>
       vaultSecretKeyVersion(row.encryptedValue) !== keyring.activeKeyVersion
