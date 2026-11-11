@@ -1,9 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-  randomUUID,
-} from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -15,14 +10,19 @@ import {
   type VaultCreateItem,
 } from "@shared/vault/schema";
 import type { AccessScope } from "@shared/identity/access-scope";
-import { db, vaultItems } from "@db";
+import { db, encryptedSecrets, vaultItems } from "@db";
 import {
   deleteEncryptedSecret,
   readEncryptedSecret,
   writeEncryptedSecret,
 } from "@db/services/secrets";
 import { ensureScope } from "@db/services/scope";
-import { getInstallationSecrets } from "@db/services/installation-secrets";
+import { getIntegrationCredentialKeyring } from "../../integrations/credential-keyring";
+import {
+  decryptVaultSecret,
+  encryptVaultSecret,
+  vaultSecretKeyVersion,
+} from "../../integrations/vault-encryption";
 
 const vaultRecordSchema = z.object({
   account: z.string(),
@@ -131,20 +131,80 @@ export async function saveVaultItem(
 export async function readVaultSecret(scope: AccessScope, id: string) {
   const encrypted = await readEncryptedSecret(scope, id);
   if (!encrypted) return undefined;
-  const { secretEncryptionKey } = await getInstallationSecrets();
-  return decryptVaultSecret(scope, id, encrypted, secretEncryptionKey);
+  const keyring = await getIntegrationCredentialKeyring();
+  return decryptVaultSecret(scope, id, encrypted, keyring);
 }
 
 export async function hasVaultSecret(scope: AccessScope, id: string) {
   return (await readEncryptedSecret(scope, id)) !== undefined;
 }
 
+export async function rewrapVaultSecrets(scope: AccessScope): Promise<number> {
+  await ensureScope(scope);
+  const keyring = await getIntegrationCredentialKeyring();
+  if (keyring.keys.size === 1) return 0;
+
+  return db.transaction(async (tx) => {
+    const records = await tx
+      .select({
+        id: encryptedSecrets.id,
+        encryptedValue: encryptedSecrets.encryptedValue,
+      })
+      .from(encryptedSecrets)
+      .where(
+        and(
+          eq(encryptedSecrets.workspaceId, scope.workspaceId),
+          eq(encryptedSecrets.namespace, "vault")
+        )
+      );
+    let rewrapped = 0;
+
+    /* oxlint-disable eslint/no-await-in-loop -- Each ciphertext is authenticated and conditionally replaced before the next record. */
+    for (const record of records) {
+      if (
+        vaultSecretKeyVersion(record.encryptedValue) ===
+        keyring.activeKeyVersion
+      ) {
+        continue;
+      }
+      const plaintext = decryptVaultSecret(
+        scope,
+        record.id,
+        record.encryptedValue,
+        keyring
+      );
+      const replacement = encryptVaultSecret(
+        scope,
+        record.id,
+        plaintext,
+        keyring
+      );
+      const updated = await tx
+        .update(encryptedSecrets)
+        .set({ encryptedValue: replacement, updatedAt: new Date() })
+        .where(
+          and(
+            eq(encryptedSecrets.workspaceId, scope.workspaceId),
+            eq(encryptedSecrets.namespace, "vault"),
+            eq(encryptedSecrets.id, record.id),
+            eq(encryptedSecrets.encryptedValue, record.encryptedValue)
+          )
+        )
+        .returning({ id: encryptedSecrets.id });
+      if (updated.length > 0) rewrapped += 1;
+    }
+    /* oxlint-enable eslint/no-await-in-loop */
+
+    return rewrapped;
+  });
+}
+
 async function writeVaultSecret(scope: AccessScope, id: string, value: string) {
-  const { secretEncryptionKey } = await getInstallationSecrets();
+  const keyring = await getIntegrationCredentialKeyring();
   await writeEncryptedSecret(
     scope,
     id,
-    encryptVaultSecret(scope, id, value, secretEncryptionKey)
+    encryptVaultSecret(scope, id, value, keyring)
   );
 }
 
@@ -168,59 +228,6 @@ function vaultAccountHint(input: VaultCreateItem) {
       return "";
   }
   throw new Error("Unsupported vault item kind.");
-}
-
-function encryptVaultSecret(
-  scope: AccessScope,
-  id: string,
-  value: string,
-  secretEncryptionKey: string
-) {
-  const iv = randomBytes(12);
-  const cipher = createCipheriv(
-    "aes-256-gcm",
-    Buffer.from(secretEncryptionKey, "base64"),
-    iv
-  );
-  cipher.setAAD(vaultSecretAad(scope, id));
-  const ciphertext = Buffer.concat([
-    cipher.update(value, "utf8"),
-    cipher.final(),
-  ]);
-  return [
-    "v1",
-    iv.toString("base64url"),
-    cipher.getAuthTag().toString("base64url"),
-    ciphertext.toString("base64url"),
-  ].join(".");
-}
-
-function decryptVaultSecret(
-  scope: AccessScope,
-  id: string,
-  value: string,
-  secretEncryptionKey: string
-) {
-  const [version, encodedIv, encodedTag, encodedCiphertext] = value.split(".");
-  if (version !== "v1" || !encodedIv || !encodedTag || !encodedCiphertext) {
-    throw new Error("The stored secret uses an unsupported format.");
-  }
-
-  const decipher = createDecipheriv(
-    "aes-256-gcm",
-    Buffer.from(secretEncryptionKey, "base64"),
-    Buffer.from(encodedIv, "base64url")
-  );
-  decipher.setAAD(vaultSecretAad(scope, id));
-  decipher.setAuthTag(Buffer.from(encodedTag, "base64url"));
-  return Buffer.concat([
-    decipher.update(Buffer.from(encodedCiphertext, "base64url")),
-    decipher.final(),
-  ]).toString("utf8");
-}
-
-function vaultSecretAad(scope: AccessScope, id: string) {
-  return Buffer.from(`${scope.workspaceId}\u0000vault\u0000${id}`);
 }
 
 function serializeVaultRecord<T extends { createdAt: Date; updatedAt: Date }>(
