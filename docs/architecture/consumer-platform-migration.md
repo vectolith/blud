@@ -136,7 +136,7 @@ imports its SDK directly.
 ### Phase 1 — consumer identity foundation
 
 - Extend Better Auth for Apple, Google, and email authentication.
-- Make the session contract independent of phone-number presence.
+- [x] Make the session contract independent of phone-number presence.
 - Add account linking, verification, recovery, rate limits, and session
   management.
 - Add migration tests proving existing phone-auth accounts remain accessible.
