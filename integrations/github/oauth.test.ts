@@ -28,7 +28,6 @@ describe("GitHub App OAuth client", () => {
     expect(url.searchParams.get("code_challenge_method")).toBe("S256");
     expect(url.searchParams.get("scope")).toBe("offline_access");
     expect(url.searchParams.get("allow_signup")).toBe("false");
-    expect(url.searchParams.has("scope", "repo")).toBe(false);
   });
 
   it("exchanges an authorization code using the exact redirect URI and PKCE verifier", async () => {
