@@ -84,10 +84,12 @@ function configuredInstallationSecrets() {
   const betterAuthSecret = env.BETTER_AUTH_SECRET;
   const secretEncryptionKey = env.SECRET_ENCRYPTION_KEY;
   if (!betterAuthSecret && !secretEncryptionKey) return undefined;
-  return {
-    ...(betterAuthSecret ? { betterAuthSecret } : {}),
-    ...(secretEncryptionKey ? { secretEncryptionKey } : {}),
-  };
+  const configured: Partial<InstallationSecrets> = {};
+  if (betterAuthSecret) configured.betterAuthSecret = betterAuthSecret;
+  if (secretEncryptionKey) {
+    configured.secretEncryptionKey = secretEncryptionKey;
+  }
+  return configured;
 }
 
 async function readInstallationSecrets(pathname: string) {
