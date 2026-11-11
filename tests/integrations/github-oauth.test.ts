@@ -44,7 +44,7 @@ const token = {
 beforeAll(async () => {
   await migrate(database, { migrationsFolder: "db/migrations" });
   // SAFETY: PGlite exercises the real Drizzle schema and transaction behavior.
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PGlite driver swap.
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PGlite.
   vi.spyOn(Database, "db", "get").mockReturnValue(database as never);
 }, 90_000);
 
@@ -367,7 +367,7 @@ describe("GitHub OAuth persistence", () => {
     }
   });
 
-  it("clears prior Blud action consent when the GitHub account is reauthorized", async () => {
+  it(\n    "clears prior Blud action consent when the GitHub account is reauthorized",\n    async () => {
     const connectionId = await saveGitHubConnection({
       ownerUserId: "alice",
       account: { id: 1234, login: "octocat" },
