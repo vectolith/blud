@@ -59,9 +59,7 @@ const token = {
 beforeAll(async () => {
   await migrate(database, { migrationsFolder: "db/migrations" });
   // SAFETY: PGlite exercises the real Drizzle schema and transaction behavior.
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PGlite uses a different driver type for the same Drizzle query contract.
-  const testDatabase = database as never;
-  vi.spyOn(Database, "db", "get").mockReturnValue(testDatabase);
+  testDatabase.set(database);
 }, 90_000);
 
 beforeEach(async () => {
