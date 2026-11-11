@@ -209,12 +209,32 @@ A phase is not complete because code compiles alone. Required evidence includes:
   deployment has been exercised.
 - Do not claim production readiness until the release gates above pass.
 
+## Integration and channel architecture
+
+The account, integration, and channel ownership model is specified in
+[`integrations-and-channels.md`](./integrations-and-channels.md). This is a
+proposed architecture contract, not an implemented schema or runtime feature.
+The first integration milestone is limited to personal user-owned connections.
+Workspace-shared connections are blocked until workspace roles and explicit
+administrative consent are implemented.
+
 ## Immediate next engineering task
 
-Start Phase 1 by tracing the complete Better Auth client/server flow, the
-current sign-in UI, environment validation, account schema, and session
-consumers. Implement Apple/Google/email support and the phone-independent
-session contract as one tested change set. Do not guess OAuth configuration
-names or callback behavior; verify them against the installed Better Auth
-version and its documentation before implementation.
+Implement the integration foundation in small, testable steps:
+
+1. Define typed provider and action registries without changing runtime behavior.
+2. Add the personal-user-owned connection schema, encrypted credential storage,
+   exact provider-scope records, and action grants with database constraints.
+3. Add migration tests for empty and existing databases, including existing
+   Better Auth users, sessions, accounts, and Stripe Link records.
+4. Implement one provider adapter and test authorization state/PKCE, callback
+   ownership, scope enforcement, action grants, refresh rotation, and revocation.
+5. Keep channel identity mapping separate. Preserve Linq's verified-phone
+   boundary and do not add workspace-shared connections yet.
+
+Do not add multiple providers or channel transports in the same change set.
+Do not migrate Google Workspace away from Vercel Connect until the new adapter
+has equivalent authorization, refresh, and revocation coverage. Do not claim
+that the proposed tables, routes, or provider interfaces exist until code and
+migration tests prove they do.
 
