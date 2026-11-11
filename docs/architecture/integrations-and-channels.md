@@ -321,3 +321,17 @@ Before enabling a provider in the consumer product, cover:
 
 No integration schema, OAuth route, provider adapter, or channel mapping table
 is claimed to exist as a result of this document.
+
+## Implementation status
+
+The initial typed registry now exists in `integrations/registry.ts`. It defines
+GitHub and Google Workspace provider identities plus read/write action metadata.
+All providers remain marked `planned`; the registry does not authorize OAuth,
+execute provider operations, or advertise a working integration.
+
+The registry tests verify provider/action ownership, non-empty provider
+permission requirements, read/write separation, approval requirements for
+writes, provider filtering, and the fail-closed availability state. The next
+implementation step is the persistence model and encrypted credential
+boundary. Provider activation must wait until an adapter and its complete
+OAuth, refresh, execution, and revocation tests are in place.
