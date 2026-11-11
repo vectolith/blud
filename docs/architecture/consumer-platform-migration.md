@@ -222,13 +222,13 @@ administrative consent are implemented.
 
 Implement the integration foundation in small, testable steps:
 
-1. Define typed provider and action registries without changing runtime behavior.
+1. Define typed provider and action registries without runtime changes.
 2. Add the personal-user-owned connection schema, encrypted credential storage,
    exact provider-scope records, and action grants with database constraints.
 3. Add migration tests for empty and existing databases, including existing
    Better Auth users, sessions, accounts, and Stripe Link records.
 4. Implement one provider adapter and test authorization state/PKCE, callback
-   ownership, scope enforcement, action grants, refresh rotation, and revocation.
+   ownership, scope and action-grant checks, refresh, and revocation.
 5. Keep channel identity mapping separate. Preserve Linq's verified-phone
    boundary and do not add workspace-shared connections yet.
 
