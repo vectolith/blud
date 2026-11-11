@@ -114,6 +114,30 @@ describe("GitHub OAuth persistence", () => {
     ).resolves.toBeNull();
   });
 
+  it("fails a consumed attempt when its encrypted PKCE verifier is corrupt", async () => {
+    const attempt = await createGitHubAuthorizationAttempt({
+      ownerUserId: "alice",
+      redirectUri: "https://blud.example/api/integrations/github/callback",
+      keyring,
+    });
+    await database
+      .update(schema.integrationAuthorizationAttempts)
+      .set({ pkceVerifierCiphertext: "tampered-ciphertext" });
+
+    await expect(
+      consumeGitHubAuthorizationAttempt({
+        ownerUserId: "alice",
+        state: attempt.state,
+        keyring,
+      })
+    ).rejects.toThrow("GitHub authorization attempt could not be decrypted.");
+
+    const [stored] = await database
+      .select()
+      .from(schema.integrationAuthorizationAttempts);
+    expect(stored?.status).toBe("failed");
+  });
+
   it("encrypts GitHub tokens and isolates connections by owner", async () => {
     const connectionId = await saveGitHubConnection({
       ownerUserId: "alice",
