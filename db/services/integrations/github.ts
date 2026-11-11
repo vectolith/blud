@@ -161,6 +161,8 @@ export async function saveGitHubConnection(input: {
     tokenType: input.token.token_type,
   });
   const connectionId = randomUUID();
+  const displayName = input.account.name?.trim();
+  const safeDisplayName = displayName ? displayName : input.account.login;
   return db.transaction(async (tx) => {
     const [connection] = await tx
       .insert(integrationConnections)
@@ -169,7 +171,7 @@ export async function saveGitHubConnection(input: {
         ownerUserId: input.ownerUserId,
         providerKey: "github",
         providerAccountId: String(input.account.id),
-        displayName: input.account.name?.trim() || input.account.login,
+        displayName: safeDisplayName,
         status: "active",
         lastUsedAt: now,
       })
