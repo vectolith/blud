@@ -1,8 +1,4 @@
-import {
-  createHash,
-  randomBytes,
-  randomUUID,
-} from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@db";
@@ -263,7 +259,6 @@ export async function saveGitHubConnection(input: {
   });
 }
 
-
 const storedGitHubTokenBundleSchema = z.object({
   accessToken: z.string().min(1),
   accessTokenExpiresAt: z.iso.datetime().nullable(),
@@ -279,8 +274,7 @@ export async function getFreshGitHubAccessToken(input: {
   clientSecret: string;
   keyring: CredentialKeyring;
 }): Promise<string | null> {
-  // Keep the row lock while rotating: GitHub invalidates a refresh token as soon
-  // as it is used, so concurrent requests must not exchange the same token.
+  // Lock while rotating: GitHub invalidates a refresh token immediately after use.
   return db.transaction(async (tx) => {
     const [record] = await tx
       .select({
@@ -298,7 +292,10 @@ export async function getFreshGitHubAccessToken(input: {
         integrationCredentials,
         and(
           eq(integrationCredentials.connectionId, integrationConnections.id),
-          eq(integrationCredentials.ownerUserId, integrationConnections.ownerUserId),
+          eq(
+            integrationCredentials.ownerUserId,
+            integrationConnections.ownerUserId
+          ),
           eq(integrationCredentials.credentialType, "oauth_tokens")
         )
       )
@@ -448,7 +445,6 @@ export async function getFreshGitHubAccessToken(input: {
     return rotated.access_token;
   });
 }
-
 
 export async function revokeGitHubConnection(input: {
   ownerUserId: string;
