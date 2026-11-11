@@ -43,7 +43,7 @@ These are repository observations, not claims that a migration or production val
 ## Target architecture
 
 | Capability | Hosted consumer product | Self-hosted edition |
-|---|---|---|
+| --- | --- | --- |
 | Identity | Blud-managed Better Auth deployment; Apple, Google, email | Same code; operator-configured identity providers |
 | Database | Managed PostgreSQL | PostgreSQL |
 | AI access | Blud-operated model gateway and provider accounts | Operator-configured provider or local model |
