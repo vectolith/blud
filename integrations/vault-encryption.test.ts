@@ -70,13 +70,14 @@ describe("versioned vault encryption", () => {
         keyring
       )
     ).toThrow(/authentication failed/u);
+    const parts = encrypted.split(".");
+    const encodedCiphertext = parts[4];
+    if (!encodedCiphertext) {
+      throw new Error("Expected a versioned vault ciphertext.");
+    }
+    parts[4] = `${encodedCiphertext.startsWith("A") ? "B" : "A"}${encodedCiphertext.slice(1)}`;
     expect(() =>
-      decryptVaultSecret(
-        scope,
-        "vault-item-1",
-        encrypted.replace(/.$/u, "x"),
-        keyring
-      )
+      decryptVaultSecret(scope, "vault-item-1", parts.join("."), keyring)
     ).toThrow(/authentication failed/u);
   });
 
