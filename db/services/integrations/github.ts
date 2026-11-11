@@ -17,8 +17,8 @@ import {
   encryptCredential,
   integrationCredentialAad,
   type CredentialKeyring,
-} from "@integrations/credential-encryption";
-import type { GitHubUserAccessToken } from "@integrations/github/oauth";
+} from "../../../integrations/credential-encryption";
+import type { GitHubUserAccessToken } from "../../../integrations/github/oauth";
 
 const attemptLifetimeMs = 10 * 60 * 1000;
 
