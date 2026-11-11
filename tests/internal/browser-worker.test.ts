@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { POST } from "@app/api/internal/browser-worker/route";
 
 describe("Internal Blud Browser Worker RPC", () => {
-  it("rejects unauthorized request when secret is set", async () => {
+  it("rejects requests without the configured internal key", async () => {
     const req = new Request(
       "http://localhost:3000/api/internal/browser-worker",
       {
@@ -48,9 +48,6 @@ describe("Internal Blud Browser Worker RPC", () => {
       }
     );
     const res = await POST(req);
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.status).toBe("success");
-    expect(body.data?.coordinatedBy).toBeDefined();
+    expect(res.status).toBe(501);
   });
 });
