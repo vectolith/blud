@@ -26,18 +26,8 @@ afterEach(async () => {
 
 describe("database services", () => {
   it("preserves workspace ownership across application domains", async () => {
-    vi.resetModules();
     const oldEncryptionKey = Buffer.alloc(32, 1);
     const activeEncryptionKey = Buffer.alloc(32, 2);
-    vi.stubEnv("BETTER_AUTH_SECRET", Buffer.alloc(32, 3).toString("base64"));
-    vi.stubEnv("SECRET_ENCRYPTION_KEY", activeEncryptionKey.toString("base64"));
-    vi.stubEnv("SECRET_ENCRYPTION_KEY_VERSION", "v2");
-    vi.stubEnv(
-      "SECRET_ENCRYPTION_KEYRING",
-      JSON.stringify({
-        "installation-v1": oldEncryptionKey.toString("base64"),
-      })
-    );
     const client = new PGlite();
     databases.push(client);
     await applyInitialMigration(client);
@@ -86,6 +76,13 @@ describe("database services", () => {
       "installation-v1",
       new Map([["installation-v1", oldEncryptionKey]])
     );
+    const rotatingVaultKeyring = createCredentialKeyring(
+      "v2",
+      new Map([
+        ["installation-v1", oldEncryptionKey],
+        ["v2", activeEncryptionKey],
+      ])
+    );
     const legacyVaultCiphertext = encryptVaultSecret(
       alice,
       legacyVaultSecretId,
@@ -99,9 +96,11 @@ describe("database services", () => {
       encryptedValue: legacyVaultCiphertext,
       updatedAt: new Date(),
     });
-    await expect(vault.rewrapVaultSecrets(alice)).resolves.toBe(1);
     await expect(
-      vault.readVaultSecret(alice, legacyVaultSecretId)
+      vault.rewrapVaultSecrets(alice, rotatingVaultKeyring)
+    ).resolves.toBe(1);
+    await expect(
+      vault.readVaultSecret(alice, legacyVaultSecretId, rotatingVaultKeyring)
     ).resolves.toBe("legacy vault secret");
     const [rewrappedVaultSecret] = await pgliteDatabase
       .select()
