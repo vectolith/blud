@@ -207,3 +207,5 @@ consumers. Implement Apple/Google/email support and the phone-independent
 session contract as one tested change set. Do not guess OAuth configuration
 names or callback behavior; verify them against the installed Better Auth
 version and its documentation before implementation.
+
+<!-- formatter inspection trigger -->
