@@ -7,7 +7,6 @@
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
         "GITHUB_APP_*",
-        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "EVE_NEXT_*",
@@ -27,7 +26,6 @@
       "env": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
-        "GITHUB_APP_*",
         "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
@@ -52,7 +50,6 @@
       "passThroughEnv": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
-        "GITHUB_APP_*",
         "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
@@ -84,7 +81,6 @@
       "passThroughEnv": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
-        "GITHUB_APP_*",
         "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
