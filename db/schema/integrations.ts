@@ -173,7 +173,7 @@ export const integrationAuthorizationAttempts = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     providerKey: text("provider_key").notNull(),
-    stateHash: text("state_hash").notNull().unique(),
+    stateHash: text("state_hash").notNull(),
     pkceVerifierCiphertext: text("pkce_verifier_ciphertext").notNull(),
     pkceVerifierIv: text("pkce_verifier_iv").notNull(),
     pkceVerifierAuthTag: text("pkce_verifier_auth_tag").notNull(),
@@ -185,6 +185,9 @@ export const integrationAuthorizationAttempts = pgTable(
     createdAt: createdAt(),
   },
   (table) => [
+    uniqueIndex("integration_authorization_attempts_state_hash_uidx").on(
+      table.stateHash
+    ),
     check(
       "integration_authorization_attempts_provider_check",
       sql`${table.providerKey} IN ('github', 'google_workspace')`
