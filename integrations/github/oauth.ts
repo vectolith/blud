@@ -19,9 +19,12 @@ export type GitHubUserAccessToken = z.infer<typeof githubTokenResponseSchema>;
 export type GitHubAccount = z.infer<typeof githubUserSchema>;
 
 export class GitHubOAuthError extends Error {
-  constructor(message: string) {
+  readonly reauthorizationRequired: boolean;
+
+  constructor(message: string, reauthorizationRequired = false) {
     super(message);
     this.name = "GitHubOAuthError";
+    this.reauthorizationRequired = reauthorizationRequired;
   }
 }
 
@@ -92,13 +95,17 @@ async function requestGitHubToken(
       body,
       cache: "no-store",
       redirect: "error",
+      signal: AbortSignal.timeout(15_000),
     });
   } catch {
     throw new GitHubOAuthError("GitHub token service is unavailable.");
   }
 
   if (!response.ok) {
-    throw new GitHubOAuthError("GitHub rejected the token request.");
+    throw new GitHubOAuthError(
+      "GitHub rejected the token request.",
+      response.status === 400 || response.status === 401
+    );
   }
 
   let payload: unknown;
@@ -129,6 +136,7 @@ export async function fetchGitHubAccount(
       },
       cache: "no-store",
       redirect: "error",
+      signal: AbortSignal.timeout(15_000),
     });
   } catch {
     throw new GitHubOAuthError("GitHub identity service is unavailable.");
