@@ -2,7 +2,9 @@ import { z } from "zod";
 import { getAuthSession } from "@db/services/auth/session";
 import { getFreshGitHubAccessToken } from "@db/services/integrations/github";
 import { env } from "@shared/environment";
-import { getIntegrationCredentialKeyring } from "../../../../../../../integrations/credential-keyring";
+import {
+  getIntegrationCredentialKeyring,
+} from "../../../../../../../integrations/credential-keyring";
 import {
   GitHubInstallationApiError,
   listGitHubInstallationRepositories,
@@ -23,9 +25,9 @@ const installationIdSchema = z.string().regex(/^[1-9]\d{0,19}$/u);
 
 export async function GET(
   request: Request,
-  context: {
-    params: Promise<{ installationId: string }>;
-  }
+  context: RouteContext<
+    "/api/integrations/github/installations/[installationId]/repositories"
+  >
 ) {
   const session = await getAuthSession(request.headers);
   if (!session) {
