@@ -107,7 +107,10 @@ async function createLegacyWorkspaceSchema(database: PGlite) {
 
 async function applyMigration(database: PGlite) {
   const migration = await readFile(
-    new URL("../migrations/0016_better_auth_workspace_cleanup.sql", import.meta.url),
+    new URL(
+      "../migrations/0016_better_auth_workspace_cleanup.sql",
+      import.meta.url
+    ),
     "utf8"
   );
   /* oxlint-disable eslint/no-await-in-loop -- SQL migration statements must execute in file order. */
