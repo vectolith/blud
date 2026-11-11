@@ -100,17 +100,32 @@ export async function consumeGitHubAuthorizationAttempt(input: {
 
   if (!attempt) return null;
 
-  const codeVerifier = decryptCredential(
-    {
-      algorithm: "aes-256-gcm",
-      ciphertext: attempt.ciphertext,
-      iv: attempt.iv,
-      authTag: attempt.authTag,
-      keyVersion: attempt.keyVersion,
-    },
-    input.keyring,
-    authorizationAttemptAad(input.ownerUserId, attempt.id)
-  );
+  let codeVerifier: string;
+  try {
+    codeVerifier = decryptCredential(
+      {
+        algorithm: "aes-256-gcm",
+        ciphertext: attempt.ciphertext,
+        iv: attempt.iv,
+        authTag: attempt.authTag,
+        keyVersion: attempt.keyVersion,
+      },
+      input.keyring,
+      authorizationAttemptAad(input.ownerUserId, attempt.id)
+    );
+  } catch {
+    await db
+      .update(integrationAuthorizationAttempts)
+      .set({ status: "failed" })
+      .where(
+        and(
+          eq(integrationAuthorizationAttempts.id, attempt.id),
+          eq(integrationAuthorizationAttempts.ownerUserId, input.ownerUserId),
+          eq(integrationAuthorizationAttempts.status, "completed")
+        )
+      );
+    throw new Error("GitHub authorization attempt could not be decrypted.");
+  }
 
   return {
     id: attempt.id,
