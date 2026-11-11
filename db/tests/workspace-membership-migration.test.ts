@@ -51,7 +51,7 @@ describe("workspace membership user foreign key migration", () => {
     `);
 
     await expect(applyMigration(database)).rejects.toThrow(
-      /orphaned workspace memberships/i
+      /foreign key constraint/i
     );
 
     const remaining = await database.query(`
