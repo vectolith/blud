@@ -119,10 +119,13 @@ export async function readIntegrationCredential(input: {
     .limit(1);
 
   if (!record) return null;
+  if (record.algorithm !== "aes-256-gcm") {
+    throw new Error("Unsupported integration credential algorithm.");
+  }
 
   return decryptCredential(
     {
-      algorithm: record.algorithm as "aes-256-gcm",
+      algorithm: "aes-256-gcm",
       ciphertext: record.ciphertext,
       iv: record.iv,
       authTag: record.authTag,
