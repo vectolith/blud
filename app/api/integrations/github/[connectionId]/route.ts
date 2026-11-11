@@ -13,7 +13,9 @@ const privateHeaders = {
 
 export async function DELETE(
   request: Request,
-  context: RouteContext<"/api/integrations/github/[connectionId]">
+  context: {
+    params: Promise<{ connectionId: string }>;
+  }
 ) {
   let appOrigin: string;
   try {
