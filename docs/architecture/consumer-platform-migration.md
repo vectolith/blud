@@ -23,6 +23,7 @@ PostgreSQL-backed `user`, `account`, `session`, and `verification` tables. It is
 not necessary to introduce a second identity framework.
 
 The current Better Auth configuration:
+
 - Enables verified phone-number authentication.
 - Disables email sign-in, email sign-up, and social sign-in routes.
 - Uses Linq through Vercel Connect to deliver phone OTPs.
@@ -31,6 +32,7 @@ The current Better Auth configuration:
   verification remains specific to phone-dependent channels.
 
 The current deployment is materially Vercel-coupled:
+
 - `vercel.json` routes scheduled-run endpoints to the Eve service.
 - `@vercel/connect/eve` supplies Linq and Google Workspace authorization.
 - `@vercel/blob` stores installation secrets and browser-image artifacts.
@@ -67,16 +69,16 @@ validation has already occurred.
 
 ## Target architecture
 
-| Capability | Hosted consumer product | Self-hosted edition |
-| --- | --- | --- |
-| Identity | Blud-managed Better Auth deployment; Apple, Google, email | Same code; operator-configured identity providers |
-| Database | Managed PostgreSQL | PostgreSQL |
-| AI access | Blud-operated model gateway and provider accounts | Operator-configured provider or local model |
-| Browser automation | Isolated browser workers behind a provider interface | Playwright/Chromium worker, optionally remote browser provider |
-| Object storage | Private S3-compatible object storage | S3-compatible storage or MinIO |
-| Queue and schedules | Durable queue and scheduler workers | Redis/Valkey-backed workers |
-| Integrations | Blud-managed OAuth app registrations and encrypted per-user grants | Operator-provided OAuth app registrations |
-| Observability | Central metrics, traces, audit events, usage controls | OpenTelemetry-compatible local stack |
+| Capability          | Hosted consumer product                                            | Self-hosted edition                                            |
+| ------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| Identity            | Blud-managed Better Auth deployment; Apple, Google, email          | Same code; operator-configured identity providers              |
+| Database            | Managed PostgreSQL                                                 | PostgreSQL                                                     |
+| AI access           | Blud-operated model gateway and provider accounts                  | Operator-configured provider or local model                    |
+| Browser automation  | Isolated browser workers behind a provider interface               | Playwright/Chromium worker, optionally remote browser provider |
+| Object storage      | Private S3-compatible object storage                               | S3-compatible storage or MinIO                                 |
+| Queue and schedules | Durable queue and scheduler workers                                | Redis/Valkey-backed workers                                    |
+| Integrations        | Blud-managed OAuth app registrations and encrypted per-user grants | Operator-provided OAuth app registrations                      |
+| Observability       | Central metrics, traces, audit events, usage controls              | OpenTelemetry-compatible local stack                           |
 
 The application must depend on internal interfaces rather than Vercel-specific
 SDKs for identity, OAuth token access, object storage, model inference, browser
@@ -125,12 +127,14 @@ imports its SDK directly.
 ## Migration sequence
 
 ### Phase 0 — baseline and contracts
+
 - Record current repository dependencies and deployment assumptions.
 - Define provider-neutral interfaces and security invariants.
 - Add architecture decision records and a migration test plan.
 - No production behavior changes in this phase.
 
 ### Phase 1 — consumer identity foundation
+
 - Extend Better Auth for Apple, Google, and email authentication.
 - Make the session contract independent of phone-number presence.
 - Add account linking, verification, recovery, rate limits, and session
@@ -139,6 +143,7 @@ imports its SDK directly.
 - Keep phone OTP available only as an explicitly configured channel.
 
 ### Phase 2 — managed AI gateway and entitlements
+
 - Add a server-side model gateway abstraction.
 - Implement tenant-level usage metering, quotas, plan entitlements, and spend
   controls.
@@ -146,6 +151,7 @@ imports its SDK directly.
 - Retain provider-specific credentials only in server-side deployment secrets.
 
 ### Phase 3 — infrastructure independence
+
 - Replace direct Vercel Blob use with an object-storage interface and
   S3-compatible adapter.
 - Replace Vercel Connect OAuth dependencies with provider-neutral per-user OAuth
@@ -156,6 +162,7 @@ imports its SDK directly.
 - Keep a compatibility adapter only where it reduces migration risk.
 
 ### Phase 4 — browser and integration isolation
+
 - Put Kernel behind a browser-provider interface and add a Playwright/Chromium
   implementation.
 - Isolate browser contexts and credentials by user/task.
@@ -164,6 +171,7 @@ imports its SDK directly.
 - Add integration contract tests and authorization-boundary tests.
 
 ### Phase 5 — consumer launch hardening
+
 - Add billing, usage visibility, support/admin controls, abuse prevention,
   deletion/export flows, backup/restore, incident logging, and operational
   runbooks.
@@ -174,6 +182,7 @@ imports its SDK directly.
 ## Release gates
 
 A phase is not complete because code compiles alone. Required evidence includes:
+
 - Type checking, linting, unit tests, and integration tests.
 - Database migration tests against both empty and existing databases.
 - Authentication tests for sign-up, sign-in, account linking, session expiry,
@@ -208,4 +217,3 @@ session contract as one tested change set. Do not guess OAuth configuration
 names or callback behavior; verify them against the installed Better Auth
 version and its documentation before implementation.
 
-<!-- formatter inspection trigger -->
