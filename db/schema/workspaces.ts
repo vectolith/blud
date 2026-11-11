@@ -1,5 +1,4 @@
 import { relations, sql } from "drizzle-orm";
-import { user } from "./auth";
 import {
   check,
   date,
@@ -81,11 +80,6 @@ export const workspaceMemberships = pgTable(
       columns: [table.workspaceId],
       foreignColumns: [workspaces.id],
     }).onDelete("cascade"),
-    foreignKey({
-      name: "workspace_memberships_user_id_fkey",
-      columns: [table.userId],
-      foreignColumns: [user.id],
-    }).onDelete("cascade"),
     check("workspace_memberships_role_check", sql`${table.role} = 'owner'`),
   ]
 );
@@ -130,10 +124,6 @@ export const workspaceMembershipsRelations = relations(
     workspace: one(workspaces, {
       fields: [workspaceMemberships.workspaceId],
       references: [workspaces.id],
-    }),
-    user: one(user, {
-      fields: [workspaceMemberships.userId],
-      references: [user.id],
     }),
   })
 );
