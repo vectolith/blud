@@ -31,11 +31,16 @@ const authenticate: Parameters<typeof routeAuth>[1] = [
     await requireOwnedRouteSubject(scope, request);
 
     return {
-      attributes: {
-        conversationChannel: "eve",
-        ...(phoneNumber ? { phoneNumber } : {}),
-        workspaceId: scope.workspaceId,
-      },
+      attributes: phoneNumber
+        ? {
+            conversationChannel: "eve",
+            phoneNumber,
+            workspaceId: scope.workspaceId,
+          }
+        : {
+            conversationChannel: "eve",
+            workspaceId: scope.workspaceId,
+          },
       authenticator: "authjs",
       principalId: scope.userId,
       principalType: "user",
