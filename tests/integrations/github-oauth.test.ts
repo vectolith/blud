@@ -369,31 +369,34 @@ describe("GitHub OAuth persistence", () => {
     }
   });
 
-  it(\n    "clears prior Blud action consent when the GitHub account is reauthorized",\n    async () => {
-    const connectionId = await saveGitHubConnection({
-      ownerUserId: "alice",
-      account: { id: 1234, login: "octocat" },
-      token,
-      keyring,
-    });
-    await database.insert(schema.integrationActionGrants).values({
-      connectionId,
-      ownerUserId: "alice",
-      actionKey: "github.issue.create",
-      decision: "allow",
-      grantedByUserId: "alice",
-    });
-
-    await expect(
-      saveGitHubConnection({
+  it(
+    "clears prior Blud action consent when the GitHub account is reauthorized",
+    async () => {
+      const connectionId = await saveGitHubConnection({
         ownerUserId: "alice",
         account: { id: 1234, login: "octocat" },
-        token: { ...token, access_token: "ghu_reauthorized" },
+        token,
         keyring,
-      })
-    ).resolves.toBe(connectionId);
-    await expect(
-      database.select().from(schema.integrationActionGrants)
-    ).resolves.toEqual([]);
-  });
+      });
+      await database.insert(schema.integrationActionGrants).values({
+        connectionId,
+        ownerUserId: "alice",
+        actionKey: "github.issue.create",
+        decision: "allow",
+        grantedByUserId: "alice",
+      });
+
+      await expect(
+        saveGitHubConnection({
+          ownerUserId: "alice",
+          account: { id: 1234, login: "octocat" },
+          token: { ...token, access_token: "ghu_reauthorized" },
+          keyring,
+        })
+      ).resolves.toBe(connectionId);
+      await expect(
+        database.select().from(schema.integrationActionGrants)
+      ).resolves.toEqual([]);
+    }
+  );
 });
