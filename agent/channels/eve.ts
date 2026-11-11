@@ -30,9 +30,7 @@ const authenticate: Parameters<typeof routeAuth>[1] = [
 
     await requireOwnedRouteSubject(scope, request);
 
-    const attributes: Readonly<
-      Record<string, string | readonly string[]>
-    > = phoneNumber
+    const attributes: Record<string, string | readonly string[]> = phoneNumber
       ? {
           conversationChannel: "eve",
           phoneNumber,
