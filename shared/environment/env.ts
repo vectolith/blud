@@ -86,6 +86,8 @@ export const env = createEnv({
     BLOB_STORE_ID: requiredValue.optional(),
     GOOGLE_CONNECTOR_UID: requiredValue.default("google/blud"),
     LINQ_CONNECTOR: requiredValue.optional(),
+    GITHUB_APP_CLIENT_ID: requiredValue.optional(),
+    GITHUB_APP_CLIENT_SECRET: requiredValue.optional(),
     LINK_CLIENT_ID: requiredValue.optional(),
     LINK_CLIENT_SECRET: requiredValue.optional(),
     STRIPE_PUBLISHABLE_KEY: requiredValue.optional(),
