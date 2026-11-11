@@ -7,7 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
-  unique,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
@@ -33,11 +33,11 @@ export const integrationConnections = pgTable(
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
   },
   (table) => [
-    unique("integration_connections_id_owner_uidx").on(
+    uniqueIndex("integration_connections_id_owner_uidx").on(
       table.id,
       table.ownerUserId
     ),
-    unique("integration_connections_owner_provider_account_uidx").on(
+    uniqueIndex("integration_connections_owner_provider_account_uidx").on(
       table.ownerUserId,
       table.providerKey,
       table.providerAccountId
@@ -78,7 +78,7 @@ export const integrationCredentials = pgTable(
     updatedAt: updatedAt(),
   },
   (table) => [
-    unique("integration_credentials_connection_type_uidx").on(
+    uniqueIndex("integration_credentials_connection_type_uidx").on(
       table.connectionId,
       table.credentialType
     ),
