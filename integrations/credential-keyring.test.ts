@@ -9,7 +9,7 @@ interface MockInstallationSecrets {
   betterAuthSecret: string;
   secretEncryptionKey: string;
   version: 1;
-};
+}
 
 const mocks = vi.hoisted(() => ({
   getInstallationSecrets: vi.fn<() => Promise<MockInstallationSecrets>>(),
