@@ -2,9 +2,7 @@ import { z } from "zod";
 import { getAuthSession } from "@db/services/auth/session";
 import { getFreshGitHubAccessToken } from "@db/services/integrations/github";
 import { env } from "@shared/environment";
-import {
-  getIntegrationCredentialKeyring,
-} from "../../../../../../../integrations/credential-keyring";
+import { getIntegrationCredentialKeyring } from "../../../../../../../integrations/credential-keyring";
 import {
   GitHubInstallationApiError,
   listGitHubInstallationRepositories,
@@ -25,9 +23,7 @@ const installationIdSchema = z.string().regex(/^[1-9]\d{0,19}$/u);
 
 export async function GET(
   request: Request,
-  context: RouteContext<
-    "/api/integrations/github/installations/[installationId]/repositories"
-  >
+  context: RouteContext<"/api/integrations/github/installations/[installationId]/repositories">
 ) {
   const session = await getAuthSession(request.headers);
   if (!session) {
@@ -46,7 +42,8 @@ export async function GET(
   if (!parsedInstallationId.success || !query.success) {
     return Response.json(
       {
-        error: "A valid GitHub installation, connection, and page are required.",
+        error:
+          "A valid GitHub installation, connection, and page are required.",
       },
       { status: 400, headers: privateHeaders }
     );
@@ -72,7 +69,8 @@ export async function GET(
     if (!accessToken) {
       return Response.json(
         {
-          error: "GitHub connection is unavailable or requires reauthorization.",
+          error:
+            "GitHub connection is unavailable or requires reauthorization.",
         },
         { status: 404, headers: privateHeaders }
       );

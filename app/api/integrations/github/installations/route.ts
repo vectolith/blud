@@ -2,9 +2,7 @@ import { z } from "zod";
 import { getAuthSession } from "@db/services/auth/session";
 import { getFreshGitHubAccessToken } from "@db/services/integrations/github";
 import { env } from "@shared/environment";
-import {
-  getIntegrationCredentialKeyring,
-} from "../../../../../integrations/credential-keyring";
+import { getIntegrationCredentialKeyring } from "../../../../../integrations/credential-keyring";
 import {
   GitHubInstallationApiError,
   listGitHubUserInstallations,
@@ -60,7 +58,8 @@ export async function GET(request: Request) {
     if (!accessToken) {
       return Response.json(
         {
-          error: "GitHub connection is unavailable or requires reauthorization.",
+          error:
+            "GitHub connection is unavailable or requires reauthorization.",
         },
         { status: 404, headers: privateHeaders }
       );

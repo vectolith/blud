@@ -140,9 +140,11 @@ describe("GitHub App installation discovery", () => {
   });
 
   it("requires reauthorization when GitHub rejects the user token", async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response("private provider detail", { status: 401 })
-    );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response("private provider detail", { status: 401 })
+      );
 
     await expect(
       listGitHubUserInstallations({
@@ -157,9 +159,14 @@ describe("GitHub App installation discovery", () => {
   });
 
   it("rejects malformed provider installation payloads", async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({ total_count: 1, installations: [{ id: "not-a-number" }] })
-    );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        Response.json({
+          total_count: 1,
+          installations: [{ id: "not-a-number" }],
+        })
+      );
 
     await expect(
       listGitHubUserInstallations({
