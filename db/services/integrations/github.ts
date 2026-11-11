@@ -524,6 +524,22 @@ export async function revokeGitHubConnection(input: {
           eq(integrationCredentials.ownerUserId, input.ownerUserId)
         )
       );
+    await tx
+      .delete(integrationConnectionScopes)
+      .where(
+        and(
+          eq(integrationConnectionScopes.connectionId, input.connectionId),
+          eq(integrationConnectionScopes.ownerUserId, input.ownerUserId)
+        )
+      );
+    await tx
+      .delete(integrationActionGrants)
+      .where(
+        and(
+          eq(integrationActionGrants.connectionId, input.connectionId),
+          eq(integrationActionGrants.ownerUserId, input.ownerUserId)
+        )
+      );
   });
 
   return { found: true, remoteRevoked };
