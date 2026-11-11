@@ -441,8 +441,30 @@ server-side environment variables. Register the exact callback URL
 App settings. The credentials are forwarded only to the application runtime
 tasks by Turbo.
 
-**Important:** GitHub remains `planned` in the provider registry. The OAuth
-identity and token lifecycle are not yet a complete GitHub action integration.
-Repository discovery/installation access, action-level authorization checks,
-provider adapters, audit events, and end-to-end live-provider verification are
-still required before enabling GitHub actions.
+### GitHub installation and repository discovery
+
+The following read-only routes are implemented:
+
+- `GET /api/integrations/github/installations?connectionId=<uuid>&page=<n>`
+  lists installations visible to the authenticated GitHub user.
+- `GET /api/integrations/github/installations/{installationId}/repositories?connectionId=<uuid>&page=<n>`
+  lists repositories and the authenticated user's effective permissions for
+  that installation.
+
+Both routes require the signed-in Blud owner and an owner-scoped GitHub
+connection. They obtain the user access token only inside the server-side
+credential boundary, preserve GitHub pagination, validate provider responses,
+and return minimal metadata without tokens or raw provider payloads. GitHub
+enforces which installations and repositories the user can access. Installation
+IDs are kept as decimal strings to avoid numeric precision loss.
+
+The user access token can list installations without additional fine-grained
+permissions. Listing repositories requires the GitHub App's Metadata
+repository permission (read). This discovery layer does not persist installation
+snapshots, create installation access tokens, or execute repository actions.
+
+**Important:** GitHub remains `planned` in the provider registry. Installation
+and repository discovery now exist, but installation-token minting, runtime
+provider-permission checks, Blud action-grant enforcement, approval handling,
+provider action adapters, audit events, and end-to-end live-provider
+verification are still required before enabling GitHub actions.
