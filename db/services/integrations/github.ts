@@ -274,7 +274,7 @@ export async function getFreshGitHubAccessToken(input: {
   clientSecret: string;
   keyring: CredentialKeyring;
 }): Promise<string | null> {
-  // Lock while rotating: GitHub invalidates a refresh token immediately after use.
+  // Lock while rotating: GitHub invalidates refresh tokens after use.
   return db.transaction(async (tx) => {
     const [record] = await tx
       .select({
