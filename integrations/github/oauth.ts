@@ -117,6 +117,16 @@ async function requestGitHubToken(
 
   const parsed = githubTokenResponseSchema.safeParse(payload);
   if (!parsed.success) {
+    const providerError = z
+      .object({ error: z.string() })
+      .safeParse(payload);
+    if (providerError.success) {
+      throw new GitHubOAuthError(
+        "GitHub rejected the token request.",
+        providerError.data.error === "bad_refresh_token" ||
+          providerError.data.error === "invalid_grant"
+      );
+    }
     throw new GitHubOAuthError("GitHub returned an invalid token response.");
   }
   return parsed.data;
