@@ -10,7 +10,9 @@ import {
 
 describe("integration credential encryption", () => {
   it("creates distinct authenticated contexts for credentials and OAuth attempts", () => {
-    expect(integrationCredentialAad("user-a", "connection-a", "oauth_tokens")).not.toBe(
+    expect(
+      integrationCredentialAad("user-a", "connection-a", "oauth_tokens")
+    ).not.toBe(
       integrationCredentialAad("user-b", "connection-a", "oauth_tokens")
     );
     expect(authorizationAttemptAad("user-a", "attempt-a")).not.toBe(
@@ -30,9 +32,13 @@ describe("integration credential encryption", () => {
     expect(encrypted.algorithm).toBe("aes-256-gcm");
     expect(encrypted.keyVersion).toBe("v1");
     expect(encrypted.ciphertext).not.toContain("refresh-token-secret");
-    expect(decryptCredential(encrypted, keyring, integrationCredentialAad("user-1", "connection-1", "oauth_tokens"))).toBe(
-      "refresh-token-secret"
-    );
+    expect(
+      decryptCredential(
+        encrypted,
+        keyring,
+        integrationCredentialAad("user-1", "connection-1", "oauth_tokens")
+      )
+    ).toBe("refresh-token-secret");
   });
 
   it("supports decrypting old versions while encrypting with the active version", () => {
@@ -68,7 +74,11 @@ describe("integration credential encryption", () => {
     );
 
     expect(() =>
-      decryptCredential(encrypted, keyring, integrationCredentialAad("user-b", "connection-a", "oauth_tokens"))
+      decryptCredential(
+        encrypted,
+        keyring,
+        integrationCredentialAad("user-b", "connection-a", "oauth_tokens")
+      )
     ).toThrow(/authentication failed/);
     expect(() =>
       decryptCredential(

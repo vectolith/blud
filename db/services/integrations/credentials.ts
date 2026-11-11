@@ -102,7 +102,10 @@ export async function readIntegrationCredential(input: {
       integrationConnections,
       and(
         eq(integrationConnections.id, integrationCredentials.connectionId),
-        eq(integrationConnections.ownerUserId, integrationCredentials.ownerUserId)
+        eq(
+          integrationConnections.ownerUserId,
+          integrationCredentials.ownerUserId
+        )
       )
     )
     .where(
