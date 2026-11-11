@@ -4,11 +4,11 @@ import {
   failGitHubAuthorizationAttempt,
   saveGitHubConnection,
 } from "@db/services/integrations/github";
-import { getIntegrationCredentialKeyring } from "@integrations/credential-keyring";
+import { getIntegrationCredentialKeyring } from "../../../../../integrations/credential-keyring";
 import {
   exchangeGitHubAuthorizationCode,
   fetchGitHubAccount,
-} from "@integrations/github/oauth";
+} from "../../../../../integrations/github/oauth";
 import { env } from "@shared/environment";
 import { applicationOrigin } from "@shared/environment/origin";
 
