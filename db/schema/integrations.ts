@@ -108,7 +108,7 @@ export const integrationConnectionScopes = pgTable(
     connectionId: text("connection_id").notNull(),
     ownerUserId: text("owner_user_id").notNull(),
     scope: text("scope").notNull(),
-    grantedAt: createdAt(),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
     primaryKey({
