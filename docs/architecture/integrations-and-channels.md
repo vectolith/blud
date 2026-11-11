@@ -379,3 +379,8 @@ Migration and encryption tests cover owner isolation, foreign-key rejection,
 grantor ownership, cascade deletion, preservation of Better Auth user/account/
 session rows, authenticated encryption, tamper detection, associated-data
 binding, and key-version rotation.
+
+Operational note: production deployments must inject the active credential key
+and any retained prior key versions from a managed secret store. The
+application must fail closed when a row references a key version absent from
+the runtime keyring; it must never fall back to the development default.
