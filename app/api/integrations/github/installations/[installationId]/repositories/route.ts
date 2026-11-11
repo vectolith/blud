@@ -19,7 +19,7 @@ const querySchema = z.object({
   page: z.coerce.number().int().min(1).max(1000).default(1),
 });
 
-const installationIdSchema = z.string().regex(/^[1-9]\d{0,15}$/u);
+const installationIdSchema = z.string().regex(/^[1-9]\d{0,19}$/u);
 
 export async function GET(
   request: Request,
