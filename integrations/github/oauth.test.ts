@@ -200,9 +200,7 @@ describe("GitHub App OAuth client", () => {
       throw new Error("Expected a GitHub revocation request.");
     }
     const [url, init] = revokeCall;
-    expect(url).toBe(
-      "https://api.github.com/applications/client-id/grant"
-    );
+    expect(url).toBe("https://api.github.com/applications/client-id/grant");
     expect(init?.method).toBe("DELETE");
     expect(new Headers(init?.headers).get("authorization")).toBe(
       `Basic ${Buffer.from("client-id:client-secret").toString("base64")}`
