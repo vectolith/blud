@@ -1,10 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { db } from "../../index";
-import { integrationConnections, integrationCredentials } from "../../schema";
+import {
+  integrationAuthorizationAttempts,
+  integrationConnections,
+  integrationCredentials,
+} from "../../schema";
 import {
   decryptCredential,
   encryptCredential,
+  authorizationAttemptAad,
   integrationCredentialAad,
   type CredentialKeyring,
 } from "../../../integrations/credential-encryption";
@@ -199,6 +204,55 @@ export async function rewrapIntegrationCredentials(input: {
           )
         )
         .returning({ id: integrationCredentials.id });
+      if (updated.length > 0) rewrapped += 1;
+    }
+    const attempts = await tx
+      .select()
+      .from(integrationAuthorizationAttempts)
+      .where(
+        eq(integrationAuthorizationAttempts.ownerUserId, input.ownerUserId)
+      )
+      .for("update");
+
+    for (const attempt of attempts) {
+      if (attempt.keyVersion === input.keyring.activeKeyVersion) continue;
+      const aad = authorizationAttemptAad(input.ownerUserId, attempt.id);
+      const plaintext = decryptCredential(
+        {
+          algorithm: "aes-256-gcm",
+          ciphertext: attempt.pkceVerifierCiphertext,
+          iv: attempt.pkceVerifierIv,
+          authTag: attempt.pkceVerifierAuthTag,
+          keyVersion: attempt.keyVersion,
+        },
+        input.keyring,
+        aad
+      );
+      const replacement = encryptCredential(
+        plaintext,
+        input.keyring,
+        aad
+      );
+      const updated = await tx
+        .update(integrationAuthorizationAttempts)
+        .set({
+          pkceVerifierCiphertext: replacement.ciphertext,
+          pkceVerifierIv: replacement.iv,
+          pkceVerifierAuthTag: replacement.authTag,
+          keyVersion: replacement.keyVersion,
+        })
+        .where(
+          and(
+            eq(integrationAuthorizationAttempts.id, attempt.id),
+            eq(integrationAuthorizationAttempts.ownerUserId, input.ownerUserId),
+            eq(integrationAuthorizationAttempts.keyVersion, attempt.keyVersion),
+            eq(
+              integrationAuthorizationAttempts.pkceVerifierCiphertext,
+              attempt.pkceVerifierCiphertext
+            )
+          )
+        )
+        .returning({ id: integrationAuthorizationAttempts.id });
       if (updated.length > 0) rewrapped += 1;
     }
     /* oxlint-enable eslint/no-await-in-loop */
