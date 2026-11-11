@@ -11,6 +11,7 @@ permissions:
   contents: read
 
 concurrency:
+  # Include the commit SHA so a stale or stalled run cannot block verification of the current head.
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.sha }}
   cancel-in-progress: true
 
