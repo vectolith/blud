@@ -28,6 +28,27 @@ export class CredentialEncryptionError extends Error {
   }
 }
 
+export function integrationCredentialAad(
+  ownerUserId: string,
+  connectionId: string,
+  credentialType: string
+): string {
+  if (!ownerUserId.trim() || !connectionId.trim() || !credentialType.trim()) {
+    throw new CredentialEncryptionError("Credential ownership context is incomplete.");
+  }
+  return ["blud", "integration-credential", ownerUserId, connectionId, credentialType].join(":");
+}
+
+export function authorizationAttemptAad(
+  ownerUserId: string,
+  attemptId: string
+): string {
+  if (!ownerUserId.trim() || !attemptId.trim()) {
+    throw new CredentialEncryptionError("Authorization attempt context is incomplete.");
+  }
+  return ["blud", "integration-authorization-attempt", ownerUserId, attemptId].join(":");
+}
+
 export function createCredentialKeyring(
   activeKeyVersion: string,
   keys: ReadonlyMap<string, Buffer>
@@ -89,7 +110,7 @@ export function decryptCredential(
   const key = keyring.keys.get(encrypted.keyVersion);
   if (!key) {
     throw new CredentialEncryptionError(
-      `Credential key version "${encrypted.keyVersion}" is unavailable.`
+      \`Credential key version "\${encrypted.keyVersion}" is unavailable.\`
     );
   }
 
