@@ -82,19 +82,21 @@ describe("integration credential key rotation", () => {
       oldKeyring,
       verifierAad
     );
-    await pgliteDatabase.insert(schema.integrationAuthorizationAttempts).values({
-      id: "attempt-a",
-      ownerUserId: "owner-a",
-      providerKey: "github",
-      stateHash: "state-hash-a",
-      pkceVerifierCiphertext: encryptedVerifier.ciphertext,
-      pkceVerifierIv: encryptedVerifier.iv,
-      pkceVerifierAuthTag: encryptedVerifier.authTag,
-      keyVersion: encryptedVerifier.keyVersion,
-      redirectUri: "https://blud.example/api/integrations/github/callback",
-      status: "pending",
-      expiresAt: new Date(Date.now() + 60_000),
-    });
+    await pgliteDatabase
+      .insert(schema.integrationAuthorizationAttempts)
+      .values({
+        id: "attempt-a",
+        ownerUserId: "owner-a",
+        providerKey: "github",
+        stateHash: "state-hash-a",
+        pkceVerifierCiphertext: encryptedVerifier.ciphertext,
+        pkceVerifierIv: encryptedVerifier.iv,
+        pkceVerifierAuthTag: encryptedVerifier.authTag,
+        keyVersion: encryptedVerifier.keyVersion,
+        redirectUri: "https://blud.example/api/integrations/github/callback",
+        status: "pending",
+        expiresAt: new Date(Date.now() + 60_000),
+      });
 
     const credentials = await import("@db/services/integrations/credentials");
     await expect(

@@ -114,9 +114,8 @@ export const env = createEnv({
       secretEncryptionKeySchema,
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
     ),
-    SECRET_ENCRYPTION_KEY_VERSION: encryptionKeyVersionSchema.default(
-      "installation-v1"
-    ),
+    SECRET_ENCRYPTION_KEY_VERSION:
+      encryptionKeyVersionSchema.default("installation-v1"),
     SECRET_ENCRYPTION_KEYRING: secretEncryptionKeyringSchema,
 
     // Optional

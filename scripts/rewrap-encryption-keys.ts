@@ -47,10 +47,7 @@ async function main() {
     })
     .from(workspaceMemberships);
   const workspaces = new Map(
-    memberships.map((membership) => [
-      membership.workspaceId,
-      membership,
-    ])
+    memberships.map((membership) => [membership.workspaceId, membership])
   );
   let vaultRecordsRewrapped = 0;
   for (const scope of workspaces.values()) {
@@ -65,10 +62,7 @@ async function main() {
     .select({ id: integrationAuthorizationAttempts.id })
     .from(integrationAuthorizationAttempts)
     .where(
-      ne(
-        integrationAuthorizationAttempts.keyVersion,
-        keyring.activeKeyVersion
-      )
+      ne(integrationAuthorizationAttempts.keyVersion, keyring.activeKeyVersion)
     );
   const vaultRows = await db
     .select({ encryptedValue: encryptedSecrets.encryptedValue })

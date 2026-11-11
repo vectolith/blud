@@ -42,17 +42,19 @@ describe("integration credential keyring configuration", () => {
       secretEncryptionKey: activeKey.toString("base64"),
       version: 1,
     });
-    const { getIntegrationCredentialKeyring } = await import(
-      "./credential-keyring"
-    );
-    const keyring: CredentialKeyring =
-      await getIntegrationCredentialKeyring();
+    const { getIntegrationCredentialKeyring } =
+      await import("./credential-keyring");
+    const keyring: CredentialKeyring = await getIntegrationCredentialKeyring();
     const oldKey = Buffer.alloc(32, 1);
     const oldKeyring = {
       activeKeyVersion: "installation-v1",
       keys: new Map([["installation-v1", oldKey]]),
     };
-    const encrypted = encryptCredential("legacy token", oldKeyring, "owner:connection");
+    const encrypted = encryptCredential(
+      "legacy token",
+      oldKeyring,
+      "owner:connection"
+    );
 
     expect(keyring.activeKeyVersion).toBe("v2");
     expect(decryptCredential(encrypted, keyring, "owner:connection")).toBe(
@@ -70,9 +72,8 @@ describe("integration credential keyring configuration", () => {
       secretEncryptionKey: Buffer.alloc(32, 2).toString("base64"),
       version: 1,
     });
-    const { getIntegrationCredentialKeyring } = await import(
-      "./credential-keyring"
-    );
+    const { getIntegrationCredentialKeyring } =
+      await import("./credential-keyring");
 
     await expect(getIntegrationCredentialKeyring()).rejects.toThrow(
       /retaining the installation-v1 key/u
@@ -86,9 +87,8 @@ describe("integration credential keyring configuration", () => {
       secretEncryptionKey: Buffer.alloc(32, 1).toString("base64"),
       version: 1,
     });
-    const { getIntegrationCredentialKeyring } = await import(
-      "./credential-keyring"
-    );
+    const { getIntegrationCredentialKeyring } =
+      await import("./credential-keyring");
 
     await expect(getIntegrationCredentialKeyring()).rejects.toThrow(
       /explicitly configured active SECRET_ENCRYPTION_KEY/u

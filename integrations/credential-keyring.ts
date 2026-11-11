@@ -16,10 +16,7 @@ export async function getIntegrationCredentialKeyring() {
   }
 
   if (activeKeyVersion === legacyKeyVersion) {
-    keys.set(
-      legacyKeyVersion,
-      Buffer.from(secretEncryptionKey, "base64")
-    );
+    keys.set(legacyKeyVersion, Buffer.from(secretEncryptionKey, "base64"));
   } else {
     if (!env.SECRET_ENCRYPTION_KEY) {
       throw new Error(

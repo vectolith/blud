@@ -180,11 +180,7 @@ export async function rewrapIntegrationCredentials(input: {
         input.keyring,
         aad
       );
-      const replacement = encryptCredential(
-        plaintext,
-        input.keyring,
-        aad
-      );
+      const replacement = encryptCredential(plaintext, input.keyring, aad);
       const updated = await tx
         .update(integrationCredentials)
         .set({
@@ -228,11 +224,7 @@ export async function rewrapIntegrationCredentials(input: {
         input.keyring,
         aad
       );
-      const replacement = encryptCredential(
-        plaintext,
-        input.keyring,
-        aad
-      );
+      const replacement = encryptCredential(plaintext, input.keyring, aad);
       const updated = await tx
         .update(integrationAuthorizationAttempts)
         .set({
