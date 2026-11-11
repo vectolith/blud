@@ -65,7 +65,7 @@ describe("integration credential keyring configuration", () => {
     ).toBe("v2");
   });
 
-  it("refuses rotation when the legacy key is not retained", async () => {
+  it("allows retired historical keys to be removed after ciphertext rewrapping", async () => {
     vi.stubEnv("SECRET_ENCRYPTION_KEYRING", "{}");
     mocks.getInstallationSecrets.mockResolvedValue({
       betterAuthSecret: Buffer.alloc(32, 3).toString("base64"),
@@ -75,9 +75,10 @@ describe("integration credential keyring configuration", () => {
     const { getIntegrationCredentialKeyring } =
       await import("./credential-keyring");
 
-    await expect(getIntegrationCredentialKeyring()).rejects.toThrow(
-      /retaining the installation-v1 key/u
-    );
+    const keyring = await getIntegrationCredentialKeyring();
+    expect(keyring.activeKeyVersion).toBe("v2");
+    expect(keyring.keys.size).toBe(1);
+    expect(keyring.keys.get("v2")).toEqual(Buffer.alloc(32, 2));
   });
 
   it("refuses a non-legacy active version without an explicit active key", async () => {
