@@ -140,6 +140,73 @@ export async function readIntegrationCredential(input: {
   );
 }
 
+export async function rewrapIntegrationCredentials(input: {
+  ownerUserId: string;
+  keyring: CredentialKeyring;
+}): Promise<number> {
+  return db.transaction(async (tx) => {
+    const records = await tx
+      .select()
+      .from(integrationCredentials)
+      .where(eq(integrationCredentials.ownerUserId, input.ownerUserId))
+      .for("update");
+    let rewrapped = 0;
+
+    /* oxlint-disable eslint/no-await-in-loop -- Each encrypted credential is authenticated and conditionally replaced in the same transaction. */
+    for (const record of records) {
+      if (record.keyVersion === input.keyring.activeKeyVersion) continue;
+      if (record.algorithm !== "aes-256-gcm") {
+        throw new Error("Unsupported integration credential algorithm.");
+      }
+
+      const aad = integrationCredentialAad(
+        input.ownerUserId,
+        record.connectionId,
+        record.credentialType
+      );
+      const plaintext = decryptCredential(
+        {
+          algorithm: "aes-256-gcm",
+          ciphertext: record.ciphertext,
+          iv: record.iv,
+          authTag: record.authTag,
+          keyVersion: record.keyVersion,
+        },
+        input.keyring,
+        aad
+      );
+      const replacement = encryptCredential(
+        plaintext,
+        input.keyring,
+        aad
+      );
+      const updated = await tx
+        .update(integrationCredentials)
+        .set({
+          algorithm: replacement.algorithm,
+          ciphertext: replacement.ciphertext,
+          iv: replacement.iv,
+          authTag: replacement.authTag,
+          keyVersion: replacement.keyVersion,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(integrationCredentials.id, record.id),
+            eq(integrationCredentials.ownerUserId, input.ownerUserId),
+            eq(integrationCredentials.keyVersion, record.keyVersion),
+            eq(integrationCredentials.ciphertext, record.ciphertext)
+          )
+        )
+        .returning({ id: integrationCredentials.id });
+      if (updated.length > 0) rewrapped += 1;
+    }
+    /* oxlint-enable eslint/no-await-in-loop */
+
+    return rewrapped;
+  });
+}
+
 export async function deleteIntegrationCredential(input: {
   ownerUserId: string;
   connectionId: string;
