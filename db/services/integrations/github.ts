@@ -162,8 +162,9 @@ export async function saveGitHubConnection(input: {
     tokenType: input.token.token_type,
   });
   const connectionId = randomUUID();
-  const displayName = input.account.name?.trim();
-  const safeDisplayName = displayName ? displayName : input.account.login;
+  const displayName =
+    input.account.name?.trim().replace(/^$/u, input.account.login) ??
+    input.account.login;
   return db.transaction(async (tx) => {
     const [connection] = await tx
       .insert(integrationConnections)
@@ -172,7 +173,7 @@ export async function saveGitHubConnection(input: {
         ownerUserId: input.ownerUserId,
         providerKey: "github",
         providerAccountId: String(input.account.id),
-        displayName: safeDisplayName,
+        displayName,
         status: "active",
         lastUsedAt: now,
       })
@@ -183,7 +184,7 @@ export async function saveGitHubConnection(input: {
           integrationConnections.providerAccountId,
         ],
         set: {
-          displayName: input.account.name?.trim() || input.account.login,
+          displayName,
           status: "active",
           revokedAt: null,
           updatedAt: now,
@@ -320,7 +321,10 @@ export async function getFreshGitHubAccessToken(input: {
     const plaintext = decryptCredential(
       {
         algorithm: "aes-256-gcm",
-        ...record.credential,
+        ciphertext: record.credential.ciphertext,
+        iv: record.credential.iv,
+        authTag: record.credential.authTag,
+        keyVersion: record.credential.keyVersion,
       },
       input.keyring,
       integrationCredentialAad(
@@ -329,9 +333,8 @@ export async function getFreshGitHubAccessToken(input: {
         "oauth_tokens"
       )
     );
-    const parsed = storedGitHubTokenBundleSchema.safeParse(
-      JSON.parse(plaintext) as unknown
-    );
+    const payload: unknown = JSON.parse(plaintext);
+    const parsed = storedGitHubTokenBundleSchema.safeParse(payload);
     if (!parsed.success) {
       throw new Error("Stored GitHub token bundle is invalid.");
     }
