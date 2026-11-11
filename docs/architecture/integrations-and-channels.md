@@ -328,10 +328,11 @@ execute provider operations, or advertise a working integration.
 
 The registry tests verify provider/action ownership, non-empty provider
 permission requirements, read/write separation, approval requirements for
-writes, provider filtering, and the fail-closed availability state. The next
-implementation step is the persistence model and encrypted credential
-boundary. Provider activation must wait until an adapter and its complete
-OAuth, refresh, execution, and revocation tests are in place.
+writes, provider filtering, and the fail-closed availability state. The
+persistence model, encrypted credential boundary, and GitHub OAuth token
+lifecycle are now implemented. Provider activation must wait until action
+adapters enforce provider permissions, Blud action grants, and approvals at
+runtime, with end-to-end provider verification.
 
 ## Personal integration persistence implementation
 
