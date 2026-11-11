@@ -184,4 +184,79 @@ describe("GitHub OAuth persistence", () => {
       .from(schema.integrationAuthorizationAttempts);
     expect(failed?.status).toBe("failed");
   });
+  it("rotates expiring tokens once and persists the replacement pair encrypted", async () => {
+    const connectionId = await saveGitHubConnection({
+      ownerUserId: "alice",
+      account: { id: 1234, login: "octocat" },
+      token: { ...token, expires_in: 1 },
+      keyring,
+    });
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        access_token: "ghu_rotated-access",
+        refresh_token: "ghr_rotated-refresh",
+        expires_in: 28_800,
+        refresh_token_expires_in: 15_897_600,
+        scope: "",
+        token_type: "bearer",
+      })
+    );
+    vi.stubGlobal("fetch", fetcher);
+
+    try {
+      await expect(
+        getFreshGitHubAccessToken({
+          ownerUserId: "alice",
+          connectionId,
+          clientId: "client",
+          clientSecret: "secret",
+          keyring,
+        })
+      ).resolves.toBe("ghu_rotated-access");
+
+      await expect(
+        getFreshGitHubAccessToken({
+          ownerUserId: "alice",
+          connectionId,
+          clientId: "client",
+          clientSecret: "secret",
+          keyring,
+        })
+      ).resolves.toBe("ghu_rotated-access");
+
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      const [, init] = fetcher.mock.calls[0]!;
+      const body = new URLSearchParams(String(init?.body));
+      expect(body.get("grant_type")).toBe("refresh_token");
+      expect(body.get("refresh_token")).toBe(token.refresh_token);
+
+      const [credential] = await database
+        .select()
+        .from(schema.integrationCredentials);
+      expect(credential?.ciphertext).not.toContain("ghu_rotated-access");
+      expect(credential?.ciphertext).not.toContain("ghr_rotated-refresh");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("does not return a GitHub token to a different user", async () => {
+    const connectionId = await saveGitHubConnection({
+      ownerUserId: "alice",
+      account: { id: 1234, login: "octocat" },
+      token,
+      keyring,
+    });
+
+    await expect(
+      getFreshGitHubAccessToken({
+        ownerUserId: "bob",
+        connectionId,
+        clientId: "client",
+        clientSecret: "secret",
+        keyring,
+      })
+    ).resolves.toBeNull();
+  });
+
 });
