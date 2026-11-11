@@ -16,6 +16,10 @@ describe("integration registry", () => {
       integrationProviders.google_workspace,
     ]);
     expect(getIntegrationProvider("unknown")).toBeUndefined();
+
+    for (const [key, provider] of Object.entries(integrationProviders)) {
+      expect(provider.key).toBe(key);
+    }
   });
 
   it("defines action identifiers that resolve to their owning provider", () => {
@@ -41,7 +45,7 @@ describe("integration registry", () => {
     }
   });
 
-  it("filters actions by provider without mixing channel identities into access", () => {
+  it("filters actions by provider", () => {
     expect(
       listIntegrationActions("github").map((action) => action.key)
     ).toEqual(["github.repository.read", "github.issue.create"]);
