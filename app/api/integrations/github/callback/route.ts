@@ -18,11 +18,12 @@ const privateHeaders = {
 };
 
 function finish(status: "connected" | "error") {
-  const destination = new URL("/settings/integrations", applicationOrigin());
-  destination.searchParams.set("github", status);
-  return new Response(null, {
-    status: 303,
-    headers: { ...privateHeaders, location: destination.href },
+  return new Response(JSON.stringify({ provider: "github", status }), {
+    status: status === "connected" ? 200 : 400,
+    headers: {
+      ...privateHeaders,
+      "content-type": "application/json; charset=utf-8",
+    },
   });
 }
 
