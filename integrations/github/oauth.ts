@@ -117,9 +117,7 @@ async function requestGitHubToken(
 
   const parsed = githubTokenResponseSchema.safeParse(payload);
   if (!parsed.success) {
-    const providerError = z
-      .object({ error: z.string() })
-      .safeParse(payload);
+    const providerError = z.object({ error: z.string() }).safeParse(payload);
     if (providerError.success) {
       throw new GitHubOAuthError(
         "GitHub rejected the token request.",
