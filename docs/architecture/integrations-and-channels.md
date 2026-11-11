@@ -384,3 +384,11 @@ Operational note: production deployments must inject the active credential key
 and any retained prior key versions from a managed secret store. The
 application must fail closed when a row references a key version absent from
 the runtime keyring; it must never fall back to the development default.
+
+The credential repository is implemented in
+`db/services/integrations/credentials.ts`. Writes are transactional and first
+verify that the connection belongs to the supplied Better Auth user and is
+active. Reads join against the connection and repeat the owner and active-state
+checks before decrypting. Upserts replace the encrypted payload and key version
+atomically; deletion is scoped by owner, connection, and credential type. The
+repository never returns ciphertext records to its callers.
