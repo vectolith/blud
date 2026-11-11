@@ -43,6 +43,11 @@ jobs:
         id: typegen
         run: pnpm types:generate
 
+      - name: Database migration consistency
+        id: dbcheck
+        if: always()
+        run: pnpm db:check
+
       - name: TypeScript
         id: typecheck
         if: always()
@@ -77,6 +82,7 @@ jobs:
         if: always()
         env:
           TYPEGEN_OUTCOME: ${{ steps.typegen.conclusion }}
+          DBCHECK_OUTCOME: ${{ steps.dbcheck.conclusion }}
           TYPECHECK_OUTCOME: ${{ steps.typecheck.conclusion }}
           LINT_OUTCOME: ${{ steps.lint.conclusion }}
           TESTS_OUTCOME: ${{ steps.tests.conclusion }}
@@ -85,7 +91,7 @@ jobs:
           BUILD_OUTCOME: ${{ steps.build.conclusion }}
         run: |
           failed=0
-          for result in "$TYPEGEN_OUTCOME" "$TYPECHECK_OUTCOME" "$LINT_OUTCOME" "$TESTS_OUTCOME" "$FORMATTING_OUTCOME" "$KNIP_OUTCOME" "$BUILD_OUTCOME"; do
+          for result in "$TYPEGEN_OUTCOME" "$DBCHECK_OUTCOME" "$TYPECHECK_OUTCOME" "$LINT_OUTCOME" "$TESTS_OUTCOME" "$FORMATTING_OUTCOME" "$KNIP_OUTCOME" "$BUILD_OUTCOME"; do
             if [ "$result" != "success" ]; then
               failed=1
             fi
