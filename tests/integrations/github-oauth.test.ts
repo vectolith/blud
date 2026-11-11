@@ -25,12 +25,14 @@ import {
   generateCredentialKey,
 } from "../../integrations/credential-encryption";
 
+type PGliteTestDatabase = ReturnType<typeof drizzle<typeof schema>>;
+
 const testDatabase = vi.hoisted(() => {
-  let database: unknown;
+  let database: PGliteTestDatabase | undefined;
   return {
     get: () => database,
-    set: (value: unknown) => {
-      database = value;
+    set: (nextDatabase: PGliteTestDatabase) => {
+      database = nextDatabase;
     },
   };
 });
