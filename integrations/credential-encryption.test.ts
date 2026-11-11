@@ -4,22 +4,33 @@ import {
   decryptCredential,
   encryptCredential,
   generateCredentialKey,
+  integrationCredentialAad,
+  authorizationAttemptAad,
 } from "./credential-encryption";
 
 describe("integration credential encryption", () => {
+  it("creates distinct authenticated contexts for credentials and OAuth attempts", () => {
+    expect(integrationCredentialAad("user-a", "connection-a", "oauth_tokens")).not.toBe(
+      integrationCredentialAad("user-b", "connection-a", "oauth_tokens")
+    );
+    expect(authorizationAttemptAad("user-a", "attempt-a")).not.toBe(
+      authorizationAttemptAad("user-b", "attempt-a")
+    );
+  });
+
   it("encrypts with AES-256-GCM and decrypts with the recorded key version", () => {
     const key = generateCredentialKey();
     const keyring = createCredentialKeyring("v1", new Map([["v1", key]]));
     const encrypted = encryptCredential(
       "refresh-token-secret",
       keyring,
-      "user-1:connection-1"
+      integrationCredentialAad("user-1", "connection-1", "oauth_tokens")
     );
 
     expect(encrypted.algorithm).toBe("aes-256-gcm");
     expect(encrypted.keyVersion).toBe("v1");
     expect(encrypted.ciphertext).not.toContain("refresh-token-secret");
-    expect(decryptCredential(encrypted, keyring, "user-1:connection-1")).toBe(
+    expect(decryptCredential(encrypted, keyring, integrationCredentialAad("user-1", "connection-1", "oauth_tokens"))).toBe(
       "refresh-token-secret"
     );
   });
@@ -53,11 +64,11 @@ describe("integration credential encryption", () => {
     const encrypted = encryptCredential(
       "secret",
       keyring,
-      "user-a:connection-a"
+      integrationCredentialAad("user-a", "connection-a", "oauth_tokens")
     );
 
     expect(() =>
-      decryptCredential(encrypted, keyring, "user-b:connection-a")
+      decryptCredential(encrypted, keyring, integrationCredentialAad("user-b", "connection-a", "oauth_tokens"))
     ).toThrow(/authentication failed/);
     expect(() =>
       decryptCredential(
@@ -66,7 +77,7 @@ describe("integration credential encryption", () => {
           ciphertext: Buffer.from("tampered").toString("base64"),
         },
         keyring,
-        "user-a:connection-a"
+        integrationCredentialAad("user-a", "connection-a", "oauth_tokens")
       )
     ).toThrow(/authentication failed/);
   });
