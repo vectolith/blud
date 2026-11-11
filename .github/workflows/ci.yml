@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/blud
+      DATABASE_URL_UNPOOLED: postgresql://ci:ci@127.0.0.1:5432/blud
       BETTER_AUTH_SECRET: ci-only-auth-secret-not-used-for-real-authentication
       BETTER_AUTH_URL: https://blud-ci.invalid
       BLUD_INTERNAL_KEY: ci-only-internal-key-not-used-for-real-authentication
@@ -46,8 +47,6 @@ jobs:
       - name: Database migration consistency
         id: dbcheck
         if: always()
-        env:
-          DATABASE_URL_UNPOOLED: postgresql://ci:ci@127.0.0.1:5432/blud
         run: pnpm db:check
 
       - name: TypeScript
