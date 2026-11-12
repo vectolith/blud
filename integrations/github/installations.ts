@@ -94,9 +94,7 @@ export interface GitHubRepositoryPage {
 
 function hasNextPage(linkHeader: string | null): boolean {
   return (
-    linkHeader
-      ?.split(",")
-      .some((link) => /;\s*rel="next"/u.test(link)) ?? false
+    linkHeader?.split(",").some((link) => /;\s*rel="next"/u.test(link)) ?? false
   );
 }
 
