@@ -7,8 +7,8 @@ import {
 
 function requestUrl(input: RequestInfo | URL): string {
   if (input instanceof URL) return input.href;
-  if (typeof input === "string") return input;
-  return input.url;
+  if (input instanceof Request) return input.url;
+  return input;
 }
 
 describe("GitHub App installation discovery", () => {
