@@ -64,6 +64,7 @@ export const env = createEnv({
     // Required
     DATABASE_URL: databaseUrlSchema,
     KERNEL_API_KEY: requiredValue,
+    BLUD_INTERNAL_KEY: z.string().min(32).optional(),
 
     // Optional overrides with local defaults. Vercel deployments provision
     // installation secrets in their connected private Blob store.
@@ -85,6 +86,8 @@ export const env = createEnv({
     BLOB_STORE_ID: requiredValue.optional(),
     GOOGLE_CONNECTOR_UID: requiredValue.default("google/blud"),
     LINQ_CONNECTOR: requiredValue.optional(),
+    GITHUB_APP_CLIENT_ID: requiredValue.optional(),
+    GITHUB_APP_CLIENT_SECRET: requiredValue.optional(),
     LINK_CLIENT_ID: requiredValue.optional(),
     LINK_CLIENT_SECRET: requiredValue.optional(),
     STRIPE_PUBLISHABLE_KEY: requiredValue.optional(),

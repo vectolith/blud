@@ -5,14 +5,30 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
-    name: Lint, Typecheck & Unit Tests
+    name: Lint, typecheck, tests & production build
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/blud
+      DATABASE_URL_UNPOOLED: postgresql://ci:ci@127.0.0.1:5432/blud
+      BETTER_AUTH_SECRET: ci-only-auth-secret-not-used-for-real-authentication
+      BETTER_AUTH_URL: https://blud-ci.invalid
+      BLUD_INTERNAL_KEY: ci-only-internal-key-not-used-for-real-authentication
+      KERNEL_API_KEY: ci-only-kernel-key-not-used-for-real-browser-execution
+      SECRET_ENCRYPTION_KEY: AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Enable Corepack & pnpm
         run: |
@@ -20,7 +36,7 @@ jobs:
           corepack prepare pnpm@11.24.0 --activate
 
       - name: Setup Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "pnpm"
@@ -28,5 +44,64 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run full check suite (oxlint, typecheck, vitest, oxfmt, knip)
-        run: pnpm check
+      - name: Generate Next.js route types
+        id: typegen
+        run: pnpm types:generate
+
+      - name: Database migration consistency
+        id: dbcheck
+        if: always()
+        run: pnpm db:check
+
+      - name: TypeScript
+        id: typecheck
+        if: always()
+        run: pnpm types:check:app
+
+      - name: Oxlint
+        id: lint
+        if: always()
+        run: pnpm lint:app
+
+      - name: Unit tests
+        id: tests
+        if: always()
+        run: pnpm test:app
+
+      - name: Formatting
+        id: formatting
+        if: always()
+        run: pnpm format:check
+
+      - name: Knip
+        id: knip
+        if: always()
+        run: pnpm knip
+
+      - name: Production build
+        id: build
+        if: always()
+        run: pnpm build:app
+
+      - name: Fail if any verification stage failed
+        if: always()
+        env:
+          TYPEGEN_OUTCOME: ${{ steps.typegen.conclusion }}
+          DBCHECK_OUTCOME: ${{ steps.dbcheck.conclusion }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.conclusion }}
+          LINT_OUTCOME: ${{ steps.lint.conclusion }}
+          TESTS_OUTCOME: ${{ steps.tests.conclusion }}
+          FORMATTING_OUTCOME: ${{ steps.formatting.conclusion }}
+          KNIP_OUTCOME: ${{ steps.knip.conclusion }}
+          BUILD_OUTCOME: ${{ steps.build.conclusion }}
+        run: |
+          failed=0
+          for result in "$TYPEGEN_OUTCOME" "$DBCHECK_OUTCOME" "$TYPECHECK_OUTCOME" "$LINT_OUTCOME" "$TESTS_OUTCOME" "$FORMATTING_OUTCOME" "$KNIP_OUTCOME" "$BUILD_OUTCOME"; do
+            if [ "$result" != "success" ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more verification stages failed."
+            exit 1
+          fi

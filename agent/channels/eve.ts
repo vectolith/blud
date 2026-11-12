@@ -30,12 +30,19 @@ const authenticate: Parameters<typeof routeAuth>[1] = [
 
     await requireOwnedRouteSubject(scope, request);
 
+    const attributes: Record<string, string | readonly string[]> = phoneNumber
+      ? {
+          conversationChannel: "eve",
+          phoneNumber,
+          workspaceId: scope.workspaceId,
+        }
+      : {
+          conversationChannel: "eve",
+          workspaceId: scope.workspaceId,
+        };
+
     return {
-      attributes: {
-        conversationChannel: "eve",
-        phoneNumber,
-        workspaceId: scope.workspaceId,
-      },
+      attributes,
       authenticator: "authjs",
       principalId: scope.userId,
       principalType: "user",
@@ -193,10 +200,9 @@ async function requestIdentityFromRequest(request: Request) {
   const session = await getAuthSession(request.headers);
   if (!session) return undefined;
   const phoneNumber = z.string().safeParse(session.user.phoneNumber);
-  if (!phoneNumber.success) return undefined;
 
   return {
-    phoneNumber: phoneNumber.data,
+    phoneNumber: phoneNumber.success ? phoneNumber.data : undefined,
     scope: accessScopeForUser(`better-auth:${session.user.id}`),
   };
 }

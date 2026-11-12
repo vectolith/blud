@@ -5,6 +5,8 @@
       "dependsOn": ["^build:app"],
       "env": [
         "BETTER_AUTH_*",
+        "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "EVE_NEXT_*",
@@ -23,6 +25,8 @@
       "dependsOn": ["db:migrate"],
       "env": [
         "BETTER_AUTH_*",
+        "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
@@ -45,6 +49,8 @@
       "cache": false,
       "passThroughEnv": [
         "BETTER_AUTH_*",
+        "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
@@ -74,6 +80,8 @@
       "cache": false,
       "passThroughEnv": [
         "BETTER_AUTH_*",
+        "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",

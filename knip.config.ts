@@ -3,7 +3,6 @@ import type { KnipConfig } from "knip";
 export default {
   entry: [
     "agent/channels/**/*.ts",
-    "agent/extensions/**/*.ts",
     "agent/hooks/**/*.ts",
     "agent/instructions/**/*.ts",
     "agent/instrumentation/**/*.ts",
@@ -12,6 +11,7 @@ export default {
     "agent/schedules/**/*.ts",
     "agent/tools/**/*.ts",
     "db/drizzle.config.ts",
+    "db/services/integrations/credentials.ts",
     // Drizzle consumes every table and relation exported by this schema barrel.
     "db/schema/index.ts",
     "evals/**/*.eval.ts",
@@ -21,8 +21,6 @@ export default {
     "tests/runtime/fixture/evals/**/*.ts",
   ],
   ignoreDependencies: [
-    // Imported through the owning Tailwind stylesheet rather than TypeScript.
-    "@tailwindcss/postcss",
     "shadcn",
     "tailwindcss",
     "use-stick-to-bottom",
@@ -30,6 +28,10 @@ export default {
     "eslint-plugin-react-hooks",
     "eslint-plugin-turbo",
     "oxlint-tailwindcss",
+    // Retained by web/trpc/client.tsx; the headless app does not mount web UI.
+    "@tanstack/react-query",
+    "@trpc/client",
+    "@trpc/react-query",
     // Invoked as a CLI.
     "vercel",
   ],
