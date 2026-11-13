@@ -4,14 +4,15 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: ["**"]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Include the commit SHA so a stale or stalled run cannot block verification of the current head.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:
