@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   // runtime. Returning success here would fabricate a browser execution
   // receipt: initializing the Kernel SDK alone does not create a browser,
   // navigate a page, or verify an outcome. Fail closed until the real
-  // coordinator can return a verifiable execution receipt.
+  // coordinator can return an authenticated completion receipt with execution evidence.
   return NextResponse.json(
     {
       status: "failure",
