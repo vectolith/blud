@@ -25,7 +25,6 @@ export default {
     "@trpc/client",
     "@trpc/react-query",
     "shadcn",
-    "tailwindcss",
     "use-stick-to-bottom",
     // Loaded as jsPlugins from .oxlintrc.jsonc rather than TypeScript.
     "eslint-plugin-react-hooks",
