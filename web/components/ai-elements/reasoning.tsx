@@ -205,7 +205,7 @@ export const ReasoningTrigger = memo(
         )}
         {...props}
       >
-        <span className="contents type-label">
+        <span className="type-label contents">
           {children ?? (
             <>
               <BrainIcon className="size-4" />
