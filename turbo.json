@@ -2,7 +2,9 @@
   "$schema": "https://turborepo.dev/schema.json",
   "tasks": {
     "build:app": {
-      "dependsOn": ["^build:app"],
+      "dependsOn": [
+        "^build:app"
+      ],
       "env": [
         "BETTER_AUTH_*",
         "BLOB_*",
@@ -15,12 +17,20 @@
         "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
-        "VERCEL_*"
+        "VERCEL_*",
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET"
       ],
-      "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "next-env.d.ts"
+      ]
     },
     "build:vercel": {
-      "dependsOn": ["db:migrate"],
+      "dependsOn": [
+        "db:migrate"
+      ],
       "env": [
         "BETTER_AUTH_*",
         "BLOB_*",
@@ -32,14 +42,25 @@
         "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
-        "VERCEL_*"
+        "VERCEL_*",
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET"
       ],
-      "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "next-env.d.ts"
+      ]
     },
     "db:migrate": {
       "cache": false,
-      "env": ["DATABASE_URL_UNPOOLED"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"]
+      "env": [
+        "DATABASE_URL_UNPOOLED"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ]
     },
     "dev:app": {
       "cache": false,
@@ -54,7 +75,9 @@
         "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
-        "VERCEL_*"
+        "VERCEL_*",
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET"
       ],
       "persistent": true
     },
@@ -68,7 +91,11 @@
       "outputs": []
     },
     "lint:app": {
-      "outputs": []
+      "outputs": [],
+      "env": [
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET"
+      ]
     },
     "start:app": {
       "cache": false,
@@ -83,19 +110,32 @@
         "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
-        "VERCEL_*"
+        "VERCEL_*",
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET"
       ],
       "persistent": true
     },
     "test:app": {
-      "outputs": []
+      "outputs": [],
+      "env": [
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET"
+      ]
     },
     "types:generate": {
-      "outputs": [".next/types/**", "next-env.d.ts"]
+      "outputs": [
+        ".next/types/**",
+        "next-env.d.ts"
+      ]
     },
     "types:check:app": {
-      "dependsOn": ["types:generate"],
-      "outputs": ["*.tsbuildinfo"]
+      "dependsOn": [
+        "types:generate"
+      ],
+      "outputs": [
+        "*.tsbuildinfo"
+      ]
     }
   }
 }
