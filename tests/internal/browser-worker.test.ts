@@ -299,9 +299,10 @@ describe("Internal Blud Browser Worker RPC", () => {
       redirect: "error",
     };
     expect(mocks.clientOptions).toContainEqual(expectedClientOptions);
-    const sentCall = mocks.send.mock.calls[0];
-    expect(sentCall?.[0]).toContain("Start URL: https://example.com");
-    expect(sentCall?.[1].signal).toBeInstanceOf(AbortSignal);
+    expect(mocks.send).toHaveBeenCalledWith(
+      expect.stringContaining("Start URL: https://example.com"),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
     expect(mocks.attach).toHaveBeenCalledWith("browser-agent-session");
   });
 
