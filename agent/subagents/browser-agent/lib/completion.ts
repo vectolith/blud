@@ -9,6 +9,8 @@ export const taskCompletionSchema = z.object({
     .max(maximumWorkerCompletionImages),
   status: z.enum(["success", "failure"]),
   message: z.string().trim().min(1),
+  finalUrl: z.url().optional(),
+  extractedData: z.record(z.string(), z.unknown()).optional(),
 });
 
 const historicalTaskCompletionSchema = taskCompletionSchema.omit({
