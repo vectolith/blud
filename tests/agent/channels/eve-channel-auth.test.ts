@@ -17,6 +17,18 @@ import * as SessionService from "@db/services/sessions";
 import { authSessionFor } from "@tests/helpers/auth-session";
 import eveChannel, { sessionIdFromPath } from "@agent/channels/eve";
 
+vi.mock("@shared/environment/env", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@shared/environment/env")>();
+  return {
+    ...actual,
+    env: {
+      ...actual.env,
+      BLUD_INTERNAL_KEY: "test-internal-secret-0123456789",
+    },
+  };
+});
+
 const getAuthSessionMock = vi.spyOn(AuthSession, "getAuthSession");
 const isSessionOwnedMock = vi.spyOn(SessionService, "isSessionOwned");
 
