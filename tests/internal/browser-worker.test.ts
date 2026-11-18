@@ -118,7 +118,8 @@ function request(body: string, token = serviceSecret) {
 }
 
 function successfulRuntimeResult(
-  finalUrl = "https://example.com/"
+  finalUrl = "https://example.com/",
+  extractedData: { title: string } | undefined = { title: "Example Domain" }
 ): TestRuntimeResult {
   return {
     status: "completed",
@@ -161,7 +162,7 @@ function successfulRuntimeResult(
             message: "Verified the page title.",
             images: [],
             finalUrl,
-            extractedData: { title: "Example Domain" },
+            ...(extractedData ? { extractedData } : {}),
           },
         },
         meta: { at: "2026-11-18T10:00:00.000Z" },
@@ -324,6 +325,51 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(body.status).toBe("failure");
     expect(body.error).toBe("browser_evidence_does_not_confirm_final_url");
     expect(body.executionReceipt).toBeUndefined();
+  });
+
+  it("rejects extracted values that do not appear in settled browser evidence", async () => {
+    mocks.result.mockResolvedValue(
+      successfulRuntimeResult("https://example.com/", {
+        title: "A fabricated page title",
+      })
+    );
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          extractSchema: { title: "string" },
+          caller: "velnor",
+        })
+      )
+    );
+
+    const body = await responseBody(res);
+    expect(body.status).toBe("failure");
+    expect(body.error).toBe(
+      "browser_extraction_not_grounded_in_tool_evidence"
+    );
+    expect(body.executionReceipt).toBeUndefined();
+  });
+
+  it("rejects a missing extraction when an extraction schema was requested", async () => {
+    mocks.result.mockResolvedValue(
+      successfulRuntimeResult("https://example.com/", undefined)
+    );
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          extractSchema: { title: "string" },
+          caller: "velnor",
+        })
+      )
+    );
+
+    const body = await responseBody(res);
+    expect(body.status).toBe("failure");
+    expect(body.error).toBe(
+      "browser_extraction_not_grounded_in_tool_evidence"
+    );
   });
 
   it("can resume only a Velnor-owned Eve session reference", async () => {
