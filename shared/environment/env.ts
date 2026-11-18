@@ -64,6 +64,7 @@ export const env = createEnv({
     // Required
     DATABASE_URL: databaseUrlSchema,
     KERNEL_API_KEY: requiredValue,
+    // Shared secret for authenticated Velnor-to-Blud browser-worker RPC.
     BLUD_INTERNAL_KEY: requiredValue.optional(),
     VELNOR_SHARED_SECRET: requiredValue.optional(),
 
