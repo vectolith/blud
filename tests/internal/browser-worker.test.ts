@@ -1,26 +1,65 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-type ClientOptions = {
+interface ClientOptions {
   baseUrl: string;
   auth: { bearer: string };
   redirect: "error";
-};
+}
 
-type TestSession = {
+interface TestWorkerCompletion {
+  status: "success";
+  message: string;
+  images: [];
+  finalUrl: string;
+  extractedData?: { title: string };
+}
+
+interface TestBrowserToolOutput {
+  content: { type: "text"; text: string }[];
+}
+
+type TestTaskOutput = TestWorkerCompletion | TestBrowserToolOutput;
+
+interface TestEventData {
+  callId?: string;
+  capability?: { kind: "tool"; name: string };
+  input?: { message: string };
+  owner?: { runId: string };
+  taskId?: string;
+  name?: string;
+  sessionId?: string;
+  streamPath?: string;
+  outcome?: "completed";
+  output?: TestTaskOutput;
+}
+
+interface TestRuntimeEvent {
+  type: string;
+  data: TestEventData;
+  meta: { at: string };
+}
+
+interface TestRuntimeResult {
+  status: "completed" | "waiting" | "failed";
+  message?: string;
+  events: TestRuntimeEvent[];
+}
+
+interface TestSession {
   id: string;
   send: (
     message: string,
     options: { signal: AbortSignal }
-  ) => Promise<{ result: () => Promise<unknown> }>;
-  stream: (options: { follow: false }) => AsyncIterable<unknown>;
-};
+  ) => Promise<{ result: () => Promise<TestRuntimeResult> }>;
+  stream: (options: { follow: false }) => AsyncIterable<TestRuntimeEvent>;
+}
 
 const mocks = vi.hoisted(() => ({
   create: vi.fn<() => Promise<{ session: TestSession }>>(),
   attach: vi.fn<(sessionId: string) => TestSession>(),
   send: vi.fn<TestSession["send"]>(),
-  result: vi.fn<() => Promise<unknown>>(),
+  result: vi.fn<() => Promise<TestRuntimeResult>>(),
   stream: vi.fn<TestSession["stream"]>(),
   clientOptions: new Array<ClientOptions>(),
 }));
@@ -40,7 +79,7 @@ const responseBodySchema = z.object({
   status: z.string().optional(),
   error: z.string().optional(),
   message: z.string().optional(),
-  data: z.unknown().optional(),
+  data: z.record(z.string(), z.string()).optional(),
   sessionRef: z.string().optional(),
   executionReceipt: z
     .object({
@@ -75,7 +114,7 @@ function request(body: string, token = serviceSecret) {
 
 function successfulRuntimeResult(
   finalUrl = "https://example.com/"
-): unknown {
+): TestRuntimeResult {
   return {
     status: "completed",
     message: "Browser assignment completed.",
