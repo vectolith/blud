@@ -1,4 +1,7 @@
-/* oxlint-disable vitest/require-mock-type-parameters -- Auth initialization needs a deliberately partial Better Auth fixture. */
+/*
+ * oxlint-disable vitest/require-mock-type-parameters -- Auth initialization
+ * needs a deliberately partial Better Auth fixture.
+ */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const handler = vi.fn<(request: Request) => Promise<Response>>();
