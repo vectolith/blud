@@ -359,6 +359,26 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(mocks.attach).toHaveBeenCalledWith("browser-agent-session");
   });
 
+  it("rejects non-HTTP final URLs even when the worker reports success", async () => {
+    mocks.result.mockResolvedValue(
+      successfulRuntimeResult("javascript:alert(1)")
+    );
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          caller: "velnor",
+        })
+      )
+    );
+
+    expect(res.status).toBe(200);
+    const body = await responseBody(res);
+    expect(body.status).toBe("failure");
+    expect(body.error).toBe("browser_final_url_missing");
+    expect(body.executionReceipt).toBeUndefined();
+  });
+
   it("rejects a model-reported final URL absent from settled browser evidence", async () => {
     mocks.result.mockResolvedValue(
       successfulRuntimeResult("https://other.example/")
