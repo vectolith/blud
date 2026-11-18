@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // This route is not yet wired to Eve's authenticated root-agent/subagent
+  // This route is not yet wired to Blud's authenticated browser-agent
   // runtime. Returning success here would fabricate a browser execution
   // receipt: initializing the Kernel SDK alone does not create a browser,
   // navigate a page, or verify an outcome. Fail closed until the real
