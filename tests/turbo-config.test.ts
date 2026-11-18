@@ -18,9 +18,21 @@ const applicationEnvironment = [
   "VELNOR_SHARED_SECRET",
   "VERCEL_*",
 ];
-const runtimeEnvironment = applicationEnvironment.filter(
-  (name) => name !== "SKIP_ENV_VALIDATION"
-);
+const runtimeEnvironment = [
+  "BETTER_AUTH_*",
+  "BLUD_INTERNAL_KEY",
+  "BLOB_*",
+  "DATABASE_URL",
+  "*_CONNECTOR_UID",
+  "KERNEL_*",
+  "LINQ_*",
+  "LINK_*",
+  "NODE_ENV",
+  "SECRET_ENCRYPTION_KEY",
+  "STRIPE_PUBLISHABLE_KEY",
+  "VELNOR_SHARED_SECRET",
+  "VERCEL_*",
+];
 
 describe("Turbo configuration", () => {
   it("scopes application environment variables to their owning tasks", async () => {
