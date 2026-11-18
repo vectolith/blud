@@ -4,6 +4,8 @@
 
 **Blud — a headless personal iMessage AI assistant that can use a browser like you.**
 
+A Vectolith product.
+
 It can do your chores, book movie tickets, or handle your groceries.
 You stay in control of your passwords, credit cards, and context.
 
