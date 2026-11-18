@@ -9,7 +9,7 @@ describe("Internal Blud Browser Worker RPC", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: "test" }),
-      },
+      }
     );
     const res = await POST(req);
     expect(res.status).toBe(401);
@@ -25,7 +25,7 @@ describe("Internal Blud Browser Worker RPC", () => {
           "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
         },
         body: JSON.stringify({}),
-      },
+      }
     );
     const res = await POST(req);
     expect(res.status).toBe(400);
@@ -45,7 +45,7 @@ describe("Internal Blud Browser Worker RPC", () => {
           startUrl: "https://example.com",
           caller: "velnor",
         }),
-      },
+      }
     );
     const res = await POST(req);
     expect(res.status).toBe(200);
