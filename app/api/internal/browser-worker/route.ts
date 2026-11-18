@@ -11,9 +11,7 @@ import { NextResponse } from "next/server";
  */
 export async function POST() {
   return NextResponse.json(
-    {
-      error: "This legacy browser-worker endpoint is retired. Use the authenticated agent browser tools.",
-    },
+    { error: "Browser-worker RPC retired; use the authenticated agent runtime." },
     { status: 410 }
   );
 }
