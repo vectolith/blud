@@ -8,6 +8,8 @@
       "env": [
         "BETTER_AUTH_*",
         "BLOB_*",
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET",
         "DATABASE_URL",
         "EVE_NEXT_*",
         "*_CONNECTOR_UID",
@@ -34,6 +36,8 @@
       "env": [
         "BETTER_AUTH_*",
         "BLOB_*",
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
         "KERNEL_*",
@@ -67,6 +71,8 @@
       "passThroughEnv": [
         "BETTER_AUTH_*",
         "BLOB_*",
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
         "KERNEL_*",
@@ -102,6 +108,8 @@
       "passThroughEnv": [
         "BETTER_AUTH_*",
         "BLOB_*",
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
         "KERNEL_*",
