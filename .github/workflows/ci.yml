@@ -30,7 +30,7 @@ jobs:
 
       - name: Inspect canonical formatter output
         run: |
-          pnpm exec oxfmt app/api/internal/browser-worker/route.ts tests/internal/browser-worker.test.ts
+          pnpm exec oxfmt app/api/internal/browser-worker/route.ts tests/internal/browser-worker.test.ts tests/agent/channels/eve-channel-auth.test.ts
           git diff -- app/api/internal/browser-worker/route.ts tests/internal/browser-worker.test.ts
 
       - name: Run full check suite (oxlint, typecheck, vitest, oxfmt, knip)
