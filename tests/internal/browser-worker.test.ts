@@ -12,7 +12,7 @@ interface TestWorkerCompletion {
   message: string;
   images: [];
   finalUrl: string;
-  extractedData?: { title: string };
+  extractedData?: { title: string | number };
 }
 
 interface TestBrowserToolOutput {
@@ -162,7 +162,7 @@ function successfulRuntimeResult(
             message: "Verified the page title.",
             images: [],
             finalUrl,
-            ...(extractedData ? { extractedData } : {}),
+            extractedData: { title: "Example Domain" },
           },
         },
         meta: { at: "2026-11-18T10:00:00.000Z" },
@@ -385,11 +385,16 @@ describe("Internal Blud Browser Worker RPC", () => {
   });
 
   it("rejects extracted values that do not appear in settled browser evidence", async () => {
-    mocks.result.mockResolvedValue(
-      successfulRuntimeResult("https://example.com/", {
-        title: "A fabricated page title",
-      })
+    const result = successfulRuntimeResult();
+    const completionEvent = result.events.find(
+      (event) => event.type === "call.settled"
     );
+    const output = completionEvent?.data.output;
+    if (!output || !("status" in output)) {
+      throw new Error("The test worker completion event is missing.");
+    }
+    output.extractedData = { title: "A fabricated page title" };
+    mocks.result.mockResolvedValue(result);
     const res = await post(
       request(
         JSON.stringify({
@@ -407,9 +412,16 @@ describe("Internal Blud Browser Worker RPC", () => {
   });
 
   it("rejects a missing extraction when an extraction schema was requested", async () => {
-    mocks.result.mockResolvedValue(
-      successfulRuntimeResult("https://example.com/", undefined)
+    const result = successfulRuntimeResult();
+    const completionEvent = result.events.find(
+      (event) => event.type === "call.settled"
     );
+    const output = completionEvent?.data.output;
+    if (!output || !("status" in output)) {
+      throw new Error("The test worker completion event is missing.");
+    }
+    delete output.extractedData;
+    mocks.result.mockResolvedValue(result);
     const res = await post(
       request(
         JSON.stringify({
@@ -423,6 +435,35 @@ describe("Internal Blud Browser Worker RPC", () => {
     const body = await responseBody(res);
     expect(body.status).toBe("failure");
     expect(body.error).toBe("browser_extraction_not_grounded_in_tool_evidence");
+  });
+
+  it("rejects extraction values that do not match the requested field type", async () => {
+    const result = successfulRuntimeResult();
+    const completionEvent = result.events.find(
+      (event) => event.type === "call.settled"
+    );
+    const output = completionEvent?.data.output;
+    if (!output || !("status" in output)) {
+      throw new Error("The test worker completion event is missing.");
+    }
+    output.extractedData = { title: 123 };
+    mocks.result.mockResolvedValue(result);
+
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          extractSchema: { title: "string" },
+          caller: "velnor",
+        })
+      )
+    );
+
+    const body = await responseBody(res);
+    expect(body.status).toBe("failure");
+    expect(body.error).toBe(
+      "browser_extraction_not_grounded_in_tool_evidence"
+    );
   });
 
   it("can resume only a Velnor-owned Eve session reference", async () => {
