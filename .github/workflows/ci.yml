@@ -28,5 +28,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Inspect canonical formatter output
+        run: |
+          pnpm exec oxfmt app/api/internal/browser-worker/route.ts tests/internal/browser-worker.test.ts
+          git diff -- app/api/internal/browser-worker/route.ts tests/internal/browser-worker.test.ts
+
       - name: Run full check suite (oxlint, typecheck, vitest, oxfmt, knip)
         run: pnpm check
