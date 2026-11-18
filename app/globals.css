@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* Tailwind v4 source registration for the browser evaluation dashboard. */
+@source "../evals/browser/dashboard/**/*.{ts,tsx}";
