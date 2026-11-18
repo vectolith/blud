@@ -20,6 +20,10 @@ export default {
     "tests/runtime/fixture/evals/**/*.ts",
   ],
   ignoreDependencies: [
+    // Retained for the unmounted web UI; the headless agent runtime does not import this client.
+    "@tanstack/react-query",
+    "@trpc/client",
+    "@trpc/react-query",
     "shadcn",
     "tailwindcss",
     "use-stick-to-bottom",
