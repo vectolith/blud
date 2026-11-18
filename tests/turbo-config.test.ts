@@ -4,16 +4,16 @@ import { z } from "zod";
 
 const applicationEnvironment = [
   "BETTER_AUTH_*",
-  "BLOB_*",
   "BLUD_INTERNAL_KEY",
+  "BLOB_*",
   "DATABASE_URL",
   "*_CONNECTOR_UID",
   "KERNEL_*",
   "LINQ_*",
   "LINK_*",
-  "STRIPE_PUBLISHABLE_KEY",
   "NODE_ENV",
   "SECRET_ENCRYPTION_KEY",
+  "STRIPE_PUBLISHABLE_KEY",
   "VELNOR_SHARED_SECRET",
   "VERCEL_*",
 ];
