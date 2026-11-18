@@ -1,98 +1,19 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
-const requestSchema = z.object({
-  message: z.string().min(1),
-  startUrl: z.string().url().optional(),
-  sessionRef: z.string().optional(),
-  caller: z.string().optional(),
-});
-
-function isAuthorized(request: Request): boolean {
-  const secret = process.env.BLUD_INTERNAL_KEY?.trim();
-  // This endpoint is optional and must never inherit credentials from another product.
-  if (!secret) return false;
-
-  const token =
-    request.headers.get("x-blud-key") ||
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
-    "";
-  return token === secret;
-}
-
-export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json(
-      { error: "Unauthorized: valid internal service key required." },
-      { status: 401 }
-    );
-  }
-
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON payload." },
-      { status: 400 }
-    );
-  }
-
-  const parsed = requestSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid browser task payload", details: parsed.error.issues },
-      { status: 400 }
-    );
-  }
-
-  const { message, startUrl } = parsed.data;
-
-  // Blud Kernel Browser Worker Execution Coordinator
-  try {
-    const kernelApiKey = process.env.KERNEL_API_KEY;
-
-    // When Kernel API key is configured, initialize execution coordinator
-    if (kernelApiKey && kernelApiKey !== "test-kernel-key") {
-      const Kernel = (await import("@onkernel/sdk")).default;
-      const kernel = new Kernel({ apiKey: kernelApiKey });
-
-      // Run browser navigation or extraction
-      return NextResponse.json({
-        status: "success",
-        message: `Task accepted and executed by Blud Kernel coordinator: "${message}"`,
-        currentUrl: startUrl || "about:blank",
-        images: [],
-        data: {
-          coordinatedBy: "blud-kernel",
-          executedAt: new Date().toISOString(),
-          task: message,
-        },
-      });
-    }
-
-    // Local / development mock coordinator response with verified telemetry
-    return NextResponse.json({
-      status: "success",
-      message: `Blud browser coordinator accepted assignment: "${message}"${
-        startUrl ? ` on ${startUrl}` : ""
-      }`,
-      currentUrl: startUrl,
-      images: [],
-      data: {
-        task: message,
-        coordinatedBy: "blud-kernel-coordinator",
-        verifiedAtUtc: new Date().toISOString(),
-      },
-    });
-  } catch (err: unknown) {
-    return NextResponse.json(
-      {
-        status: "failure",
-        message: "Blud browser coordinator encountered an error.",
-        error: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 }
-    );
-  }
+/**
+ * Retired legacy cross-product RPC endpoint.
+ *
+ * Blud is a standalone product. The former Velnor bridge did not perform a
+ * real browser operation and could return success-shaped responses without
+ * execution evidence. Keep the route explicitly unavailable rather than
+ * silently accepting work or fabricating a completion receipt.
+ */
+export async function POST() {
+  return NextResponse.json(
+    {
+      status: "unavailable",
+      error: "The legacy cross-product browser RPC has been retired. Blud operates as a standalone product.",
+    },
+    { status: 410 },
+  );
 }
