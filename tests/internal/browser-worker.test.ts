@@ -1,21 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
+type ClientOptions = {
+  host: string;
+  auth: { bearer: string };
+  redirect: "error";
+};
+
+type TestSession = {
+  id: string;
+  send: (
+    message: string,
+    options: { signal: AbortSignal }
+  ) => Promise<{ result: () => Promise<unknown> }>;
+  stream: (options: { follow: false }) => AsyncIterable<unknown>;
+};
+
 const mocks = vi.hoisted(() => ({
-  create: vi.fn(),
-  attach: vi.fn(),
-  send: vi.fn(),
-  result: vi.fn(),
-  agent: vi.fn(),
-  stream: vi.fn(),
-  clientOptions: [] as unknown[],
+  create: vi.fn<() => Promise<{ session: TestSession }>>(),
+  attach: vi.fn<(sessionId: string) => TestSession>(),
+  send: vi.fn<TestSession["send"]>(),
+  result: vi.fn<() => Promise<unknown>>(),
+  stream: vi.fn<TestSession["stream"]>(),
+  clientOptions: new Array<ClientOptions>(),
 }));
 
 vi.mock("eve/client", () => ({
   Client: class {
     sessions = { create: mocks.create, attach: mocks.attach };
 
-    constructor(options: unknown) {
+    constructor(options: ClientOptions) {
       mocks.clientOptions.push(options);
     }
   },
@@ -40,6 +54,8 @@ const responseBodySchema = z.object({
 });
 
 let post: (request: Request) => Promise<Response>;
+let session: TestSession;
+let childSession: TestSession;
 
 async function loadPost() {
   vi.resetModules();
@@ -57,58 +73,58 @@ function request(body: string, token = serviceSecret) {
   });
 }
 
-function event(type: string, data: Record<string, unknown>) {
-  return {
-    type,
-    data,
-    scope: { turnId: "turn_1" },
-    meta: {
-      at: "2026-11-18T10:00:00.000Z",
-      position: { index: 0, line: 0 },
-    },
-  };
-}
-
-function successfulRuntimeResult(finalUrl = "https://example.com/") {
+function successfulRuntimeResult(
+  finalUrl = "https://example.com/"
+): unknown {
   return {
     status: "completed",
     message: "Browser assignment completed.",
     events: [
-      event("call.requested", {
-        callId: "run-browser-call",
-        capability: { kind: "tool", name: "run_browser" },
-        input: { message: "Inspect Example" },
-        owner: { runId: "run_1" },
-      }),
-      event("call.started", {
-        callId: "run-browser-call",
-        taskId: "browser-task-1",
-      }),
-      event("agent.started", {
-        name: "browser-agent",
-        sessionId: "browser-agent-session",
-        streamPath: "/eve/v1/session/browser-agent-session/stream",
-      }),
-      event("call.settled", {
-        callId: "run-browser-call",
-        outcome: "completed",
-        output: {
-          status: "success",
-          message: "Verified the page title.",
-          images: [],
-          finalUrl,
-          extractedData: { title: "Example Domain" },
+      {
+        type: "call.requested",
+        data: {
+          callId: "run-browser-call",
+          capability: { kind: "tool", name: "run_browser" },
+          input: { message: "Inspect Example" },
+          owner: { runId: "run_1" },
         },
-      }),
+        meta: { at: "2026-11-18T10:00:00.000Z" },
+      },
+      {
+        type: "call.started",
+        data: {
+          callId: "run-browser-call",
+          taskId: "browser-task-1",
+        },
+        meta: { at: "2026-11-18T10:00:00.000Z" },
+      },
+      {
+        type: "agent.started",
+        data: {
+          name: "browser-agent",
+          sessionId: "browser-agent-session",
+          streamPath: "/eve/v1/session/browser-agent-session/stream",
+        },
+        meta: { at: "2026-11-18T10:00:00.000Z" },
+      },
+      {
+        type: "call.settled",
+        data: {
+          callId: "run-browser-call",
+          outcome: "completed",
+          output: {
+            status: "success",
+            message: "Verified the page title.",
+            images: [],
+            finalUrl,
+            extractedData: { title: "Example Domain" },
+          },
+        },
+        meta: { at: "2026-11-18T10:00:00.000Z" },
+      },
     ],
   };
 }
-
-let session: {
-  id: string;
-  send: ReturnType<typeof vi.fn>;
-  agent: ReturnType<typeof vi.fn>;
-};
 
 describe("Internal Blud Browser Worker RPC", () => {
   beforeEach(async () => {
@@ -127,30 +143,44 @@ describe("Internal Blud Browser Worker RPC", () => {
     session = {
       id: "wrun_internal_1",
       send: mocks.send,
-      agent: mocks.agent,
+      stream: mocks.stream,
+    };
+    childSession = {
+      id: "browser-agent-session",
+      send: mocks.send,
+      stream: mocks.stream,
     };
     mocks.create.mockResolvedValue({ session });
-    mocks.attach.mockReturnValue(session);
+    mocks.attach.mockImplementation((sessionId) =>
+      sessionId === childSession.id ? childSession : session
+    );
     mocks.send.mockResolvedValue({ result: mocks.result });
     mocks.result.mockResolvedValue(successfulRuntimeResult());
-    mocks.agent.mockReturnValue({ stream: mocks.stream });
     mocks.stream.mockImplementation(async function* () {
-      yield event("call.requested", {
-        callId: "snapshot-call",
-        capability: { kind: "tool", name: "browser_snapshot" },
-      });
-      yield event("call.settled", {
-        callId: "snapshot-call",
-        outcome: "completed",
-        output: {
-          content: [
-            {
-              type: "text",
-              text: "Page title: Example Domain\nURL: https://example.com/",
-            },
-          ],
+      yield {
+        type: "call.requested",
+        data: {
+          callId: "snapshot-call",
+          capability: { kind: "tool", name: "browser_snapshot" },
         },
-      });
+        meta: { at: "2026-11-18T10:00:00.000Z" },
+      };
+      yield {
+        type: "call.settled",
+        data: {
+          callId: "snapshot-call",
+          outcome: "completed",
+          output: {
+            content: [
+              {
+                type: "text",
+                text: "Page title: Example Domain\nURL: https://example.com/",
+              },
+            ],
+          },
+        },
+        meta: { at: "2026-11-18T10:00:01.000Z" },
+      };
     });
     await loadPost();
   });
@@ -194,67 +224,61 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(400);
   });
 
-  it(
-    "dispatches into Eve and returns a receipt bound to settled browser evidence",
-    async () => {
-      const res = await post(
-        request(
-          JSON.stringify({
-            message: "Verify the page title",
-            startUrl: "https://example.com",
-            extractSchema: { title: "string" },
-            caller: "velnor",
-          })
-        )
-      );
+  it("dispatches into Eve and returns a receipt bound to settled browser evidence", async () => {
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          startUrl: "https://example.com",
+          extractSchema: { title: "string" },
+          caller: "velnor",
+        })
+      )
+    );
 
-      expect(res.status).toBe(200);
-      const body = responseBodySchema.parse(await res.json());
-      expect(body.status).toBe("success");
-      expect(body.sessionRef).toBe("wrun_internal_1");
-      expect(body.executionReceipt).toMatchObject({
-        taskId: "browser-task-1",
-        state: "completed",
-        finalUrl: "https://example.com/",
-        completedAtUtc: "2026-11-18T10:00:00.000Z",
-      });
-      expect(body.executionReceipt?.evidenceSha256).toMatch(/^[a-f0-9]{64}$/);
-      expect(body.data).toEqual({ title: "Example Domain" });
-      expect(mocks.clientOptions).toContainEqual({
-        host: "http://localhost:3000",
-        auth: { bearer: serviceSecret },
-        redirect: "error",
-      });
-      expect(mocks.send).toHaveBeenCalledWith(
-        expect.stringContaining("Start URL: https://example.com"),
-        expect.objectContaining({ signal: expect.any(AbortSignal) })
-      );
-      expect(mocks.agent).toHaveBeenCalledOnce();
-    }
-  );
+    expect(res.status).toBe(200);
+    const body = responseBodySchema.parse(await res.json());
+    expect(body.status).toBe("success");
+    expect(body.sessionRef).toBe("wrun_internal_1");
+    expect(body.executionReceipt).toMatchObject({
+      taskId: "browser-task-1",
+      state: "completed",
+      finalUrl: "https://example.com/",
+      completedAtUtc: "2026-11-18T10:00:00.000Z",
+    });
+    expect(body.executionReceipt?.evidenceSha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(body.data).toEqual({ title: "Example Domain" });
+    expect(mocks.clientOptions).toContainEqual({
+      host: "http://localhost:3000",
+      auth: { bearer: serviceSecret },
+      redirect: "error",
+    });
+    expect(mocks.send).toHaveBeenCalledWith(
+      expect.stringContaining("Start URL: https://example.com"),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+    expect(mocks.attach).toHaveBeenCalledWith("browser-agent-session");
+  });
 
-  it(
-    "rejects a model-reported final URL absent from settled browser evidence",
-    async () => {
-      mocks.result.mockResolvedValue(
-        successfulRuntimeResult("https://other.example/")
-      );
-      const res = await post(
-        request(
-          JSON.stringify({
-            message: "Verify the page title",
-            caller: "velnor",
-          })
-        )
-      );
+  it("rejects a model-reported final URL absent from settled browser evidence", async () => {
+    mocks.result.mockResolvedValue(
+      successfulRuntimeResult("https://other.example/")
+    );
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          caller: "velnor",
+        })
+      )
+    );
 
-      expect(res.status).toBe(200);
-      const body = responseBodySchema.parse(await res.json());
-      expect(body.status).toBe("failure");
-      expect(body.error).toBe("browser_evidence_does_not_confirm_final_url");
-      expect(body.executionReceipt).toBeUndefined();
-    }
-  );
+    expect(res.status).toBe(200);
+    const body = responseBodySchema.parse(await res.json());
+    expect(body.status).toBe("failure");
+    expect(body.error).toBe("browser_evidence_does_not_confirm_final_url");
+    expect(body.executionReceipt).toBeUndefined();
+  });
 
   it("can resume only a Velnor-owned Eve session reference", async () => {
     const res = await post(
