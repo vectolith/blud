@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { getAuthSession } from "@db/services/auth/session";
 import { proxy } from "../proxy";
 
-const auth = vi.hoisted(() => ({ getSession: vi.fn<typeof getAuthSession>() }));
+const auth = vi.hoisted(() => ({
+  getSession: vi.fn<typeof getAuthSession>(),
+}));
 vi.mock("@db/services/auth/session", () => ({
   getAuthSession: auth.getSession,
 }));
@@ -34,4 +36,18 @@ describe("contact download proxy", () => {
       );
     }
   );
+
+  it("lets the internal browser worker reach its own service-key authentication gate", async () => {
+    const response = await proxy(
+      new NextRequest("https://example.com/api/internal/browser-worker", {
+        method: "POST",
+        headers: {
+          "x-blud-key":
+            "test-service-key-that-is-not-used-by-the-proxy",
+        },
+      })
+    );
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+    expect(auth.getSession).not.toHaveBeenCalled();
+  });
 });
