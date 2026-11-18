@@ -49,8 +49,9 @@ describe("Internal Blud Browser Worker RPC", () => {
     );
     const res = await POST(req);
     expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.status).toBe("success");
-    expect(body.data?.coordinatedBy).toBeDefined();
+    expect(await res.json()).toMatchObject({
+      status: "success",
+      data: { coordinatedBy: expect.any(String) },
+    });
   });
 });
