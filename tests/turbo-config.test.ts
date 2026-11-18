@@ -13,6 +13,7 @@ const applicationEnvironment = [
   "LINK_*",
   "NODE_ENV",
   "SECRET_ENCRYPTION_KEY",
+  "SKIP_ENV_VALIDATION",
   "STRIPE_PUBLISHABLE_KEY",
   "VELNOR_SHARED_SECRET",
   "VERCEL_*",
