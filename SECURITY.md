@@ -19,7 +19,14 @@ personal data from logs, screenshots, and requests.
 
 Reports may cover authentication, authorization, cryptography, data exposure,
 tenant isolation, unsafe parsing, dependency vulnerabilities, build/release
-integrity, and deployment configuration in this repository.
+integrity, browser execution and deployment configuration in this repository.
+
+Blud owns its identity, authorization, credential vault, browser execution and
+user-data boundaries. Browser page content is untrusted input and must never be
+allowed to override system policy or grant tool permissions. Credentials must
+not be exposed to model context, browser page content or logs. Side-effectful
+browser actions require the product's trusted authorization and confirmation
+gates.
 
 Do not test against third-party services, accounts, wallets, homeservers,
 production deployments, or other users' data without explicit authorization.
