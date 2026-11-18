@@ -139,14 +139,9 @@
       "outputs": [
         "*.tsbuildinfo"
       ]
-    },
-    "//#lint:app": {
-      "env": [
-        "BLUD_INTERNAL_KEY",
-        "SKIP_ENV_VALIDATION",
-        "VELNOR_SHARED_SECRET"
-      ],
-      "outputs": []
     }
-  }
+  },
+  "globalEnv": [
+    "SKIP_ENV_VALIDATION"
+  ]
 }
