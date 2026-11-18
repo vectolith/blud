@@ -30,8 +30,8 @@ jobs:
 
       - name: Inspect Eve channel auth test formatting
         run: |
-          pnpm exec oxfmt tests/agent/channels/eve-channel-auth.test.ts
-          git diff -- tests/agent/channels/eve-channel-auth.test.ts
+          pnpm exec oxfmt app/api/internal/browser-worker/route.ts tests/internal/browser-worker.test.ts tests/agent/channels/eve-channel-auth.test.ts
+          git diff -- app/api/internal/browser-worker/route.ts tests/internal/browser-worker.test.ts tests/agent/channels/eve-channel-auth.test.ts
 
       - name: Inspect browser worker formatter output
         run: |
