@@ -23,10 +23,6 @@ export default {
   ignoreDependencies: [
     // Imported through the owning Tailwind stylesheet rather than TypeScript.
     "@tailwindcss/postcss",
-    // Used by the web tRPC client, which is intentionally excluded from the headless runtime entry graph.
-    "@tanstack/react-query",
-    "@trpc/client",
-    "@trpc/react-query",
     "shadcn",
     "tailwindcss",
     "use-stick-to-bottom",
@@ -34,6 +30,10 @@ export default {
     "eslint-plugin-react-hooks",
     "eslint-plugin-turbo",
     "oxlint-tailwindcss",
+    // Used by web/trpc/client.tsx; the headless-agent graph excludes the web UI.
+    "@tanstack/react-query",
+    "@trpc/client",
+    "@trpc/react-query",
     // Invoked as a CLI.
     "vercel",
   ],
