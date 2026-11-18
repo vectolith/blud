@@ -5,6 +5,7 @@
       "dependsOn": ["^build:app"],
       "env": [
         "BETTER_AUTH_*",
+        "BLUD_INTERNAL_KEY",
         "BLOB_*",
         "DATABASE_URL",
         "EVE_NEXT_*",
@@ -12,9 +13,10 @@
         "KERNEL_*",
         "LINQ_*",
         "LINK_*",
-        "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
+        "STRIPE_PUBLISHABLE_KEY",
+        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
@@ -23,15 +25,17 @@
       "dependsOn": ["db:migrate"],
       "env": [
         "BETTER_AUTH_*",
+        "BLUD_INTERNAL_KEY",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
         "KERNEL_*",
         "LINQ_*",
         "LINK_*",
-        "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
+        "STRIPE_PUBLISHABLE_KEY",
+        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
@@ -45,15 +49,17 @@
       "cache": false,
       "passThroughEnv": [
         "BETTER_AUTH_*",
+        "BLUD_INTERNAL_KEY",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
         "KERNEL_*",
         "LINQ_*",
         "LINK_*",
-        "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
+        "STRIPE_PUBLISHABLE_KEY",
+        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "persistent": true
@@ -68,26 +74,30 @@
       "outputs": []
     },
     "lint:app": {
+      "env": ["BLUD_INTERNAL_KEY", "VELNOR_SHARED_SECRET"],
       "outputs": []
     },
     "start:app": {
       "cache": false,
       "passThroughEnv": [
         "BETTER_AUTH_*",
+        "BLUD_INTERNAL_KEY",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
         "KERNEL_*",
         "LINQ_*",
         "LINK_*",
-        "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
+        "STRIPE_PUBLISHABLE_KEY",
+        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "persistent": true
     },
     "test:app": {
+      "env": ["BLUD_INTERNAL_KEY", "VELNOR_SHARED_SECRET"],
       "outputs": []
     },
     "types:generate": {
