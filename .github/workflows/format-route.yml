@@ -1,0 +1,33 @@
+name: Format Blud browser worker route
+
+on:
+  push:
+    branches: [standards/public-product-readiness]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format browser worker route
+        run: |
+          pnpm exec oxfmt --write app/api/internal/browser-worker/route.ts
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add app/api/internal/browser-worker/route.ts
+            git commit -m "style(api): format retired browser worker route"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
