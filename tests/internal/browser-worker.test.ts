@@ -1,12 +1,41 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
+const mocks = vi.hoisted(() => ({
+  create: vi.fn(),
+  attach: vi.fn(),
+  send: vi.fn(),
+  result: vi.fn(),
+  agent: vi.fn(),
+  stream: vi.fn(),
+  clientOptions: [] as unknown[],
+}));
+
+vi.mock("eve/client", () => ({
+  Client: class {
+    sessions = { create: mocks.create, attach: mocks.attach };
+    constructor(options: unknown) {
+      mocks.clientOptions.push(options);
+    }
+  },
+}));
+
 const serviceSecret = "test-auth-secret-0123456789abcdefghijklmnop";
 const responseBodySchema = z.object({
   status: z.string().optional(),
   error: z.string().optional(),
   message: z.string().optional(),
   data: z.unknown().optional(),
+  sessionRef: z.string().optional(),
+  executionReceipt: z
+    .object({
+      taskId: z.string(),
+      state: z.literal("completed"),
+      completedAtUtc: z.string(),
+      finalUrl: z.string(),
+      evidenceSha256: z.string(),
+    })
+    .optional(),
 });
 
 let post: (request: Request) => Promise<Response>;
@@ -27,8 +56,62 @@ function request(body: string, token = serviceSecret) {
   });
 }
 
+function event(type: string, data: Record<string, unknown>) {
+  return {
+    type,
+    data,
+    scope: { turnId: "turn_1" },
+    meta: {
+      at: "2026-11-18T10:00:00.000Z",
+      position: { index: 0, line: 0 },
+    },
+  };
+}
+
+function successfulRuntimeResult(finalUrl = "https://example.com/") {
+  return {
+    status: "completed",
+    message: "Browser assignment completed.",
+    events: [
+      event("call.requested", {
+        callId: "run-browser-call",
+        capability: { kind: "tool", name: "run_browser" },
+        input: { message: "Inspect Example" },
+        owner: { runId: "run_1" },
+      }),
+      event("call.started", {
+        callId: "run-browser-call",
+        taskId: "browser-task-1",
+      }),
+      event("agent.started", {
+        name: "browser-agent",
+        sessionId: "browser-agent-session",
+        streamPath: "/eve/v1/session/browser-agent-session/stream",
+      }),
+      event("call.settled", {
+        callId: "run-browser-call",
+        outcome: "completed",
+        output: {
+          status: "success",
+          message: "Verified the page title.",
+          images: [],
+          finalUrl,
+          extractedData: { title: "Example Domain" },
+        },
+      }),
+    ],
+  };
+}
+
+let session: {
+  id: string;
+  send: ReturnType<typeof vi.fn>;
+  agent: ReturnType<typeof vi.fn>;
+};
+
 describe("Internal Blud Browser Worker RPC", () => {
   beforeEach(async () => {
+    vi.clearAllMocks();
     vi.stubEnv(
       "DATABASE_URL",
       "postgresql://user:password@example.com/database"
@@ -37,6 +120,32 @@ describe("Internal Blud Browser Worker RPC", () => {
     vi.stubEnv("VELNOR_SHARED_SECRET", "");
     vi.stubEnv("BETTER_AUTH_SECRET", "");
     vi.stubEnv("KERNEL_API_KEY", "configured-kernel-key");
+    vi.stubEnv("VERCEL_URL", "");
+    session = {
+      id: "wrun_internal_1",
+      send: mocks.send,
+      agent: mocks.agent,
+    };
+    mocks.create.mockResolvedValue({ session });
+    mocks.attach.mockReturnValue(session);
+    mocks.send.mockResolvedValue({ result: mocks.result });
+    mocks.result.mockResolvedValue(successfulRuntimeResult());
+    mocks.agent.mockReturnValue({ stream: mocks.stream });
+    mocks.stream.mockImplementation(async function* () {
+      yield event("call.requested", {
+        callId: "snapshot-call",
+        capability: { kind: "tool", name: "browser_snapshot" },
+      });
+      yield event("call.settled", {
+        callId: "snapshot-call",
+        outcome: "completed",
+        output: {
+          content: [
+            { type: "text", text: "Page title: Example Domain\nURL: https://example.com/" },
+          ],
+        },
+      });
+    });
     await loadPost();
   });
 
@@ -56,11 +165,12 @@ describe("Internal Blud Browser Worker RPC", () => {
     const body = responseBodySchema.parse(await res.json());
     expect(body.status).toBe("offline");
     expect(body.error).toBe("internal_service_auth_not_configured");
+    expect(mocks.create).not.toHaveBeenCalled();
   });
 
   it("rejects an invalid internal service key", async () => {
     const res = await post(
-      request(JSON.stringify({ message: "test" }), "wrong-secret")
+      request(JSON.stringify({ message: "test", caller: "velnor" }), "wrong-secret")
     );
     expect(res.status).toBe(401);
   });
@@ -75,22 +185,89 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(400);
   });
 
-  it("never reports success before browser execution exists", async () => {
+  it("dispatches into Eve and returns a receipt bound to settled browser evidence", async () => {
     const res = await post(
       request(
         JSON.stringify({
           message: "Verify the page title",
           startUrl: "https://example.com",
+          extractSchema: { title: "string" },
           caller: "velnor",
         })
       )
     );
 
-    expect(res.status).toBe(501);
+    expect(res.status).toBe(200);
+    const body = responseBodySchema.parse(await res.json());
+    expect(body.status).toBe("success");
+    expect(body.sessionRef).toBe("wrun_internal_1");
+    expect(body.executionReceipt).toMatchObject({
+      taskId: "browser-task-1",
+      state: "completed",
+      finalUrl: "https://example.com/",
+      completedAtUtc: "2026-11-18T10:00:00.000Z",
+    });
+    expect(body.executionReceipt?.evidenceSha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(body.data).toEqual({ title: "Example Domain" });
+    expect(mocks.clientOptions).toContainEqual({
+      host: "http://localhost:3000",
+      auth: { bearer: serviceSecret },
+      redirect: "error",
+    });
+    expect(mocks.send).toHaveBeenCalledWith(
+      expect.stringContaining("Start URL: https://example.com"),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+    expect(mocks.agent).toHaveBeenCalledOnce();
+  });
+
+  it("rejects a model-reported final URL absent from settled browser evidence", async () => {
+    mocks.result.mockResolvedValue(successfulRuntimeResult("https://other.example/"));
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          caller: "velnor",
+        })
+      )
+    );
+
+    expect(res.status).toBe(200);
     const body = responseBodySchema.parse(await res.json());
     expect(body.status).toBe("failure");
-    expect(body.error).toBe("browser_execution_not_implemented");
-    expect(body.message).toMatch(/no browser action was performed/i);
-    expect(body.data).toBeUndefined();
+    expect(body.error).toBe("browser_evidence_does_not_confirm_final_url");
+    expect(body.executionReceipt).toBeUndefined();
+  });
+
+  it("can resume only a Velnor-owned Eve session reference", async () => {
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Continue the page inspection",
+          sessionRef: "wrun_existing_123",
+          caller: "velnor",
+        })
+      )
+    );
+
+    expect(res.status).toBe(200);
+    expect(mocks.attach).toHaveBeenCalledWith("wrun_existing_123");
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-Eve session references before dispatch", async () => {
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Continue the page inspection",
+          sessionRef: "kernel-browser-session",
+          caller: "velnor",
+        })
+      )
+    );
+
+    expect(res.status).toBe(400);
+    expect(mocks.create).not.toHaveBeenCalled();
+    expect(mocks.attach).not.toHaveBeenCalled();
   });
 });
