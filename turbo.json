@@ -2,7 +2,9 @@
   "$schema": "https://turborepo.dev/schema.json",
   "tasks": {
     "build:app": {
-      "dependsOn": ["^build:app"],
+      "dependsOn": [
+        "^build:app"
+      ],
       "env": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
@@ -20,10 +22,16 @@
         "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
-      "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "next-env.d.ts"
+      ]
     },
     "build:vercel": {
-      "dependsOn": ["db:migrate"],
+      "dependsOn": [
+        "db:migrate"
+      ],
       "env": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
@@ -40,12 +48,21 @@
         "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
-      "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "next-env.d.ts"
+      ]
     },
     "db:migrate": {
       "cache": false,
-      "env": ["DATABASE_URL_UNPOOLED"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"]
+      "env": [
+        "DATABASE_URL_UNPOOLED"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ]
     },
     "dev:app": {
       "cache": false,
@@ -103,15 +120,25 @@
       "persistent": true
     },
     "test:app": {
-      "env": ["BLUD_INTERNAL_KEY", "VELNOR_SHARED_SECRET"],
+      "env": [
+        "BLUD_INTERNAL_KEY",
+        "VELNOR_SHARED_SECRET"
+      ],
       "outputs": []
     },
     "types:generate": {
-      "outputs": [".next/types/**", "next-env.d.ts"]
+      "outputs": [
+        ".next/types/**",
+        "next-env.d.ts"
+      ]
     },
     "types:check:app": {
-      "dependsOn": ["types:generate"],
-      "outputs": ["*.tsbuildinfo"]
+      "dependsOn": [
+        "types:generate"
+      ],
+      "outputs": [
+        "*.tsbuildinfo"
+      ]
     }
   }
 }
