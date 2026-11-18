@@ -56,7 +56,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(400);
   });
 
-  it("does not report success before browser execution is implemented", async () => {
+  it("never reports success before browser execution exists", async () => {
     const res = await POST(
       request(
         JSON.stringify({
