@@ -26,7 +26,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     vi.unstubAllEnvs();
   });
 
-  it("fails closed when internal service authentication is not configured", async () => {
+  it("fails closed when service authentication is missing", async () => {
     vi.stubEnv("BLUD_INTERNAL_KEY", "");
     vi.stubEnv("VELNOR_SHARED_SECRET", "");
 
@@ -41,7 +41,7 @@ describe("Internal Blud Browser Worker RPC", () => {
 
   it("rejects an invalid internal service key", async () => {
     const res = await POST(
-      request(JSON.stringify({ message: "test", caller: "velnor" }), "wrong-secret")
+      request(JSON.stringify({ message: "test" }), "wrong-secret")
     );
     expect(res.status).toBe(401);
   });
@@ -56,7 +56,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(400);
   });
 
-  it("never reports success until a real browser execution adapter exists", async () => {
+  it("does not report success before browser execution is implemented", async () => {
     const res = await POST(
       request(
         JSON.stringify({
