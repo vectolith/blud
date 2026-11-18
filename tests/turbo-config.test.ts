@@ -18,7 +18,9 @@ const applicationEnvironment = [
   "VELNOR_SHARED_SECRET",
   "VERCEL_*",
 ];
-const runtimeEnvironment = applicationEnvironment;
+const runtimeEnvironment = applicationEnvironment.filter(
+  (name) => name !== "SKIP_ENV_VALIDATION"
+);
 
 describe("Turbo configuration", () => {
   it("scopes application environment variables to their owning tasks", async () => {
@@ -47,7 +49,9 @@ describe("Turbo configuration", () => {
     );
     expect(turbo.tasks["build:vercel"].env).toEqual(applicationEnvironment);
     expect(turbo.tasks["dev:app"].passThroughEnv).toEqual(runtimeEnvironment);
+    expect(turbo.tasks["dev:app"].passThroughEnv).not.toContain("SKIP_ENV_VALIDATION");
     expect(turbo.tasks["start:app"].passThroughEnv).toEqual(runtimeEnvironment);
+    expect(turbo.tasks["start:app"].passThroughEnv).not.toContain("SKIP_ENV_VALIDATION");
   });
 
   it("provisions required one-click deployment configuration", async () => {
