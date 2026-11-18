@@ -1,0 +1,26 @@
+name: Temporary formatting probe
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  format-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format only the readiness files and print the exact diff
+        run: |
+          pnpm exec oxfmt --write PUBLIC_PRODUCT_STANDARD.md "app/api/auth/[...all]/_tests/auth-route.test.ts" tests/internal/browser-worker.test.ts
+          git diff --no-ext-diff -- PUBLIC_PRODUCT_STANDARD.md "app/api/auth/[...all]/_tests/auth-route.test.ts" tests/internal/browser-worker.test.ts
