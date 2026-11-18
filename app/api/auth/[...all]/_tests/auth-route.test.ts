@@ -1,10 +1,19 @@
-/* oxlint-disable vitest/require-mock-type-parameters -- Auth initialization needs a deliberately partial Better Auth fixture. */
+/*
+ * oxlint-disable vitest/require-mock-type-parameters -- Auth initialization
+ * needs a deliberately partial Better Auth fixture.
+ */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const handler = vi.fn<(request: Request) => Promise<Response>>();
+// Explicit signatures keep the mocked Better Auth adapter contract type-checked.
 const mocks = vi.hoisted(() => ({
-  getAuth: vi.fn(),
-  toNextJsHandler: vi.fn(),
+  getAuth: vi.fn<() => Promise<unknown>>(),
+  toNextJsHandler:
+    vi.fn<
+      (
+        auth: unknown
+      ) => Record<"DELETE" | "GET" | "PATCH" | "POST" | "PUT", typeof handler>
+    >(),
 }));
 
 vi.mock("@db/services/auth", () => ({ getAuth: mocks.getAuth }));
