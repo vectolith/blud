@@ -183,6 +183,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "");
     vi.stubEnv("KERNEL_API_KEY", "configured-kernel-key");
     vi.stubEnv("VERCEL_URL", "");
+    vi.stubEnv("BETTER_AUTH_URL", "http://localhost:3000");
 
     session = {
       id: "wrun_internal_1",
