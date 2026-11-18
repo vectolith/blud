@@ -1,30 +1,46 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({
-  message: z.string().min(1),
+  message: z.string().trim().min(1).max(8_000),
   startUrl: z.string().url().optional(),
   sessionRef: z.string().optional(),
-  caller: z.string().optional(),
-});
+  extractSchema: z.record(z.string(), z.unknown()).optional(),
+  caller: z.literal("velnor"),
+}).strict();
 
-function isAuthorized(request: Request): boolean {
-  const secret =
-    process.env.BLUD_INTERNAL_KEY ||
-    process.env.VELNOR_SHARED_SECRET ||
-    process.env.BETTER_AUTH_SECRET ||
-    "";
-  if (!secret) return true; // in local dev without secret configured
+function configuredServiceSecret(): string {
+  return process.env.BLUD_INTERNAL_KEY || process.env.VELNOR_SHARED_SECRET || "";
+}
 
+function isAuthorized(request: Request, secret: string): boolean {
   const token =
     request.headers.get("x-blud-key") ||
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
+    request.headers.get("authorization")?.replace(/^Bearer\\s+/i, "") ||
     "";
-  return token === secret;
+  const expectedBytes = Buffer.from(secret);
+  const tokenBytes = Buffer.from(token);
+  return (
+    tokenBytes.length === expectedBytes.length &&
+    timingSafeEqual(tokenBytes, expectedBytes)
+  );
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
+  const secret = configuredServiceSecret();
+  if (!secret) {
+    return NextResponse.json(
+      {
+        status: "offline",
+        error: "internal_service_auth_not_configured",
+        message: "Blud internal browser-worker authentication is not configured.",
+      },
+      { status: 503 }
+    );
+  }
+
+  if (!isAuthorized(request, secret)) {
     return NextResponse.json(
       { error: "Unauthorized: valid internal service key required." },
       { status: 401 }
@@ -49,53 +65,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const { message, startUrl } = parsed.data;
-
-  // Blud Kernel Browser Worker Execution Coordinator
-  try {
-    const kernelApiKey = process.env.KERNEL_API_KEY;
-
-    // When Kernel API key is configured, initialize execution coordinator
-    if (kernelApiKey && kernelApiKey !== "test-kernel-key") {
-      const Kernel = (await import("@onkernel/sdk")).default;
-      const kernel = new Kernel({ apiKey: kernelApiKey });
-
-      // Run browser navigation or extraction
-      return NextResponse.json({
-        status: "success",
-        message: `Task accepted and executed by Blud Kernel coordinator: "${message}"`,
-        currentUrl: startUrl || "about:blank",
-        images: [],
-        data: {
-          coordinatedBy: "blud-kernel",
-          executedAt: new Date().toISOString(),
-          task: message,
-        },
-      });
-    }
-
-    // Local / development mock coordinator response with verified telemetry
-    return NextResponse.json({
-      status: "success",
-      message: `Blud browser coordinator accepted assignment: "${message}"${
-        startUrl ? ` on ${startUrl}` : ""
-      }`,
-      currentUrl: startUrl,
-      images: [],
-      data: {
-        task: message,
-        coordinatedBy: "blud-kernel-coordinator",
-        verifiedAtUtc: new Date().toISOString(),
-      },
-    });
-  } catch (err: unknown) {
-    return NextResponse.json(
-      {
-        status: "failure",
-        message: "Blud browser coordinator encountered an error.",
-        error: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 }
-    );
-  }
+  // This route is not yet wired to Eve's authenticated root-agent/subagent
+  // runtime. Returning success here would fabricate a browser execution
+  // receipt: initializing the Kernel SDK alone does not create a browser,
+  // navigate a page, or verify an outcome. Fail closed until the real
+  // coordinator can return a verifiable execution receipt.
+  return NextResponse.json(
+    {
+      status: "failure",
+      error: "browser_execution_not_implemented",
+      message:
+        "No browser action was performed. The internal endpoint is not yet connected to Blud's browser-agent runtime.",
+    },
+    { status: 501 }
+  );
 }
