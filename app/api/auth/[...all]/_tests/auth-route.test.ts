@@ -5,6 +5,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const handler = vi.fn<(request: Request) => Promise<Response>>();
+// Explicit signatures keep the mocked Better Auth adapter contract type-checked.
 const mocks = vi.hoisted(() => ({
   getAuth: vi.fn<() => Promise<unknown>>(),
   toNextJsHandler:
