@@ -1,16 +1,5 @@
 import type { RouteHandlerArgs } from "eve/channels";
-
-vi.mock("@shared/environment/env", async (importOriginal) => {
-  const actual =
-    await importOriginal();
-  return {
-    ...actual,
-    env: {
-      ...actual.env,
-      BLUD_INTERNAL_KEY: "test-internal-secret-0123456789",
-    },
-  };
-});
+import type * as EnvironmentModule from "@shared/environment/env";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as AuthSession from "@db/services/auth/session";
 import * as SessionService from "@db/services/sessions";
@@ -19,7 +8,7 @@ import eveChannel, { sessionIdFromPath } from "@agent/channels/eve";
 
 vi.mock("@shared/environment/env", async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import("@shared/environment/env")>();
+    await importOriginal<typeof EnvironmentModule>();
   return {
     ...actual,
     env: {
