@@ -9,12 +9,9 @@ const requestSchema = z.object({
 });
 
 function isAuthorized(request: Request): boolean {
-  const secret =
-    process.env.BLUD_INTERNAL_KEY ||
-    process.env.VELNOR_SHARED_SECRET ||
-    process.env.BETTER_AUTH_SECRET ||
-    "";
-  if (!secret) return true; // in local dev without secret configured
+  const secret = process.env.BLUD_INTERNAL_KEY?.trim();
+  // This endpoint is optional and must never inherit credentials from another product.
+  if (!secret) return false;
 
   const token =
     request.headers.get("x-blud-key") ||
