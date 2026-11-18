@@ -23,9 +23,34 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllEnvs();
 });
 
 describe("Eve channel authentication", () => {
+  it("admits the Velnor service only on owned session routes", async () => {
+    const secret = "test-internal-secret-0123456789";
+    vi.stubEnv("BLUD_INTERNAL_KEY", secret);
+    vi.stubEnv("VELNOR_SHARED_SECRET", "");
+    isSessionOwnedMock.mockResolvedValue(true);
+
+    const route = findRoute("GET", "/eve/v1/session/:sessionId/stream");
+    const response = await route.handler(
+      new Request(
+        "https://assistant.example/eve/v1/session/wrun_service/stream",
+        { headers: { Authorization: `Bearer ${secret}` } }
+      ),
+      unexpectedRouteContext()
+    );
+
+    expect(isSessionOwnedMock).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: "blud-internal:velnor" }),
+      "wrun_service"
+    );
+    expect(getAuthSessionMock).not.toHaveBeenCalled();
+    expect(response.status).not.toBe(401);
+    expect(response.status).not.toBe(403);
+  });
+
   it("checks decoded session route ids against workspace ownership", async () => {
     const route = eveChannel.routes.find(
       (candidate) =>
