@@ -79,7 +79,7 @@ const browserCompletionSchema = z
   .object({
     status: z.enum(["success", "failure"]),
     message: z.string().trim().min(1),
-    finalUrl: z.url().optional(),
+    finalUrl: z.string().optional(),
     extractedData: z.record(z.string(), z.json()).optional(),
   })
   .loose();
