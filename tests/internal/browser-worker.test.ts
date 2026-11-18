@@ -30,7 +30,9 @@ describe("Internal Blud Browser Worker RPC", () => {
     vi.stubEnv("BLUD_INTERNAL_KEY", "");
     vi.stubEnv("VELNOR_SHARED_SECRET", "");
 
-    const res = await POST(request(JSON.stringify({ message: "test", caller: "velnor" })));
+    const res = await POST(
+      request(JSON.stringify({ message: "test", caller: "velnor" }))
+    );
     expect(res.status).toBe(503);
     const body = await res.json();
     expect(body.status).toBe("offline");
@@ -38,7 +40,9 @@ describe("Internal Blud Browser Worker RPC", () => {
   });
 
   it("rejects an invalid internal service key", async () => {
-    const res = await POST(request(JSON.stringify({ message: "test", caller: "velnor" }), "wrong-secret"));
+    const res = await POST(
+      request(JSON.stringify({ message: "test", caller: "velnor" }), "wrong-secret")
+    );
     expect(res.status).toBe(401);
   });
 
