@@ -5,6 +5,14 @@ import { z } from "zod";
 import { taskCompletionOutputSchema } from "@shared/browser/task-completion";
 import { env } from "@shared/environment/env";
 
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 type ExtractionType =
   | "string"
   | "number"
@@ -460,11 +468,7 @@ function matchesExtractionSchema(
         case "array":
           return Array.isArray(value);
         case "object":
-          return (
-            value !== null &&
-            typeof value === "object" &&
-            !Array.isArray(value)
-          );
+          return value.kind === "object";
         case "null":
           return value === null;
         default:
