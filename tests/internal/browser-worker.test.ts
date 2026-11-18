@@ -102,6 +102,11 @@ async function loadPost() {
   post = route.POST;
 }
 
+async function responseBody(response: Response) {
+  const rawBody: unknown = await response.json();
+  return responseBodySchema.parse(rawBody);
+}
+
 function request(body: string, token = serviceSecret) {
   const headers = new Headers({ "Content-Type": "application/json" });
   if (token.length > 0) headers.set("x-blud-key", token);
@@ -237,7 +242,7 @@ describe("Internal Blud Browser Worker RPC", () => {
       request(JSON.stringify({ message: "test", caller: "velnor" }))
     );
     expect(res.status).toBe(503);
-    const body = responseBodySchema.parse(await res.json());
+    const body = await responseBody(res);
     expect(body.status).toBe("offline");
     expect(body.error).toBe("internal_service_auth_not_configured");
     expect(mocks.create).not.toHaveBeenCalled();
@@ -276,7 +281,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     );
 
     expect(res.status).toBe(200);
-    const body = responseBodySchema.parse(await res.json());
+    const body = await responseBody(res);
     expect(body.status).toBe("success");
     expect(body.sessionRef).toBe("wrun_internal_1");
     expect(body.executionReceipt).toMatchObject({
@@ -313,7 +318,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     );
 
     expect(res.status).toBe(200);
-    const body = responseBodySchema.parse(await res.json());
+    const body = await responseBody(res);
     expect(body.status).toBe("failure");
     expect(body.error).toBe("browser_evidence_does_not_confirm_final_url");
     expect(body.executionReceipt).toBeUndefined();
