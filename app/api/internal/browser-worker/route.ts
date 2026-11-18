@@ -2,7 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Client } from "eve/client";
 import { z } from "zod";
-import { taskCompletionOutputSchema } from "@agent/subagents/browser-agent/lib/completion";
+import { taskCompletionOutputSchema } from "@shared/browser/task-completion";
 import { env } from "@shared/environment/env";
 
 const requestSchema = z
@@ -19,9 +19,9 @@ const runtimeEventSchema = z
   .object({
     type: z.string(),
     data: z.unknown(),
-    meta: z.object({ at: z.string() }).passthrough(),
+    meta: z.object({ at: z.string() }).loose(),
   })
-  .passthrough();
+  .loose();
 
 const runtimeResultSchema = z.object({
   status: z.enum(["completed", "waiting", "failed"]),
