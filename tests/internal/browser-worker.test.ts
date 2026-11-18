@@ -292,11 +292,12 @@ describe("Internal Blud Browser Worker RPC", () => {
     });
     expect(body.executionReceipt?.evidenceSha256).toMatch(/^[a-f0-9]{64}$/);
     expect(body.data).toEqual({ title: "Example Domain" });
-    expect(mocks.clientOptions).toContainEqual({
+    const expectedClientOptions: ClientOptions = {
       baseUrl: "http://localhost:3000",
       auth: { bearer: serviceSecret },
       redirect: "error",
-    });
+    };
+    expect(mocks.clientOptions).toContainEqual(expectedClientOptions);
     expect(mocks.send).toHaveBeenCalledWith(
       expect.stringContaining("Start URL: https://example.com"),
       expect.objectContaining({ signal: expect.any(AbortSignal) })
