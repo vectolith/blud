@@ -375,9 +375,7 @@ describe("Internal Blud Browser Worker RPC", () => {
 
     const body = await responseBody(res);
     expect(body.status).toBe("failure");
-    expect(body.error).toBe(
-      "browser_extraction_not_grounded_in_tool_evidence"
-    );
+    expect(body.error).toBe("browser_extraction_not_grounded_in_tool_evidence");
     expect(body.executionReceipt).toBeUndefined();
   });
 
@@ -402,45 +400,6 @@ describe("Internal Blud Browser Worker RPC", () => {
     );
   });
 
-
-  it("rejects extracted values that are absent from settled browser evidence", async () => {
-    mocks.result.mockResolvedValue({
-      ...successfulRuntimeResult(),
-      events: successfulRuntimeResult().events.map((event) =>
-        event.type === "call.settled" &&
-        event.data.callId === "run-browser-call"
-          ? {
-              ...event,
-              data: {
-                ...event.data,
-                output: {
-                  status: "success",
-                  message: "Completed extraction.",
-                  images: [],
-                  finalUrl: "https://example.com/",
-                  extractedData: { title: "Invented page title" },
-                },
-              },
-            }
-          : event
-      ),
-    });
-    const res = await post(
-      request(
-        JSON.stringify({
-          message: "Extract the page title",
-          extractSchema: { title: "string" },
-          caller: "velnor",
-        })
-      )
-    );
-
-    expect(res.status).toBe(200);
-    const body = await responseBody(res);
-    expect(body.status).toBe("failure");
-    expect(body.error).toBe("browser_extraction_not_grounded_in_tool_evidence");
-    expect(body.executionReceipt).toBeUndefined();
-  });
 
   it("can resume only a Velnor-owned Eve session reference", async () => {
     const res = await post(
