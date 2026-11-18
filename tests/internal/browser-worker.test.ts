@@ -119,8 +119,18 @@ function request(body: string, token = serviceSecret) {
 
 function successfulRuntimeResult(
   finalUrl = "https://example.com/",
-  extractedData: { title: string } | undefined = { title: "Example Domain" }
+  extractedData: { title: string } | null = { title: "Example Domain" }
 ): TestRuntimeResult {
+  const completionOutput: TestWorkerCompletion = {
+    status: "success",
+    message: "Verified the page title.",
+    images: [],
+    finalUrl,
+  };
+  if (extractedData !== null) {
+    completionOutput.extractedData = extractedData;
+  }
+
   return {
     status: "completed",
     message: "Browser assignment completed.",
@@ -157,13 +167,7 @@ function successfulRuntimeResult(
         data: {
           callId: "run-browser-call",
           outcome: "completed",
-          output: {
-            status: "success",
-            message: "Verified the page title.",
-            images: [],
-            finalUrl,
-            extractedData: { title: "Example Domain" },
-          },
+          output: completionOutput,
         },
         meta: { at: "2026-11-18T10:00:00.000Z" },
       },
