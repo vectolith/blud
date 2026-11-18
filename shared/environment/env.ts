@@ -60,6 +60,10 @@ function installationSecretWithLocalDefault<
 }
 
 export const env = createEnv({
+  // Build workers do not receive production secrets. Skip schema validation
+  // only when explicitly requested by the build environment; runtime
+  // deployments must leave this unset so required configuration is enforced.
+  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
   server: {
     // Required
     DATABASE_URL: databaseUrlSchema,
