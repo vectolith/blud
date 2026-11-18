@@ -274,8 +274,7 @@
     "tailwindcss/no-contradicting-variants": "off",
     "tailwindcss/no-deprecated-classes": "warn",
     "tailwindcss/no-duplicate-classes": "error",
-    // The semantic typography utilities are hand-authored `@layer utilities`
-    // classes in app/styles/brand/typography.css.
+    // Tailwind v4 is loaded from the repository's canonical app/globals.css entry point.
     "tailwindcss/no-unknown-classes": [
       "warn",
       {
