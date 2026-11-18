@@ -6,8 +6,8 @@ describe("Internal Blud Browser Worker RPC", () => {
     const req = new Request(
       "http://localhost:3000/api/internal/browser-worker",
       {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: "test" }),
       },
     );
@@ -19,11 +19,11 @@ describe("Internal Blud Browser Worker RPC", () => {
     const req = new Request(
       "http://localhost:3000/api/internal/browser-worker",
       {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
-      },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
+        },
         body: JSON.stringify({}),
       },
     );
@@ -35,11 +35,11 @@ describe("Internal Blud Browser Worker RPC", () => {
     const req = new Request(
       "http://localhost:3000/api/internal/browser-worker",
       {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
-      },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
+        },
         body: JSON.stringify({
           message: "Verify homepage load",
           startUrl: "https://example.com",
