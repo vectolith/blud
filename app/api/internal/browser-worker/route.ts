@@ -398,6 +398,7 @@ function findRunBrowserCompletion(events: RuntimeEvent[]) {
   return completion;
 }
 
+// Validate extracted values against the schema supplied by the caller.
 function matchesExtractionSchema(
   data: Record<string, JsonValue>,
   schema: Record<string, JsonValue>
