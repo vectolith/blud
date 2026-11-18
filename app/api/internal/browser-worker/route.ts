@@ -24,10 +24,11 @@ function configuredServiceSecret(): string {
 }
 
 function isAuthorized(request: Request, secret: string): boolean {
+  const headerKey = request.headers.get("x-blud-key");
+  const bearerToken =
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
   const token =
-    request.headers.get("x-blud-key") ||
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
-    "";
+    headerKey && headerKey.length > 0 ? headerKey : bearerToken;
   const expectedBytes = Buffer.from(secret);
   const tokenBytes = Buffer.from(token);
   return (
