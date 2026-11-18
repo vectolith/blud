@@ -256,6 +256,20 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
+  it("fails closed when the configured internal service secret is too short", async () => {
+    vi.stubEnv("BLUD_INTERNAL_KEY", "short-secret");
+    await loadPost();
+
+    const res = await post(
+      request(JSON.stringify({ message: "test", caller: "velnor" }))
+    );
+    const body = await responseBody(res);
+    expect(res.status).toBe(503);
+    expect(body.status).toBe("offline");
+    expect(body.error).toBe("internal_service_auth_not_configured");
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
   it("fails closed when the configured Eve origin is missing", async () => {
     vi.stubEnv("BETTER_AUTH_URL", "");
     await loadPost();
