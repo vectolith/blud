@@ -45,21 +45,21 @@ describe("Eve channel authentication", () => {
     isSessionOwnedMock.mockResolvedValue(true);
 
     const route = findRoute("GET", "/eve/v1/session/:sessionId/stream");
-    const response = await route.handler(
-      new Request(
-        "https://assistant.example/eve/v1/session/wrun_service/stream",
-        { headers: { Authorization: `Bearer ${secret}` } }
-      ),
-      unexpectedRouteContext()
-    );
+    await expect(
+      route.handler(
+        new Request(
+          "https://assistant.example/eve/v1/session/wrun_service/stream",
+          { headers: { Authorization: `Bearer ${secret}` } }
+        ),
+        unexpectedRouteContext()
+      )
+    ).rejects.toThrow("The request should stop at authorization.");
 
     expect(isSessionOwnedMock).toHaveBeenCalledWith(
       expect.objectContaining({ userId: "blud-internal:velnor" }),
       "wrun_service"
     );
     expect(getAuthSessionMock).not.toHaveBeenCalled();
-    expect(response.status).not.toBe(401);
-    expect(response.status).not.toBe(403);
   });
 
   it("checks decoded session route ids against workspace ownership", async () => {
