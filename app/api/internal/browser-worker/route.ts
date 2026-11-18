@@ -2,7 +2,6 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Client } from "eve/client";
 import { z } from "zod";
-import { taskCompletionOutputSchema } from "@shared/browser/task-completion";
 import { env } from "@shared/environment/env";
 
 type JsonValue =
@@ -75,6 +74,17 @@ const runtimeResultSchema = z.object({
   message: z.string().optional(),
   events: z.array(runtimeEventSchema),
 });
+
+const browserCompletionSchema = z
+  .object({
+    status: z.enum(["success", "failure"]),
+    message: z.string().trim().min(1),
+    finalUrl: z.url().optional(),
+    extractedData: z.record(z.string(), z.json()).optional(),
+  })
+  .loose();
+
+type BrowserCompletion = z.infer<typeof browserCompletionSchema>;
 
 const callRequestedSchema = z.object({
   callId: z.string().min(1),
@@ -395,7 +405,7 @@ function findRunBrowserCompletion(events: RuntimeEvent[]) {
   const runBrowserCalls = new Set<string>();
   const taskIds = new Map<string, string>();
   let completion:
-    | (z.infer<typeof taskCompletionOutputSchema> & {
+    | (BrowserCompletion & {
         taskId: string;
         completedAt: string;
       })
@@ -423,7 +433,7 @@ function findRunBrowserCompletion(events: RuntimeEvent[]) {
     if (!call.success || call.data.outcome !== "completed") continue;
     const taskId = taskIds.get(call.data.callId);
     if (!taskId || !runBrowserCalls.has(call.data.callId)) continue;
-    const parsed = taskCompletionOutputSchema.safeParse(call.data.output);
+    const parsed = browserCompletionSchema.safeParse(call.data.output);
     if (parsed.success) {
       completion = {
         ...parsed.data,
