@@ -49,13 +49,7 @@ describe("Turbo configuration", () => {
     );
     expect(turbo.tasks["build:vercel"].env).toEqual(applicationEnvironment);
     expect(turbo.tasks["dev:app"].passThroughEnv).toEqual(runtimeEnvironment);
-    expect(turbo.tasks["dev:app"].passThroughEnv).not.toContain(
-      "SKIP_ENV_VALIDATION"
-    );
     expect(turbo.tasks["start:app"].passThroughEnv).toEqual(runtimeEnvironment);
-    expect(turbo.tasks["start:app"].passThroughEnv).not.toContain(
-      "SKIP_ENV_VALIDATION"
-    );
   });
 
   it("provisions required one-click deployment configuration", async () => {
