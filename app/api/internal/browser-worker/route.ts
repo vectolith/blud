@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { env } from "@shared/environment/env";
 
 const EXECUTION_NOT_IMPLEMENTED_MESSAGE = [
   "No browser action was performed.",
@@ -18,17 +19,14 @@ const requestSchema = z
   .strict();
 
 function configuredServiceSecret(): string {
-  const primary = process.env.BLUD_INTERNAL_KEY;
-  if (primary && primary.length > 0) return primary;
-  return process.env.VELNOR_SHARED_SECRET ?? "";
+  return env.BLUD_INTERNAL_KEY ?? env.VELNOR_SHARED_SECRET ?? "";
 }
 
 function isAuthorized(request: Request, secret: string): boolean {
   const headerKey = request.headers.get("x-blud-key");
   const bearerToken =
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
-  const token =
-    headerKey && headerKey.length > 0 ? headerKey : bearerToken;
+  const token = headerKey && headerKey.length > 0 ? headerKey : bearerToken;
   const expectedBytes = Buffer.from(secret);
   const tokenBytes = Buffer.from(token);
   return (
