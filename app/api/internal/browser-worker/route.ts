@@ -453,7 +453,7 @@ function matchesExtractionSchema(
       } else {
         const objectDefinition = z
           .object({ type: z.string().optional() })
-          .passthrough()
+          .loose()
           .safeParse(definition);
         if (!objectDefinition.success) return false;
         expectedType = objectDefinition.data.type;
