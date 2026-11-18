@@ -17,7 +17,7 @@ function configuredServiceSecret(): string {
 function isAuthorized(request: Request, secret: string): boolean {
   const token =
     request.headers.get("x-blud-key") ||
-    request.headers.get("authorization")?.replace(/^Bearer\\s+/i, "") ||
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
     "";
   const expectedBytes = Buffer.from(secret);
   const tokenBytes = Buffer.from(token);
