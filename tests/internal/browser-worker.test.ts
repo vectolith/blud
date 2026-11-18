@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@app/api/internal/browser-worker/route";
+import { z } from "zod";
 
 const serviceSecret = "test-auth-secret-0123456789abcdefghijklmnop";
+const responseBodySchema = z.object({
+  status: z.string().optional(),
+  error: z.string().optional(),
+  message: z.string().optional(),
+  data: z.unknown().optional(),
+});
 
 function request(body: string, token = serviceSecret) {
   return new Request("http://localhost:3000/api/internal/browser-worker", {
@@ -34,7 +41,7 @@ describe("Internal Blud Browser Worker RPC", () => {
       request(JSON.stringify({ message: "test", caller: "velnor" }))
     );
     expect(res.status).toBe(503);
-    const body = await res.json();
+    const body = responseBodySchema.parse(await res.json());
     expect(body.status).toBe("offline");
     expect(body.error).toBe("internal_service_auth_not_configured");
   });
