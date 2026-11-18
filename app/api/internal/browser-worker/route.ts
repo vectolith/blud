@@ -173,10 +173,7 @@ export async function POST(request: Request) {
     const result = runtimeResultSchema.parse(rawResult);
     const completion = findRunBrowserCompletion(result.events);
 
-    if (
-      result.status !== "completed" ||
-      completion?.status !== "success"
-    ) {
+    if (result.status !== "completed" || completion?.status !== "success") {
       return NextResponse.json(
         {
           status: "failure",
