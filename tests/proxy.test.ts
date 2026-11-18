@@ -42,8 +42,7 @@ describe("contact download proxy", () => {
       new NextRequest("https://example.com/api/internal/browser-worker", {
         method: "POST",
         headers: {
-          "x-blud-key":
-            "test-service-key-that-is-not-used-by-the-proxy",
+          "x-blud-key": "test-service-key-that-is-not-used-by-the-proxy",
         },
       })
     );
