@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { POST } from "@app/api/internal/browser-worker/route";
 import { z } from "zod";
 
 const serviceSecret = "test-auth-secret-0123456789abcdefghijklmnop";
@@ -10,23 +9,31 @@ const responseBodySchema = z.object({
   data: z.unknown().optional(),
 });
 
+let post: (request: Request) => Promise<Response>;
+
+async function loadPost() {
+  vi.resetModules();
+  const route = await import("@app/api/internal/browser-worker/route");
+  post = route.POST;
+}
+
 function request(body: string, token = serviceSecret) {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  if (token.length > 0) headers.set("x-blud-key", token);
   return new Request("http://localhost:3000/api/internal/browser-worker", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { "x-blud-key": token } : {}),
-    },
+    headers,
     body,
   });
 }
 
 describe("Internal Blud Browser Worker RPC", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.stubEnv("BLUD_INTERNAL_KEY", serviceSecret);
     vi.stubEnv("VELNOR_SHARED_SECRET", "");
     vi.stubEnv("BETTER_AUTH_SECRET", "");
     vi.stubEnv("KERNEL_API_KEY", "configured-kernel-key");
+    await loadPost();
   });
 
   afterEach(() => {
@@ -36,8 +43,9 @@ describe("Internal Blud Browser Worker RPC", () => {
   it("fails closed when service authentication is missing", async () => {
     vi.stubEnv("BLUD_INTERNAL_KEY", "");
     vi.stubEnv("VELNOR_SHARED_SECRET", "");
+    await loadPost();
 
-    const res = await POST(
+    const res = await post(
       request(JSON.stringify({ message: "test", caller: "velnor" }))
     );
     expect(res.status).toBe(503);
@@ -47,24 +55,24 @@ describe("Internal Blud Browser Worker RPC", () => {
   });
 
   it("rejects an invalid internal service key", async () => {
-    const res = await POST(
+    const res = await post(
       request(JSON.stringify({ message: "test" }), "wrong-secret")
     );
     expect(res.status).toBe(401);
   });
 
   it("rejects malformed JSON after authentication", async () => {
-    const res = await POST(request("{"));
+    const res = await post(request("{"));
     expect(res.status).toBe(400);
   });
 
   it("rejects an invalid browser delegation payload", async () => {
-    const res = await POST(request(JSON.stringify({})));
+    const res = await post(request(JSON.stringify({})));
     expect(res.status).toBe(400);
   });
 
   it("never reports success before browser execution exists", async () => {
-    const res = await POST(
+    const res = await post(
       request(
         JSON.stringify({
           message: "Verify the page title",
@@ -75,7 +83,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     );
 
     expect(res.status).toBe(501);
-    const body = await res.json();
+    const body = responseBodySchema.parse(await res.json());
     expect(body.status).toBe("failure");
     expect(body.error).toBe("browser_execution_not_implemented");
     expect(body.message).toMatch(/no browser action was performed/i);
