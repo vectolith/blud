@@ -3,7 +3,6 @@ import type { KnipConfig } from "knip";
 export default {
   entry: [
     "agent/channels/**/*.ts",
-    "agent/extensions/**/*.ts",
     "agent/hooks/**/*.ts",
     "agent/instructions/**/*.ts",
     "agent/instrumentation/**/*.ts",
@@ -21,8 +20,6 @@ export default {
     "tests/runtime/fixture/evals/**/*.ts",
   ],
   ignoreDependencies: [
-    // Imported through the owning Tailwind stylesheet rather than TypeScript.
-    "@tailwindcss/postcss",
     "shadcn",
     "tailwindcss",
     "use-stick-to-bottom",
@@ -39,5 +36,5 @@ export default {
     "shared/**/*.ts": ["exports", "files", "types"],
     "web/**/*.{ts,tsx}": ["exports", "files", "types"],
   },
-  project: ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}"],
+  project: ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,css}"],
 } satisfies KnipConfig;
