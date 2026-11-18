@@ -5,12 +5,24 @@ import { z } from "zod";
 import { taskCompletionOutputSchema } from "@shared/browser/task-completion";
 import { env } from "@shared/environment/env";
 
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
+const extractionSchema = z.record(z.string(), z.json());
 const requestSchema = z
   .object({
     message: z.string().trim().min(1).max(8_000),
     startUrl: z.url().optional(),
     sessionRef: z.string().min(1).optional(),
-    extractSchema: z.record(z.string(), z.unknown()).optional(),
+    extractSchema: z
+      .record(z.string(), z.json())
+      .refine((schema) => Object.keys(schema).length > 0)
+      .optional(),
     caller: z.literal("velnor"),
   })
   .strict();
@@ -281,17 +293,24 @@ export async function POST(request: Request) {
       );
     }
 
-    if (
-      (extractSchema && !completion.extractedData) ||
-      (completion.extractedData &&
-        !isExtractionGrounded(completion.extractedData, evidenceText))
-    ) {
+    const parsedExtraction =
+      completion.extractedData === undefined
+        ? undefined
+        : extractionSchema.safeParse(completion.extractedData);
+    const extractionInvalid =
+      (extractSchema !== undefined &&
+        (!parsedExtraction?.success ||
+          !matchesExtractionSchema(parsedExtraction.data, extractSchema))) ||
+      (completion.extractedData !== undefined &&
+        (!parsedExtraction?.success ||
+          !isExtractionGrounded(parsedExtraction.data, evidenceText)));
+    if (extractionInvalid) {
       return NextResponse.json(
         {
           status: "failure",
           error: "browser_extraction_not_grounded_in_tool_evidence",
           message:
-            "The requested extraction was missing or contained values not observed in settled browser-tool output.",
+            "The requested extraction was missing, did not match its field schema, or contained values not observed in settled browser-tool output.",
           sessionRef: sessionId,
         },
         { status: 200 }
@@ -305,7 +324,7 @@ export async function POST(request: Request) {
       status: "success",
       message: completion.message,
       sessionRef: sessionId,
-      data: completion.extractedData,
+      data: parsedExtraction?.success ? parsedExtraction.data : undefined,
       images: [],
       executionReceipt: {
         taskId: completion.taskId,
@@ -379,26 +398,66 @@ function findRunBrowserCompletion(events: RuntimeEvent[]) {
   return completion;
 }
 
+function matchesExtractionSchema(
+  data: Record<string, JsonValue>,
+  schema: Record<string, JsonValue>
+): boolean {
+  const fields = Object.entries(schema);
+  return (
+    fields.length > 0 &&
+    fields.every(([field, definition]) => {
+      if (!(field in data)) return false;
+      const expectedType =
+        typeof definition === "string"
+          ? definition
+          : definition !== null &&
+              typeof definition === "object" &&
+              !Array.isArray(definition) &&
+              typeof definition.type === "string"
+            ? definition.type
+            : undefined;
+      const value = data[field];
+
+      switch (expectedType) {
+        case "string":
+          return typeof value === "string";
+        case "number":
+          return typeof value === "number";
+        case "integer":
+          return typeof value === "number" && Number.isInteger(value);
+        case "boolean":
+          return typeof value === "boolean";
+        case "array":
+          return Array.isArray(value);
+        case "object":
+          return (
+            value !== null &&
+            typeof value === "object" &&
+            !Array.isArray(value)
+          );
+        case "null":
+          return value === null;
+        default:
+          return false;
+      }
+    })
+  );
+}
+
 function isExtractionGrounded(
-  value: Record<string, unknown>,
+  value: Record<string, JsonValue>,
   evidenceText: string
 ): boolean {
   const observedValues: string[] = [];
 
-  function collect(candidate: unknown) {
+  function collect(candidate: JsonValue) {
     if (typeof candidate === "string") {
       if (candidate.length > 0) observedValues.push(candidate);
-      return;
-    }
-    if (typeof candidate === "number" || typeof candidate === "boolean") {
+    } else if (typeof candidate === "number" || typeof candidate === "boolean") {
       observedValues.push(String(candidate));
-      return;
-    }
-    if (Array.isArray(candidate)) {
+    } else if (Array.isArray(candidate)) {
       for (const item of candidate) collect(item);
-      return;
-    }
-    if (candidate && typeof candidate === "object") {
+    } else if (candidate !== null) {
       for (const item of Object.values(candidate)) collect(item);
     }
   }
