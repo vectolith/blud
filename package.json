@@ -106,7 +106,7 @@
     "eval:ci": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/run-agent-evals.ts --junit .eve/junit.xml",
     "eval:list": "eve eval --list",
     "format": "oxfmt .",
-    "format:check": "oxfmt turbo.json && git diff -- turbo.json && oxfmt --check .",
+    "format:check": "oxfmt --check .",
     "knip": "knip --config knip.config.ts",
     "lint": "turbo run lint:app",
     "lint:app": "oxlint . --deny-warnings",
