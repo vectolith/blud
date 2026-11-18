@@ -171,6 +171,7 @@ function successfulRuntimeResult(
   };
 }
 
+// These tests validate the service boundary without invoking a real browser provider.
 describe("Internal Blud Browser Worker RPC", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
