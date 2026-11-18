@@ -7,6 +7,7 @@ import {
   UnauthenticatedError,
 } from "eve/channels/auth";
 import { z } from "zod";
+import { env } from "@shared/environment/env";
 import { isSessionOwned } from "@db/services/sessions";
 import {
   accessScopeForUser,
@@ -25,8 +26,7 @@ const authenticateLocalDev = localDev();
 
 const authenticate: Parameters<typeof routeAuth>[1] = [
   async (request) => {
-    const secret =
-      process.env.BLUD_INTERNAL_KEY ?? process.env.VELNOR_SHARED_SECRET ?? "";
+    const secret = env.BLUD_INTERNAL_KEY ?? env.VELNOR_SHARED_SECRET ?? "";
     const token =
       request.headers.get("x-blud-key") ??
       request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
