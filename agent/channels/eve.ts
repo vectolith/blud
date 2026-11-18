@@ -28,7 +28,7 @@ const authenticate: Parameters<typeof routeAuth>[1] = [
     const secret = process.env.BLUD_INTERNAL_KEY ?? process.env.VELNOR_SHARED_SECRET ?? "";
     const token =
       request.headers.get("x-blud-key") ??
-      request.headers.get("authorization")?.replace(/^Bearer\\s+/i, "") ??
+      request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
       "";
     const expectedBytes = Buffer.from(secret);
     const tokenBytes = Buffer.from(token);
@@ -43,7 +43,7 @@ const authenticate: Parameters<typeof routeAuth>[1] = [
     const pathname = new URL(request.url).pathname;
     if (
       pathname !== "/eve/v1/session" &&
-      !/^\\/eve\\/v1\\/session\\/[^/]+(?:\\/stream)?$/.test(pathname)
+      !/^\/eve\/v1\/session\/[^/]+(?:\/stream)?$/.test(pathname)
     ) {
       return null;
     }
