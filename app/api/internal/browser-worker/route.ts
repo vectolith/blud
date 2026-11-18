@@ -2,6 +2,11 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+const EXECUTION_NOT_IMPLEMENTED_MESSAGE = [
+  "No browser action was performed.",
+  "The endpoint is not connected to Blud's browser-agent runtime.",
+].join(" ");
+
 const requestSchema = z
   .object({
     message: z.string().trim().min(1).max(8_000),
@@ -38,7 +43,7 @@ export async function POST(request: Request) {
       {
         status: "offline",
         error: "internal_service_auth_not_configured",
-        message: "Blud internal browser-worker authentication is not configured.",
+        message: "Blud internal service authentication is not configured.",
       },
       { status: 503 }
     );
@@ -78,8 +83,7 @@ export async function POST(request: Request) {
     {
       status: "failure",
       error: "browser_execution_not_implemented",
-      message:
-        "No browser action was performed. The internal endpoint is not yet connected to Blud's browser-agent runtime.",
+      message: EXECUTION_NOT_IMPLEMENTED_MESSAGE,
     },
     { status: 501 }
   );
