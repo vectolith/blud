@@ -185,6 +185,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     vi.stubEnv("KERNEL_API_KEY", "configured-kernel-key");
     vi.stubEnv("VERCEL_URL", "");
     vi.stubEnv("BETTER_AUTH_URL", "http://localhost:3000");
+    vi.stubEnv("BETTER_AUTH_URL", "http://localhost:3000");
 
     session = {
       id: "wrun_internal_1",
@@ -384,6 +385,46 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(body.error).toBe(
       "browser_extraction_not_grounded_in_tool_evidence"
     );
+  });
+
+
+  it("rejects extracted values that are absent from settled browser evidence", async () => {
+    mocks.result.mockResolvedValue({
+      ...successfulRuntimeResult(),
+      events: successfulRuntimeResult().events.map((event) =>
+        event.type === "call.settled" &&
+        event.data.callId === "run-browser-call"
+          ? {
+              ...event,
+              data: {
+                ...event.data,
+                output: {
+                  status: "success",
+                  message: "Completed extraction.",
+                  images: [],
+                  finalUrl: "https://example.com/",
+                  extractedData: { title: "Invented page title" },
+                },
+              },
+            }
+          : event
+      ),
+    });
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Extract the page title",
+          extractSchema: { title: "string" },
+          caller: "velnor",
+        })
+      )
+    );
+
+    expect(res.status).toBe(200);
+    const body = await responseBody(res);
+    expect(body.status).toBe("failure");
+    expect(body.error).toBe("browser_extraction_not_grounded_in_tool_evidence");
+    expect(body.executionReceipt).toBeUndefined();
   });
 
   it("can resume only a Velnor-owned Eve session reference", async () => {
