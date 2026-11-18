@@ -14,6 +14,6 @@ export async function POST() {
       status: "unavailable",
       error: "The legacy cross-product browser RPC has been retired. Blud operates as a standalone product.",
     },
-    { status: 410 },
+    { status: 410 }
   );
 }
