@@ -64,6 +64,8 @@ export const env = createEnv({
     // Required
     DATABASE_URL: databaseUrlSchema,
     KERNEL_API_KEY: requiredValue,
+    BLUD_INTERNAL_KEY: requiredValue.optional(),
+    VELNOR_SHARED_SECRET: requiredValue.optional(),
 
     // Optional overrides with local defaults. Vercel deployments provision
     // installation secrets in their connected private Blob store.
