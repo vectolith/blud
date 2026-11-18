@@ -1,4 +1,5 @@
 import type { RouteHandlerArgs } from "eve/channels";
+import type * as EnvironmentModule from "@shared/environment/env";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as AuthSession from "@db/services/auth/session";
 import * as SessionService from "@db/services/sessions";
@@ -6,8 +7,7 @@ import { authSessionFor } from "@tests/helpers/auth-session";
 import eveChannel, { sessionIdFromPath } from "@agent/channels/eve";
 
 vi.mock("@shared/environment/env", async (importOriginal) => {
-  const actual =
-    await importOriginal();
+  const actual = await importOriginal<typeof EnvironmentModule>();
   return {
     ...actual,
     env: {
