@@ -135,7 +135,18 @@ export async function POST(request: Request) {
   const host = env.VERCEL_URL
     ? `https://${env.VERCEL_URL}`
     : env.BETTER_AUTH_URL;
-  // Use the deployment-local Eve API so service identity and session ownership are enforced.
+  if (!host) {
+    return NextResponse.json(
+      {
+        status: "offline",
+        error: "eve_runtime_origin_not_configured",
+        message: "Blud's authenticated Eve runtime origin is not configured.",
+      },
+      { status: 503 }
+    );
+  }
+
+  // Use the configured application origin so Eve enforces service identity and session ownership.
   const client = new Client({
     baseUrl: host,
     auth: { bearer: secret },
