@@ -132,8 +132,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const requestOrigin = new URL(request.url).origin;
-  const host = env.VERCEL_URL ? `https://${env.VERCEL_URL}` : requestOrigin;
+  const host = env.VERCEL_URL
+    ? `https://${env.VERCEL_URL}`
+    : env.BETTER_AUTH_URL;
   // Use the deployment-local Eve API so service identity and session ownership are enforced.
   const client = new Client({
     baseUrl: host,
