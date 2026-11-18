@@ -270,6 +270,23 @@ export async function POST(request: Request) {
       );
     }
 
+    if (
+      (extractSchema && !completion.extractedData) ||
+      (completion.extractedData &&
+        !isExtractionGrounded(completion.extractedData, evidenceText))
+    ) {
+      return NextResponse.json(
+        {
+          status: "failure",
+          error: "browser_extraction_not_grounded_in_tool_evidence",
+          message:
+            "The requested extraction was missing or contained values not observed in settled browser-tool output.",
+          sessionRef: sessionId,
+        },
+        { status: 200 }
+      );
+    }
+
     const evidenceSha256 = createHash("sha256")
       .update(JSON.stringify(evidenceEvents))
       .digest("hex");
@@ -349,6 +366,34 @@ function findRunBrowserCompletion(events: RuntimeEvent[]) {
   }
 
   return completion;
+}
+
+function isExtractionGrounded(
+  value: Record<string, unknown>,
+  evidenceText: string
+): boolean {
+  const observedValues: string[] = [];
+
+  function collect(candidate: unknown) {
+    if (typeof candidate === "string") {
+      if (candidate.length > 0) observedValues.push(candidate);
+      return;
+    }
+    if (typeof candidate === "number" || typeof candidate === "boolean") {
+      observedValues.push(String(candidate));
+      return;
+    }
+    if (Array.isArray(candidate)) {
+      for (const item of candidate) collect(item);
+      return;
+    }
+    if (candidate && typeof candidate === "object") {
+      for (const item of Object.values(candidate)) collect(item);
+    }
+  }
+
+  collect(value);
+  return observedValues.every((observed) => evidenceText.includes(observed));
 }
 
 function isHttpUrl(value: string) {
