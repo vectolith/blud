@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 type ClientOptions = {
-  host: string;
+  baseUrl: string;
   auth: { bearer: string };
   redirect: "error";
 };
@@ -249,7 +249,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(body.executionReceipt?.evidenceSha256).toMatch(/^[a-f0-9]{64}$/);
     expect(body.data).toEqual({ title: "Example Domain" });
     expect(mocks.clientOptions).toContainEqual({
-      host: "http://localhost:3000",
+      baseUrl: "http://localhost:3000",
       auth: { bearer: serviceSecret },
       redirect: "error",
     });
