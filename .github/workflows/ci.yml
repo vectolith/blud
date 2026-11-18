@@ -33,5 +33,10 @@ jobs:
           pnpm exec oxfmt tests/agent/channels/eve-channel-auth.test.ts
           git diff -- tests/agent/channels/eve-channel-auth.test.ts
 
+      - name: Inspect channel auth test formatting
+        run: |
+          pnpm exec oxfmt tests/agent/channels/eve-channel-auth.test.ts
+          git diff -- tests/agent/channels/eve-channel-auth.test.ts
+
       - name: Run full check suite (oxlint, typecheck, vitest, oxfmt, knip)
         run: pnpm check
