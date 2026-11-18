@@ -3,6 +3,7 @@ import type { KnipConfig } from "knip";
 export default {
   entry: [
     "agent/channels/**/*.ts",
+    "agent/extensions/**/*.ts",
     "agent/hooks/**/*.ts",
     "agent/instructions/**/*.ts",
     "agent/instrumentation/**/*.ts",
@@ -20,16 +21,19 @@ export default {
     "tests/runtime/fixture/evals/**/*.ts",
   ],
   ignoreDependencies: [
-    // Retained for the unmounted web UI; the headless agent runtime does not import this client.
-    "@tanstack/react-query",
-    "@trpc/client",
-    "@trpc/react-query",
+    // Imported through the owning Tailwind stylesheet rather than TypeScript.
+    "@tailwindcss/postcss",
     "shadcn",
+    "tailwindcss",
     "use-stick-to-bottom",
     // Loaded as jsPlugins from .oxlintrc.jsonc rather than TypeScript.
     "eslint-plugin-react-hooks",
     "eslint-plugin-turbo",
     "oxlint-tailwindcss",
+    // Used by web/trpc/client.tsx; the headless-agent graph excludes the web UI.
+    "@tanstack/react-query",
+    "@trpc/client",
+    "@trpc/react-query",
     // Invoked as a CLI.
     "vercel",
   ],
@@ -39,5 +43,5 @@ export default {
     "shared/**/*.ts": ["exports", "files", "types"],
     "web/**/*.{ts,tsx}": ["exports", "files", "types"],
   },
-  project: ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs,css}"],
+  project: ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}"],
 } satisfies KnipConfig;
