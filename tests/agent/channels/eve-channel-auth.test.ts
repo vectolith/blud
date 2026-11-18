@@ -1,4 +1,16 @@
 import type { RouteHandlerArgs } from "eve/channels";
+
+vi.mock("@shared/environment/env", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@shared/environment/env")>();
+  return {
+    ...actual,
+    env: {
+      ...actual.env,
+      BLUD_INTERNAL_KEY: "test-internal-secret-0123456789",
+    },
+  };
+});
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as AuthSession from "@db/services/auth/session";
 import * as SessionService from "@db/services/sessions";
@@ -29,8 +41,6 @@ afterEach(() => {
 describe("Eve channel authentication", () => {
   it("admits the Velnor service only on owned session routes", async () => {
     const secret = "test-internal-secret-0123456789";
-    vi.stubEnv("BLUD_INTERNAL_KEY", secret);
-    vi.stubEnv("VELNOR_SHARED_SECRET", "");
     isSessionOwnedMock.mockResolvedValue(true);
 
     const route = findRoute("GET", "/eve/v1/session/:sessionId/stream");
