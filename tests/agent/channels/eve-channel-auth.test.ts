@@ -2,7 +2,7 @@ import type { RouteHandlerArgs } from "eve/channels";
 
 vi.mock("@shared/environment/env", async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import("@shared/environment/env")>();
+    await importOriginal();
   return {
     ...actual,
     env: {
