@@ -33,5 +33,10 @@ jobs:
           pnpm exec oxfmt tests/internal/browser-worker.test.ts
           git diff -- tests/internal/browser-worker.test.ts
 
+      - name: Inspect browser worker test formatter output
+        run: |
+          pnpm exec oxfmt tests/internal/browser-worker.test.ts
+          git diff -- tests/internal/browser-worker.test.ts
+
       - name: Run full check suite (oxlint, typecheck, vitest, oxfmt, knip)
         run: pnpm check
