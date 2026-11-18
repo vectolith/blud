@@ -250,6 +250,20 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
+  it("fails closed when the configured Eve origin is missing", async () => {
+    vi.stubEnv("BETTER_AUTH_URL", "");
+    await loadPost();
+
+    const res = await post(
+      request(JSON.stringify({ message: "test", caller: "velnor" }))
+    );
+    const body = await responseBody(res);
+    expect(res.status).toBe(503);
+    expect(body.status).toBe("offline");
+    expect(body.error).toBe("eve_runtime_origin_not_configured");
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
   it("rejects an invalid internal service key", async () => {
     const res = await post(
       request(
