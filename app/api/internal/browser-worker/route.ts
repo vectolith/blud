@@ -10,7 +10,7 @@ const EXECUTION_NOT_IMPLEMENTED_MESSAGE = [
 const requestSchema = z
   .object({
     message: z.string().trim().min(1).max(8_000),
-    startUrl: z.string().url().optional(),
+    startUrl: z.url().optional(),
     sessionRef: z.string().optional(),
     extractSchema: z.record(z.string(), z.unknown()).optional(),
     caller: z.literal("velnor"),
@@ -18,9 +18,9 @@ const requestSchema = z
   .strict();
 
 function configuredServiceSecret(): string {
-  return (
-    process.env.BLUD_INTERNAL_KEY || process.env.VELNOR_SHARED_SECRET || ""
-  );
+  const primary = process.env.BLUD_INTERNAL_KEY;
+  if (primary && primary.length > 0) return primary;
+  return process.env.VELNOR_SHARED_SECRET ?? "";
 }
 
 function isAuthorized(request: Request, secret: string): boolean {
