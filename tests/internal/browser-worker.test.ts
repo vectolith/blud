@@ -1,47 +1,73 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@app/api/internal/browser-worker/route";
 
+const serviceSecret = "test-auth-secret-0123456789abcdefghijklmnop";
+
+function request(body: string, token = serviceSecret) {
+  return new Request("http://localhost:3000/api/internal/browser-worker", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { "x-blud-key": token } : {}),
+    },
+    body,
+  });
+}
+
 describe("Internal Blud Browser Worker RPC", () => {
-  it("rejects unauthorized request when secret is set", async () => {
-    const req = new Request("http://localhost:3000/api/internal/browser-worker", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: "test" }),
-    });
-    const res = await POST(req);
+  beforeEach(() => {
+    vi.stubEnv("BLUD_INTERNAL_KEY", serviceSecret);
+    vi.stubEnv("VELNOR_SHARED_SECRET", "");
+    vi.stubEnv("BETTER_AUTH_SECRET", "");
+    vi.stubEnv("KERNEL_API_KEY", "configured-kernel-key");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("fails closed when internal service authentication is not configured", async () => {
+    vi.stubEnv("BLUD_INTERNAL_KEY", "");
+    vi.stubEnv("VELNOR_SHARED_SECRET", "");
+
+    const res = await POST(request(JSON.stringify({ message: "test", caller: "velnor" })));
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.status).toBe("offline");
+    expect(body.error).toBe("internal_service_auth_not_configured");
+  });
+
+  it("rejects an invalid internal service key", async () => {
+    const res = await POST(request(JSON.stringify({ message: "test", caller: "velnor" }), "wrong-secret"));
     expect(res.status).toBe(401);
   });
 
-  it("rejects invalid json payload when authorized", async () => {
-    const req = new Request("http://localhost:3000/api/internal/browser-worker", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
-      },
-      body: JSON.stringify({}),
-    });
-    const res = await POST(req);
+  it("rejects malformed JSON after authentication", async () => {
+    const res = await POST(request("{"));
     expect(res.status).toBe(400);
   });
 
-  it("accepts valid browser delegation task and returns coordinator status", async () => {
-    const req = new Request("http://localhost:3000/api/internal/browser-worker", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-blud-key": "test-auth-secret-0123456789abcdefghijklmnop",
-      },
-      body: JSON.stringify({
-        message: "Verify homepage load",
-        startUrl: "https://example.com",
-        caller: "velnor",
-      }),
-    });
-    const res = await POST(req);
-    expect(res.status).toBe(200);
+  it("rejects an invalid browser delegation payload", async () => {
+    const res = await POST(request(JSON.stringify({})));
+    expect(res.status).toBe(400);
+  });
+
+  it("never reports success until a real browser execution adapter exists", async () => {
+    const res = await POST(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          startUrl: "https://example.com",
+          caller: "velnor",
+        })
+      )
+    );
+
+    expect(res.status).toBe(501);
     const body = await res.json();
-    expect(body.status).toBe("success");
-    expect(body.data?.coordinatedBy).toBeDefined();
+    expect(body.status).toBe("failure");
+    expect(body.error).toBe("browser_execution_not_implemented");
+    expect(body.message).toMatch(/no browser action was performed/i);
+    expect(body.data).toBeUndefined();
   });
 });
