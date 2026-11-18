@@ -141,7 +141,10 @@ describe("Internal Blud Browser Worker RPC", () => {
         outcome: "completed",
         output: {
           content: [
-            { type: "text", text: "Page title: Example Domain\nURL: https://example.com/" },
+            {
+              type: "text",
+              text: "Page title: Example Domain\nURL: https://example.com/",
+            },
           ],
         },
       });
@@ -170,7 +173,10 @@ describe("Internal Blud Browser Worker RPC", () => {
 
   it("rejects an invalid internal service key", async () => {
     const res = await post(
-      request(JSON.stringify({ message: "test", caller: "velnor" }), "wrong-secret")
+      request(
+        JSON.stringify({ message: "test", caller: "velnor" }),
+        "wrong-secret"
+      )
     );
     expect(res.status).toBe(401);
   });
@@ -185,7 +191,9 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(400);
   });
 
-  it("dispatches into Eve and returns a receipt bound to settled browser evidence", async () => {
+  it(
+    "dispatches into Eve and returns a receipt bound to settled browser evidence",
+    async () => {
     const res = await post(
       request(
         JSON.stringify({
@@ -219,10 +227,15 @@ describe("Internal Blud Browser Worker RPC", () => {
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
     expect(mocks.agent).toHaveBeenCalledOnce();
-  });
+    }
+  );
 
-  it("rejects a model-reported final URL absent from settled browser evidence", async () => {
-    mocks.result.mockResolvedValue(successfulRuntimeResult("https://other.example/"));
+  it(
+    "rejects a model-reported final URL absent from settled browser evidence",
+    async () => {
+      mocks.result.mockResolvedValue(
+        successfulRuntimeResult("https://other.example/")
+      );
     const res = await post(
       request(
         JSON.stringify({
