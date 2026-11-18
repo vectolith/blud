@@ -43,7 +43,7 @@ function isAuthorized(request: Request, secret: string): boolean {
 }
 
 function timingSafeEqualBytes(left: Buffer, right: Buffer): boolean {
-  // Length is checked before timingSafeEqual because Node requires equal lengths.
+  // Check lengths before timingSafeEqual because Node requires equal lengths.
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
@@ -98,7 +98,9 @@ export async function POST(request: Request) {
   }
 
   const requestOrigin = new URL(request.url).origin;
-  const host = env.VERCEL_URL ? `https://${env.VERCEL_URL}` : requestOrigin;
+  const host = env.VERCEL_URL
+    ? `https://${env.VERCEL_URL}`
+    : requestOrigin;
   const client = new Client({
     host,
     auth: { bearer: secret },
@@ -170,10 +172,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const runBrowserCall = result.events.findLast((event) =>
-      event.type === "call.requested" &&
-      event.data.capability.kind === "tool" &&
-      event.data.capability.name === "run_browser"
+    const runBrowserCall = result.events.findLast(
+      (event) =>
+        event.type === "call.requested" &&
+        event.data.capability.kind === "tool" &&
+        event.data.capability.name === "run_browser"
     );
     const runBrowserTaskId = runBrowserCall
       ? result.events.findLast(
