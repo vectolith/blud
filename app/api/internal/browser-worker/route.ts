@@ -445,30 +445,38 @@ function matchesExtractionSchema(
     fields.length > 0 &&
     fields.every(([field, definition]) => {
       if (!(field in data)) return false;
-      const expectedType =
-        typeof definition === "string"
-          ? definition
-          : definition !== null &&
-              typeof definition === "object" &&
-              !Array.isArray(definition) &&
-              typeof definition.type === "string"
-            ? definition.type
-            : undefined;
+
+      const stringDefinition = z.string().safeParse(definition);
+      let expectedType: string | undefined;
+      if (stringDefinition.success) {
+        expectedType = stringDefinition.data;
+      } else {
+        const objectDefinition = z
+          .object({ type: z.string().optional() })
+          .passthrough()
+          .safeParse(definition);
+        if (!objectDefinition.success) return false;
+        expectedType = objectDefinition.data.type;
+      }
+
+      if (!expectedType) return false;
       const value = data[field];
 
       switch (expectedType) {
         case "string":
-          return typeof value === "string";
+          return z.string().safeParse(value).success;
         case "number":
-          return typeof value === "number";
-        case "integer":
-          return typeof value === "number" && Number.isInteger(value);
+          return z.number().safeParse(value).success;
+        case "integer": {
+          const parsedNumber = z.number().safeParse(value);
+          return parsedNumber.success && Number.isInteger(parsedNumber.data);
+        }
         case "boolean":
-          return typeof value === "boolean";
+          return z.boolean().safeParse(value).success;
         case "array":
-          return Array.isArray(value);
+          return z.array(z.json()).safeParse(value).success;
         case "object":
-          return value.kind === "object";
+          return z.record(z.string(), z.json()).safeParse(value).success;
         case "null":
           return value === null;
         default:
@@ -485,14 +493,33 @@ function isExtractionGrounded(
   const observedValues: string[] = [];
 
   function collect(candidate: JsonValue) {
-    if (typeof candidate === "string") {
-      if (candidate.length > 0) observedValues.push(candidate);
-    } else if (typeof candidate === "number" || typeof candidate === "boolean") {
-      observedValues.push(String(candidate));
-    } else if (Array.isArray(candidate)) {
-      for (const item of candidate) collect(item);
-    } else if (candidate !== null) {
-      for (const item of Object.values(candidate)) collect(item);
+    const parsedString = z.string().safeParse(candidate);
+    if (parsedString.success) {
+      if (parsedString.data.length > 0) observedValues.push(parsedString.data);
+      return;
+    }
+
+    const parsedNumber = z.number().safeParse(candidate);
+    if (parsedNumber.success) {
+      observedValues.push(String(parsedNumber.data));
+      return;
+    }
+
+    const parsedBoolean = z.boolean().safeParse(candidate);
+    if (parsedBoolean.success) {
+      observedValues.push(String(parsedBoolean.data));
+      return;
+    }
+
+    const parsedArray = z.array(z.json()).safeParse(candidate);
+    if (parsedArray.success) {
+      for (const item of parsedArray.data) collect(item);
+      return;
+    }
+
+    const parsedObject = z.record(z.string(), z.json()).safeParse(candidate);
+    if (parsedObject.success) {
+      for (const item of Object.values(parsedObject.data)) collect(item);
     }
   }
 
