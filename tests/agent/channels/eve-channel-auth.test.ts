@@ -17,7 +17,7 @@ vi.mock("@shared/environment/env", async (importOriginal) => {
   };
 });
 
-// Keep the internal service identity test isolated from real deployment environment values.
+// Keep the internal service identity test isolated from deployment environment values.
 const getAuthSessionMock = vi.spyOn(AuthSession, "getAuthSession");
 const isSessionOwnedMock = vi.spyOn(SessionService, "isSessionOwned");
 
