@@ -12,7 +12,7 @@ vi.mock("@shared/environment/env", async (importOriginal) => {
     ...actual,
     env: {
       ...actual.env,
-      BLUD_INTERNAL_KEY: "test-internal-secret-0123456789",
+      BLUD_INTERNAL_KEY: "test-internal-secret-with-at-least-32-characters",
     },
   };
 });
@@ -41,7 +41,7 @@ afterEach(() => {
 
 describe("Eve channel authentication", () => {
   it("admits the Velnor service only on owned session routes", async () => {
-    const secret = "test-internal-secret-0123456789";
+    const secret = "test-internal-secret-with-at-least-32-characters";
     isSessionOwnedMock.mockResolvedValue(true);
 
     const route = findRoute("GET", "/eve/v1/session/:sessionId/stream");
