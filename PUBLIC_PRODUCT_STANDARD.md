@@ -13,6 +13,12 @@ consumption does not, by itself, mean that a source repository, service
 endpoint, dataset, or operational system must be publicly exposed. Repository
 visibility and deployment exposure must be deliberate security decisions.
 
+Blud is an independent personal-agent product. It owns its application runtime,
+identity, authorization, browser execution boundary, credential vault, user
+data, integrations, deployment and release lifecycle. It must remain useful
+without another Vectolith product. Optional integrations must be replaceable
+and must not weaken Blud's own security boundaries.
+
 This standard is a required engineering baseline, not a claim that the
 repository already satisfies every requirement. Compliance must be established
 through implementation, tests, and review.
@@ -124,14 +130,14 @@ features:
 - Preserve raw evaluation evidence and dissenting results; do not select or
   suppress evidence solely to make a model appear better.
 
-### 8. Financial and dependency discipline
+### 8. External dependency management
 
-- Prefer maintainable open standards and free/open-source dependencies where
-  they meet the requirement.
-- Do not introduce paid APIs, infrastructure, trials, or services without
-  explicit authorization.
-- Document operational dependencies, quotas, limits, and failure behavior.
-  Never rely on quota circumvention.
+- Identify external services, trust boundaries, data flows, quotas, limits, and
+  failure behavior.
+- Use supported interfaces and documented contracts; do not rely on
+  undocumented service behavior or quota circumvention.
+- Keep browser execution, credential storage, identity, and core assistant
+  operation independently testable and replaceable.
 
 ## Repository-specific implementation
 
