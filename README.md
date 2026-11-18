@@ -367,5 +367,4 @@ Built on [Vercel](https://vercel.com) · [Kernel](https://kernel.sh) · [Linq](h
 
 </div>
 
-
 **Runtime configuration:** `DATABASE_URL` and `KERNEL_API_KEY` are required at runtime. `SKIP_ENV_VALIDATION=true` is permitted only for CI/build environments that do not receive runtime secrets; never set it in a deployed runtime.
