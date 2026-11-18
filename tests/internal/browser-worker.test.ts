@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { POST } from "@app/api/internal/browser-worker/route";
 
+// Do not claim success until a real browser executor is implemented.
 describe("retired internal browser-worker RPC", () => {
   it("never reports a browser task as successful without executing it", async () => {
     const req = new Request(
