@@ -1,0 +1,34 @@
+name: Format Blud auth fixture
+
+on:
+  push:
+    branches: [standards/public-product-readiness]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format auth route test
+        run: |
+          pnpm exec oxfmt --write "app/api/auth/[...all]/_tests/auth-route.test.ts"
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add "app/api/auth/[...all]/_tests/auth-route.test.ts"
+            git commit -m "style(test): format auth route fixture"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
