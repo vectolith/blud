@@ -34,6 +34,11 @@
     },
     "oxlint-tailwindcss"
   ],
+  "settings": {
+    "tailwindcss": {
+      "entryPoint": "app/globals.css"
+    }
+  },
   "rules": {
     "local-architecture/no-forbidden-layer-imports": "error",
     "anti-slop/no-chained-type-assertions": "error",
