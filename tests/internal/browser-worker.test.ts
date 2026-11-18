@@ -22,7 +22,7 @@ describe("retired internal browser-worker RPC", () => {
     const res = await POST(req);
     expect(res.status).toBe(410);
     await expect(res.json()).resolves.toEqual({
-      error: "Browser-worker RPC retired; use the authenticated agent runtime.",
+      error: "Browser-worker RPC is retired.",
     });
   });
 });
