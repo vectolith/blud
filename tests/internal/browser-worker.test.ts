@@ -31,7 +31,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(400);
   });
 
-  it("accepts a valid browser delegation task and returns coordinator status", async () => {
+  it("accepts a valid delegation task and returns coordinator status", async () => {
     const req = new Request(
       "http://localhost:3000/api/internal/browser-worker",
       {
