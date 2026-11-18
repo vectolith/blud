@@ -33,3 +33,6 @@ jobs:
 
       - name: Run full check suite (oxlint, typecheck, vitest, oxfmt, knip)
         run: pnpm check
+
+      - name: Build production application
+        run: pnpm build
