@@ -437,9 +437,7 @@ describe("Internal Blud Browser Worker RPC", () => {
 
     const body = await responseBody(res);
     expect(body.status).toBe("failure");
-    expect(body.error).toBe(
-      "browser_extraction_not_grounded_in_tool_evidence"
-    );
+    expect(body.error).toBe("browser_extraction_not_grounded_in_tool_evidence");
   });
 
 
