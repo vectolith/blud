@@ -12,49 +12,14 @@ type JsonValue =
   | JsonValue[]
   | { [key: string]: JsonValue };
 
-type ExtractionType =
-  | "string"
-  | "number"
-  | "integer"
-  | "boolean"
-  | "array"
-  | "object"
-  | "null";
-
-type ParsedJsonValue =
-  | { kind: "string"; value: string }
-  | { kind: "number"; value: number }
-  | { kind: "boolean"; value: boolean }
-  | { kind: "null"; value: null }
-  | { kind: "array"; value: ParsedJsonValue[] }
-  | { kind: "object"; value: Record<string, ParsedJsonValue> };
-
-const parsedJsonValueSchema: z.ZodType<ParsedJsonValue> = z.lazy(() =>
-  z.union([
-    z.string().transform((value) => ({ kind: "string" as const, value })),
-    z.number().transform((value) => ({ kind: "number" as const, value })),
-    z.boolean().transform((value) => ({ kind: "boolean" as const, value })),
-    z.null().transform((value) => ({ kind: "null" as const, value })),
-    z
-      .array(parsedJsonValueSchema)
-      .transform((value) => ({ kind: "array" as const, value })),
-    z
-      .record(z.string(), parsedJsonValueSchema)
-      .transform((value) => ({ kind: "object" as const, value })),
-  ])
-);
-
-const extractionSchema = z.record(z.string(), parsedJsonValueSchema);
+const extractionSchema = z.record(z.string(), z.json());
 const requestSchema = z
   .object({
     message: z.string().trim().min(1).max(8_000),
     startUrl: z.url().optional(),
     sessionRef: z.string().min(1).optional(),
     extractSchema: z
-      .record(
-        z.string(),
-        z.enum(["string", "number", "integer", "boolean", "array", "object", "null"])
-      )
+      .record(z.string(), z.json())
       .refine((schema) => Object.keys(schema).length > 0)
       .optional(),
     caller: z.literal("velnor"),
@@ -370,9 +335,7 @@ export async function POST(request: Request) {
       status: "success",
       message: completion.message,
       sessionRef: sessionId,
-      data: parsedExtraction?.success
-        ? serializeExtractionData(parsedExtraction.data)
-        : undefined,
+      data: parsedExtraction?.success ? parsedExtraction.data : undefined,
       images: [],
       executionReceipt: {
         taskId: completion.taskId,
