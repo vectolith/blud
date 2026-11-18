@@ -99,7 +99,7 @@ function ToolHeader({
       {...props}
     >
       {icon ?? <WrenchIcon className="size-4 shrink-0" />}
-      <span className="min-w-0 flex-1 truncate type-label">{title}</span>
+      <span className="type-label min-w-0 flex-1 truncate">{title}</span>
       {meta ? (
         <span
           className="flex shrink-0 items-center gap-1"

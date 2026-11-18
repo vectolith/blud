@@ -97,7 +97,7 @@ function RunTables({
   ];
   return (
     <>
-      <div className="flex flex-wrap gap-x-5 gap-y-1 type-caption text-muted-foreground">
+      <div className="type-caption flex flex-wrap gap-x-5 gap-y-1 text-muted-foreground">
         <span>Concurrency {run.maxConcurrency}</span>
         <span>Task budget {formatDuration(run.taskTimeoutMs)}</span>
         <span>
@@ -235,7 +235,7 @@ function TaskResultCell({ now, task }: { now: number; task?: Task }) {
         </span>
       </div>
       <p
-        className="mt-2 overflow-hidden type-caption text-ellipsis whitespace-nowrap"
+        className="type-caption mt-2 overflow-hidden text-ellipsis whitespace-nowrap"
         title={message}
       >
         {message}

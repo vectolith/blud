@@ -51,7 +51,7 @@ export function ActivityDurationBreakdown({
           );
         })}
       </div>
-      <div className="grid gap-0.5 type-caption text-muted-foreground">
+      <div className="type-caption grid gap-0.5 text-muted-foreground">
         {segments.map(({ durationMs, kind }) => {
           const presentation = activityPresentation[kind];
           return (

@@ -81,7 +81,7 @@ export default async function BenchmarkTracePage({
               LLM judge {Math.round(match.task.judgeScore * 100)}%
             </p>
             {match.task.judgeRationale ? (
-              <p className="mt-1 type-caption text-muted-foreground">
+              <p className="type-caption mt-1 text-muted-foreground">
                 {match.task.judgeRationale}
               </p>
             ) : null}
@@ -91,7 +91,7 @@ export default async function BenchmarkTracePage({
 
       {trace ? (
         <section aria-label="Task trace" className="grid gap-3">
-          <div className="flex flex-wrap justify-between gap-2 type-caption text-muted-foreground">
+          <div className="type-caption flex flex-wrap justify-between gap-2 text-muted-foreground">
             <span>{trace.events.length} events</span>
             <span>Updated {new Date(trace.updatedAt).toLocaleString()}</span>
           </div>
@@ -130,7 +130,7 @@ export default async function BenchmarkTracePage({
             This is the exact worker session for the task, but detailed events
             were not persisted by this older benchmark run.
           </p>
-          <p className="mt-1 type-caption text-muted-foreground">
+          <p className="type-caption mt-1 text-muted-foreground">
             New runs save the trace here while the task is active and retain it
             after the ephemeral variant server is removed.
           </p>

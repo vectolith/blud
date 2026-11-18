@@ -23,6 +23,10 @@ export default {
   ignoreDependencies: [
     // Imported through the owning Tailwind stylesheet rather than TypeScript.
     "@tailwindcss/postcss",
+    // Used by the web tRPC client, which is intentionally excluded from the headless runtime entry graph.
+    "@tanstack/react-query",
+    "@trpc/client",
+    "@trpc/react-query",
     "shadcn",
     "tailwindcss",
     "use-stick-to-bottom",
