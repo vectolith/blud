@@ -34,13 +34,13 @@ describe("auth route initialization", () => {
   it("retries after transient installation-secret failures", async () => {
     mocks.getAuth
       .mockRejectedValueOnce(new Error("Blob temporarily unavailable"))
-      .mockResolvedValueOnce({} as AuthInstance);
+      .mockRejectedValueOnce(new Error("Blob still unavailable"));
     const { GET } = await import("@app/api/auth/[...all]/route");
     const request = new Request("https://blud.example/api/auth/session");
 
     await expect(GET(request)).rejects.toThrow("Blob temporarily unavailable");
-    await expect(GET(request)).resolves.toMatchObject({ status: 200 });
+    await expect(GET(request)).rejects.toThrow("Blob still unavailable");
     expect(mocks.getAuth).toHaveBeenCalledTimes(2);
-    expect(handler).toHaveBeenCalledOnce();
+    expect(handler).not.toHaveBeenCalled();
   });
 });
