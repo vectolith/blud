@@ -104,8 +104,10 @@ below have objective evidence.
   route for bug reports and security reports.
 
 ### 7. Responsible AI and model-specific requirements
+
 For repositories that train, evaluate, distribute, or serve models or AI
 features:
+
 - Record model identity, revision, architecture, intended use, limitations,
   provenance, and applicable license.
 - Record training/evaluation data provenance, permissions, filtering,
