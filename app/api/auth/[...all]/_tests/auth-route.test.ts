@@ -6,8 +6,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const handler = vi.fn<(request: Request) => Promise<Response>>();
 const mocks = vi.hoisted(() => ({
-  getAuth: vi.fn(),
-  toNextJsHandler: vi.fn(),
+  getAuth: vi.fn<() => Promise<unknown>>(),
+  toNextJsHandler: vi.fn<
+    (auth: unknown) => Record<"DELETE" | "GET" | "PATCH" | "POST" | "PUT", typeof handler>
+  >(),
 }));
 
 vi.mock("@db/services/auth", () => ({ getAuth: mocks.getAuth }));
