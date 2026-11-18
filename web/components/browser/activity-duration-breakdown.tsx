@@ -35,7 +35,7 @@ export function ActivityDurationBreakdown({
     <div className="grid gap-2">
       <div
         aria-label="Time by activity type"
-        className="flex h-1.5 overflow-hidden rounded-full bg-muted"
+        className="bg-muted flex h-1.5 overflow-hidden rounded-full"
       >
         {segments.map(({ durationMs, kind }) => {
           const presentation = activityPresentation[kind];
@@ -51,7 +51,7 @@ export function ActivityDurationBreakdown({
           );
         })}
       </div>
-      <div className="grid gap-0.5 type-caption text-muted-foreground">
+      <div className="type-caption text-muted-foreground grid gap-0.5">
         {segments.map(({ durationMs, kind }) => {
           const presentation = activityPresentation[kind];
           return (

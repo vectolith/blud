@@ -99,7 +99,7 @@ function ToolHeader({
       {...props}
     >
       {icon ?? <WrenchIcon className="size-4 shrink-0" />}
-      <span className="min-w-0 flex-1 truncate type-label">{title}</span>
+      <span className="type-label min-w-0 flex-1 truncate">{title}</span>
       {meta ? (
         <span
           className="flex shrink-0 items-center gap-1"
@@ -148,7 +148,7 @@ function ToolInput({ className, input, ...props }: ToolInputProps) {
   return (
     <div className={cn("space-y-2 overflow-hidden", className)} {...props}>
       <p className="type-label text-muted-foreground">Parameters</p>
-      <pre className="type-code overflow-x-auto rounded-md bg-muted/50 p-3">
+      <pre className="type-code bg-muted/50 overflow-x-auto rounded-md p-3">
         <code>{JSON.stringify(input, null, 2)}</code>
       </pre>
     </div>
