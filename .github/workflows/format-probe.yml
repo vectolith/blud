@@ -20,5 +20,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Format and print exact diff
         run: |
-          pnpm exec oxfmt --write "app/api/auth/[...all]/_tests/auth-route.test.ts"
-          git diff --no-ext-diff -- "app/api/auth/[...all]/_tests/auth-route.test.ts"
+          pnpm exec oxfmt --write "app/api/auth/[...all]/_tests/auth-route.test.ts" tests/internal/browser-worker.test.ts
+          git diff --no-ext-diff -- "app/api/auth/[...all]/_tests/auth-route.test.ts" tests/internal/browser-worker.test.ts
