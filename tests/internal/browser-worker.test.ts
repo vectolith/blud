@@ -29,6 +29,7 @@ function request(body: string, token = serviceSecret) {
 
 describe("Internal Blud Browser Worker RPC", () => {
   beforeEach(async () => {
+    vi.stubEnv("DATABASE_URL", "postgresql://user:password@example.com/database");
     vi.stubEnv("BLUD_INTERNAL_KEY", serviceSecret);
     vi.stubEnv("VELNOR_SHARED_SECRET", "");
     vi.stubEnv("BETTER_AUTH_SECRET", "");
