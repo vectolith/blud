@@ -2,16 +2,20 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-const requestSchema = z.object({
-  message: z.string().trim().min(1).max(8_000),
-  startUrl: z.string().url().optional(),
-  sessionRef: z.string().optional(),
-  extractSchema: z.record(z.string(), z.unknown()).optional(),
-  caller: z.literal("velnor"),
-}).strict();
+const requestSchema = z
+  .object({
+    message: z.string().trim().min(1).max(8_000),
+    startUrl: z.string().url().optional(),
+    sessionRef: z.string().optional(),
+    extractSchema: z.record(z.string(), z.unknown()).optional(),
+    caller: z.literal("velnor"),
+  })
+  .strict();
 
 function configuredServiceSecret(): string {
-  return process.env.BLUD_INTERNAL_KEY || process.env.VELNOR_SHARED_SECRET || "";
+  return (
+    process.env.BLUD_INTERNAL_KEY || process.env.VELNOR_SHARED_SECRET || ""
+  );
 }
 
 function isAuthorized(request: Request, secret: string): boolean {
