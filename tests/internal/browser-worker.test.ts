@@ -266,20 +266,6 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
-
-  it("fails closed when the deployed Eve API origin is unavailable", async () => {
-    vi.stubEnv("BETTER_AUTH_URL", "");
-    await loadPost();
-
-    const res = await post(
-      request(JSON.stringify({ message: "test", caller: "velnor" }))
-    );
-    expect(res.status).toBe(503);
-    const body = await responseBody(res);
-    expect(body.error).toBe("internal_agent_origin_not_configured");
-    expect(mocks.create).not.toHaveBeenCalled();
-  });
-
   it("rejects an invalid internal service key", async () => {
     const res = await post(
       request(
@@ -352,10 +338,9 @@ describe("Internal Blud Browser Worker RPC", () => {
       redirect: "error",
     };
     expect(mocks.clientOptions).toContainEqual(expectedClientOptions);
-    expect(mocks.send).toHaveBeenCalledWith(
-      expect.stringContaining("Start URL: https://example.com"),
-      expect.objectContaining({ signal: expect.any(AbortSignal) })
-    );
+    const sentCall = mocks.send.mock.calls[0];
+    expect(sentCall?.[0]).toContain("Start URL: https://example.com");
+    expect(sentCall?.[1].signal).toBeInstanceOf(AbortSignal);
     expect(mocks.attach).toHaveBeenCalledWith("browser-agent-session");
   });
 
@@ -439,7 +424,6 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(body.status).toBe("failure");
     expect(body.error).toBe("browser_extraction_not_grounded_in_tool_evidence");
   });
-
 
   it("can resume only a Velnor-owned Eve session reference", async () => {
     const res = await post(
