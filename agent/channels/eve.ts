@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { eveChannel } from "eve/channels/eve";
 import {
   ForbiddenError,
@@ -23,6 +24,42 @@ import {
 const authenticateLocalDev = localDev();
 
 const authenticate: Parameters<typeof routeAuth>[1] = [
+  async (request) => {
+    const secret = process.env.BLUD_INTERNAL_KEY ?? process.env.VELNOR_SHARED_SECRET ?? "";
+    const token =
+      request.headers.get("x-blud-key") ??
+      request.headers.get("authorization")?.replace(/^Bearer\\s+/i, "") ??
+      "";
+    const expectedBytes = Buffer.from(secret);
+    const tokenBytes = Buffer.from(token);
+    if (
+      !secret ||
+      tokenBytes.length !== expectedBytes.length ||
+      !timingSafeEqual(tokenBytes, expectedBytes)
+    ) {
+      return null;
+    }
+
+    const pathname = new URL(request.url).pathname;
+    if (
+      pathname !== "/eve/v1/session" &&
+      !/^\\/eve\\/v1\\/session\\/[^/]+(?:\\/stream)?$/.test(pathname)
+    ) {
+      return null;
+    }
+
+    const scope = accessScopeForUser("blud-internal:velnor");
+    await requireOwnedRouteSubject(scope, request);
+    return {
+      authenticator: "blud-internal",
+      attributes: {
+        conversationChannel: "eve",
+        workspaceId: scope.workspaceId,
+      },
+      principalId: scope.userId,
+      principalType: "service",
+    };
+  },
   async (request) => {
     const identity = await requestIdentityFromRequest(request);
     if (!identity) return null;
