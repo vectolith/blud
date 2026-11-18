@@ -130,12 +130,13 @@ function isAuthorized(request: Request, secret: string): boolean {
 
 export async function POST(request: Request) {
   const secret = configuredServiceSecret();
-  if (!secret) {
+  if (!secret || secret.length < 32) {
     return NextResponse.json(
       {
         status: "offline",
         error: "internal_service_auth_not_configured",
-        message: "Blud internal service authentication is not configured.",
+        message:
+          "Blud internal service authentication must be configured with at least 32 characters.",
       },
       { status: 503 }
     );
