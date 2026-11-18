@@ -1417,7 +1417,7 @@ export const PromptInputButton = ({
       <TooltipContent side={side}>
         {tooltipContent}
         {shortcut && (
-          <span className="text-muted-foreground ml-2">{shortcut}</span>
+          <span className="ml-2 text-muted-foreground">{shortcut}</span>
         )}
       </TooltipContent>
     </Tooltip>

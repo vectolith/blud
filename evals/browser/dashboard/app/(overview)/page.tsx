@@ -25,7 +25,7 @@ export default function RunsPage() {
       <header className="flex items-end justify-between gap-4">
         <div>
           <h1 className="type-page-title">Browser A/B runs</h1>
-          <p className="type-supporting-body text-muted-foreground mt-1">
+          <p className="type-supporting-body mt-1 text-muted-foreground">
             Current and completed comparisons.
           </p>
         </div>
@@ -88,7 +88,7 @@ function RunRow({ run }: { run: BrowserBenchmarkLiveStatus }) {
         >
           {run.label ?? formatRunDate(run.startedAt)}
         </Link>
-        <div className="type-compact-code text-muted-foreground mt-0.5">
+        <div className="type-compact-code mt-0.5 text-muted-foreground">
           {run.label ? `${formatRunDate(run.startedAt)} · ` : ""}
           {run.variants.baseline.sha.slice(0, 7)} →{" "}
           {run.variants.candidate.sha.slice(0, 7)}

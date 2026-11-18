@@ -51,7 +51,7 @@ export function RunDetail({ runId }: { runId: string }) {
             {run?.label ?? "Browser A/B"}
           </h1>
           {run ? (
-            <p className="type-supporting-body text-muted-foreground mt-1">
+            <p className="type-supporting-body mt-1 text-muted-foreground">
               {run.suite} · {run.variants.baseline.sha.slice(0, 7)} →{" "}
               {run.variants.candidate.sha.slice(0, 7)}
             </p>
@@ -97,7 +97,7 @@ function RunTables({
   ];
   return (
     <>
-      <div className="type-caption text-muted-foreground flex flex-wrap gap-x-5 gap-y-1">
+      <div className="type-caption flex flex-wrap gap-x-5 gap-y-1 text-muted-foreground">
         <span>Concurrency {run.maxConcurrency}</span>
         <span>Task budget {formatDuration(run.taskTimeoutMs)}</span>
         <span>
@@ -135,19 +135,19 @@ function RunTables({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[22%]">Task</TableHead>
-                <TableHead className="border-border w-[18%] border-l">
+                <TableHead className="w-[18%] border-l border-border">
                   Baseline result
                 </TableHead>
-                <TableHead className="border-border w-[13%] border-l">
+                <TableHead className="w-[13%] border-l border-border">
                   Baseline trace
                 </TableHead>
-                <TableHead className="border-border w-[18%] border-l">
+                <TableHead className="w-[18%] border-l border-border">
                   Candidate result
                 </TableHead>
-                <TableHead className="border-border w-[13%] border-l">
+                <TableHead className="w-[13%] border-l border-border">
                   Candidate trace
                 </TableHead>
-                <TableHead className="border-border w-[16%] border-l">
+                <TableHead className="w-[16%] border-l border-border">
                   Improvement
                 </TableHead>
               </TableRow>
@@ -164,7 +164,7 @@ function RunTables({
                   const left = baseline.find((task) => task.id === taskId);
                   const right = candidate.find((task) => task.id === taskId);
                   return (
-                    <TableRow className="border-border border-b" key={taskId}>
+                    <TableRow className="border-b border-border" key={taskId}>
                       <TableCell className="align-top font-medium wrap-break-word whitespace-normal">
                         {left?.name ?? right?.name ?? "Task"}
                       </TableCell>
@@ -225,7 +225,7 @@ function TaskResultCell({ now, task }: { now: number; task?: Task }) {
     task.activity ??
     (task.status === "running" ? "Starting task" : "Waiting to start");
   return (
-    <TableCell className="border-border min-w-0 overflow-hidden border-l align-top whitespace-normal">
+    <TableCell className="min-w-0 overflow-hidden border-l border-border align-top whitespace-normal">
       <div className="flex items-center gap-2">
         <StatusDot status={task.status} />
         <span className="type-compact-code text-muted-foreground">
@@ -253,13 +253,13 @@ function TaskTraceCell({
 }) {
   if (!task) {
     return (
-      <TableCell className="border-border text-muted-foreground border-l align-top">
+      <TableCell className="border-l border-border align-top text-muted-foreground">
         —
       </TableCell>
     );
   }
   return (
-    <TableCell className="border-border border-l align-top whitespace-normal">
+    <TableCell className="border-l border-border align-top whitespace-normal">
       <div className="flex flex-wrap gap-x-3 gap-y-1">
         {taskTraceHref ? (
           <a
@@ -298,7 +298,7 @@ function TaskImprovement({
 }) {
   const improvement = compareBenchmarkTasks(baseline, candidate);
   return (
-    <TableCell className="border-border border-l align-top whitespace-normal">
+    <TableCell className="border-l border-border align-top whitespace-normal">
       <div className="grid gap-1">
         <Improvement label="Time" value={improvement.time} />
         <Improvement label="Cost" value={improvement.cost} />

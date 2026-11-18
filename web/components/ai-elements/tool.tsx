@@ -148,7 +148,7 @@ function ToolInput({ className, input, ...props }: ToolInputProps) {
   return (
     <div className={cn("space-y-2 overflow-hidden", className)} {...props}>
       <p className="type-label text-muted-foreground">Parameters</p>
-      <pre className="type-code bg-muted/50 overflow-x-auto rounded-md p-3">
+      <pre className="type-code overflow-x-auto rounded-md bg-muted/50 p-3">
         <code>{JSON.stringify(input, null, 2)}</code>
       </pre>
     </div>

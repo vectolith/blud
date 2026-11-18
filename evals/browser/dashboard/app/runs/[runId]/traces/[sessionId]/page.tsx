@@ -67,7 +67,7 @@ export default async function BenchmarkTracePage({
           ← Run details
         </Link>
         <h1 className="type-page-title mt-3">{match.task.name}</h1>
-        <p className="type-supporting-body text-muted-foreground mt-1">
+        <p className="type-supporting-body mt-1 text-muted-foreground">
           {match.variant} · {sessionId} · {match.task.status}
         </p>
         <div className="mt-4 max-w-4xl">
@@ -81,7 +81,7 @@ export default async function BenchmarkTracePage({
               LLM judge {Math.round(match.task.judgeScore * 100)}%
             </p>
             {match.task.judgeRationale ? (
-              <p className="type-caption text-muted-foreground mt-1">
+              <p className="type-caption mt-1 text-muted-foreground">
                 {match.task.judgeRationale}
               </p>
             ) : null}
@@ -91,7 +91,7 @@ export default async function BenchmarkTracePage({
 
       {trace ? (
         <section aria-label="Task trace" className="grid gap-3">
-          <div className="type-caption text-muted-foreground flex flex-wrap justify-between gap-2">
+          <div className="type-caption flex flex-wrap justify-between gap-2 text-muted-foreground">
             <span>{trace.events.length} events</span>
             <span>Updated {new Date(trace.updatedAt).toLocaleString()}</span>
           </div>
@@ -106,15 +106,15 @@ export default async function BenchmarkTracePage({
               </TableHeader>
               <TableBody>
                 {trace.events.map((event) => (
-                  <TableRow className="border-border border-b" key={event.id}>
-                    <TableCell className="type-compact-code text-muted-foreground align-top">
+                  <TableRow className="border-b border-border" key={event.id}>
+                    <TableCell className="type-compact-code align-top text-muted-foreground">
                       {new Date(event.at).toLocaleTimeString()}
                     </TableCell>
                     <TableCell className="align-top font-medium whitespace-normal">
                       {event.label}
                     </TableCell>
                     <TableCell className="align-top whitespace-normal">
-                      <pre className="type-compact-code text-muted-foreground max-h-48 overflow-auto break-all whitespace-pre-wrap">
+                      <pre className="type-compact-code max-h-48 overflow-auto break-all whitespace-pre-wrap text-muted-foreground">
                         {event.detail || "—"}
                       </pre>
                     </TableCell>
@@ -130,7 +130,7 @@ export default async function BenchmarkTracePage({
             This is the exact worker session for the task, but detailed events
             were not persisted by this older benchmark run.
           </p>
-          <p className="type-caption text-muted-foreground mt-1">
+          <p className="type-caption mt-1 text-muted-foreground">
             New runs save the trace here while the task is active and retain it
             after the ephemeral variant server is removed.
           </p>
