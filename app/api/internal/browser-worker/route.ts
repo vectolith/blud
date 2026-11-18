@@ -143,7 +143,7 @@ export async function POST(request: Request) {
   const controller = new AbortController();
   const timer = setTimeout(() => {
     controller.abort();
-  }, 180_000);
+  }, 165_000);
 
   let sessionId = sessionRef;
   try {
