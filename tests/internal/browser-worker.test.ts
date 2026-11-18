@@ -300,6 +300,28 @@ describe("Internal Blud Browser Worker RPC", () => {
     expect(res.status).toBe(400);
   });
 
+  it("does not issue a success receipt without a settled run_browser task", async () => {
+    mocks.result.mockResolvedValue({
+      status: "completed",
+      message: "No browser workflow was executed.",
+      events: [],
+    });
+    const res = await post(
+      request(
+        JSON.stringify({
+          message: "Verify the page title",
+          caller: "velnor",
+        })
+      )
+    );
+
+    expect(res.status).toBe(200);
+    const body = await responseBody(res);
+    expect(body.status).toBe("failure");
+    expect(body.error).toBe("browser_worker_did_not_complete_successfully");
+    expect(body.executionReceipt).toBeUndefined();
+  });
+
   it("dispatches into Eve and returns a receipt bound to settled browser evidence", async () => {
     const res = await post(
       request(
