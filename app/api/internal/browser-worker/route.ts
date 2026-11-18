@@ -2,7 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Client } from "eve/client";
 import { z } from "zod";
-import { readTaskCompletion } from "@evals/browser/worker-events";
+import { taskCompletionOutputSchema } from "@agent/subagents/browser-agent/lib/completion";
 import { env } from "@shared/environment/env";
 
 const requestSchema = z
@@ -15,6 +15,43 @@ const requestSchema = z
   })
   .strict();
 
+const runtimeEventSchema = z
+  .object({
+    type: z.string(),
+    data: z.unknown(),
+    meta: z.object({ at: z.string() }).passthrough(),
+  })
+  .passthrough();
+
+const runtimeResultSchema = z.object({
+  status: z.enum(["completed", "waiting", "failed"]),
+  message: z.string().optional(),
+  events: z.array(runtimeEventSchema),
+});
+
+const callRequestedSchema = z.object({
+  callId: z.string().min(1),
+  capability: z.object({
+    kind: z.literal("tool"),
+    name: z.string().min(1),
+  }),
+});
+
+const callStartedSchema = z.object({
+  callId: z.string().min(1),
+  taskId: z.string().min(1),
+});
+
+const callSettledSchema = z.object({
+  callId: z.string().min(1),
+  outcome: z.string(),
+  output: z.unknown(),
+});
+
+const agentStartedSchema = z.object({
+  sessionId: z.string().min(1),
+});
+
 const browserToolNames = new Set([
   "browser_snapshot",
   "browser_text",
@@ -24,6 +61,8 @@ const browserToolNames = new Set([
   "playwright_execute",
   "computer_action",
 ]);
+
+type RuntimeEvent = z.infer<typeof runtimeEventSchema>;
 
 function configuredServiceSecret(): string {
   return env.BLUD_INTERNAL_KEY ?? env.VELNOR_SHARED_SECRET ?? "";
@@ -38,13 +77,8 @@ function isAuthorized(request: Request, secret: string): boolean {
   const tokenBytes = Buffer.from(token);
   return (
     tokenBytes.length === expectedBytes.length &&
-    timingSafeEqualBytes(tokenBytes, expectedBytes)
+    timingSafeEqual(tokenBytes, expectedBytes)
   );
-}
-
-function timingSafeEqualBytes(left: Buffer, right: Buffer): boolean {
-  // Check lengths before timingSafeEqual because Node requires equal lengths.
-  return left.length === right.length && timingSafeEqual(left, right);
 }
 
 export async function POST(request: Request) {
@@ -91,16 +125,15 @@ export async function POST(request: Request) {
       {
         status: "failure",
         error: "invalid_session_reference",
-        message: "The supplied sessionRef is not a Velnor-owned Blud agent session.",
+        message:
+          "The supplied sessionRef is not a Velnor-owned Blud agent session.",
       },
       { status: 400 }
     );
   }
 
   const requestOrigin = new URL(request.url).origin;
-  const host = env.VERCEL_URL
-    ? `https://${env.VERCEL_URL}`
-    : requestOrigin;
+  const host = env.VERCEL_URL ? `https://${env.VERCEL_URL}` : requestOrigin;
   // Use the deployment-local Eve API so service identity and session ownership are enforced.
   const client = new Client({
     host,
@@ -108,7 +141,9 @@ export async function POST(request: Request) {
     redirect: "error",
   });
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 180_000);
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, 180_000);
 
   let sessionId = sessionRef;
   try {
@@ -134,13 +169,13 @@ export async function POST(request: Request) {
     const response = await session.send(assignment, {
       signal: controller.signal,
     });
-    const result = await response.result();
-    const completion = readTaskCompletion(result.events);
+    const rawResult: unknown = await response.result();
+    const result = runtimeResultSchema.parse(rawResult);
+    const completion = findRunBrowserCompletion(result.events);
 
     if (
       result.status !== "completed" ||
-      !completion ||
-      completion.status !== "success"
+      completion?.status !== "success"
     ) {
       return NextResponse.json(
         {
@@ -173,40 +208,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const runBrowserCall = result.events.findLast(
-      (event) =>
-        event.type === "call.requested" &&
-        event.data.capability.kind === "tool" &&
-        event.data.capability.name === "run_browser"
-    );
-    const runBrowserTaskId = runBrowserCall
-      ? result.events.findLast(
-          (event) =>
-            event.type === "call.started" &&
-            event.data.callId === runBrowserCall.data.callId
-        )
-      : undefined;
-    if (
-      !runBrowserTaskId ||
-      runBrowserTaskId.type !== "call.started" ||
-      !runBrowserTaskId.data.taskId
-    ) {
-      return NextResponse.json(
-        {
-          status: "failure",
-          error: "browser_workflow_receipt_missing",
-          message:
-            "The completion was not linked to a started run_browser workflow task.",
-          sessionRef: sessionId,
-        },
-        { status: 200 }
-      );
-    }
-
     const childStarted = result.events.findLast(
       (event) => event.type === "agent.started"
     );
-    if (!childStarted || childStarted.type !== "agent.started") {
+    const childSessionId = childStarted
+      ? agentStartedSchema.parse(childStarted.data).sessionId
+      : undefined;
+    if (!childSessionId) {
       return NextResponse.json(
         {
           status: "failure",
@@ -219,24 +227,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const child = session.agent(childStarted);
-    const childEvents = [];
-    for await (const event of child.stream({ follow: false })) {
-      childEvents.push(event);
+    const childSession = client.sessions.attach(childSessionId);
+    const childEvents: RuntimeEvent[] = [];
+    for await (const rawEvent of childSession.stream({ follow: false })) {
+      childEvents.push(runtimeEventSchema.parse(rawEvent));
     }
 
     const toolNamesByCall = new Map<string, string>();
-    const evidenceEvents: Array<{ tool: string; output: unknown }> = [];
+    const evidenceEvents: { tool: string; output: unknown }[] = [];
     for (const event of childEvents) {
-      if (
-        event.type === "call.requested" &&
-        event.data.capability.kind === "tool"
-      ) {
-        toolNamesByCall.set(event.data.callId, event.data.capability.name);
+      if (event.type === "call.requested") {
+        const call = callRequestedSchema.safeParse(event.data);
+        if (call.success) {
+          toolNamesByCall.set(call.data.callId, call.data.capability.name);
+        }
       } else if (event.type === "call.settled") {
-        const tool = toolNamesByCall.get(event.data.callId);
+        const call = callSettledSchema.safeParse(event.data);
+        if (!call.success) continue;
+        const tool = toolNamesByCall.get(call.data.callId);
         if (tool && browserToolNames.has(tool)) {
-          evidenceEvents.push({ tool, output: event.data.output });
+          evidenceEvents.push({ tool, output: call.data.output });
         }
       }
     }
@@ -245,8 +255,8 @@ export async function POST(request: Request) {
       .map(({ output }) => JSON.stringify(output))
       .join("\n");
     const observedUrls = new Set(
-      [...evidenceText.matchAll(/https?:\/\/[^\s"'<>]+/gu)].map(
-        ([url]) => url.replace(/[),.;]+$/u, "")
+      [...evidenceText.matchAll(/https?:\/\/[^\s"'<>]+/gu)].map(([url]) =>
+        url.replace(/[),.;]+$/u, "")
       )
     );
     if (evidenceEvents.length === 0 || !observedUrls.has(finalUrl)) {
@@ -272,7 +282,7 @@ export async function POST(request: Request) {
       data: completion.extractedData,
       images: [],
       executionReceipt: {
-        taskId: runBrowserTaskId.data.taskId,
+        taskId: completion.taskId,
         state: "completed",
         completedAtUtc: completion.completedAt,
         finalUrl,
@@ -296,6 +306,51 @@ export async function POST(request: Request) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+function findRunBrowserCompletion(events: RuntimeEvent[]) {
+  const runBrowserCalls = new Set<string>();
+  const taskIds = new Map<string, string>();
+  let completion:
+    | (z.infer<typeof taskCompletionOutputSchema> & {
+        taskId: string;
+        completedAt: string;
+      })
+    | undefined;
+
+  for (const event of events) {
+    if (event.type === "call.requested") {
+      const call = callRequestedSchema.safeParse(event.data);
+      if (call.success && call.data.capability.name === "run_browser") {
+        runBrowserCalls.add(call.data.callId);
+      }
+      continue;
+    }
+
+    if (event.type === "call.started") {
+      const call = callStartedSchema.safeParse(event.data);
+      if (call.success && runBrowserCalls.has(call.data.callId)) {
+        taskIds.set(call.data.callId, call.data.taskId);
+      }
+      continue;
+    }
+
+    if (event.type !== "call.settled") continue;
+    const call = callSettledSchema.safeParse(event.data);
+    if (!call.success || call.data.outcome !== "completed") continue;
+    const taskId = taskIds.get(call.data.callId);
+    if (!taskId || !runBrowserCalls.has(call.data.callId)) continue;
+    const parsed = taskCompletionOutputSchema.safeParse(call.data.output);
+    if (parsed.success) {
+      completion = {
+        ...parsed.data,
+        taskId,
+        completedAt: event.meta.at,
+      };
+    }
+  }
+
+  return completion;
 }
 
 function isHttpUrl(value: string) {
