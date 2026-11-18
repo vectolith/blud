@@ -98,9 +98,7 @@ export async function POST(request: Request) {
   }
 
   const requestOrigin = new URL(request.url).origin;
-  const host = env.VERCEL_URL
-    ? `https://${env.VERCEL_URL}`
-    : requestOrigin;
+  const host = env.VERCEL_URL ? `https://${env.VERCEL_URL}` : requestOrigin;
   const client = new Client({
     host,
     auth: { bearer: secret },
@@ -172,11 +170,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const runBrowserCall = result.events.findLast(
-      (event) =>
-        event.type === "call.requested" &&
-        event.data.capability.kind === "tool" &&
-        event.data.capability.name === "run_browser"
+    const runBrowserCall = result.events.findLast((event) =>
+      event.type === "call.requested" &&
+      event.data.capability.kind === "tool" &&
+      event.data.capability.name === "run_browser"
     );
     const runBrowserTaskId = runBrowserCall
       ? result.events.findLast(
@@ -244,8 +241,8 @@ export async function POST(request: Request) {
       .map(({ output }) => JSON.stringify(output))
       .join("\n");
     const observedUrls = new Set(
-      [...evidenceText.matchAll(/https?:\/\/[^\s"'<>]+/gu)].map(([url]) =>
-        url.replace(/[),.;]+$/u, "")
+      [...evidenceText.matchAll(/https?:\/\/[^\s"'<>]+/gu)].map(
+        ([url]) => url.replace(/[),.;]+$/u, "")
       )
     );
     if (evidenceEvents.length === 0 || !observedUrls.has(finalUrl)) {
