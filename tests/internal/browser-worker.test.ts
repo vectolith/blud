@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("eve/client", () => ({
   Client: class {
     sessions = { create: mocks.create, attach: mocks.attach };
+
     constructor(options: unknown) {
       mocks.clientOptions.push(options);
     }
@@ -112,6 +113,7 @@ let session: {
 describe("Internal Blud Browser Worker RPC", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    mocks.clientOptions.length = 0;
     vi.stubEnv(
       "DATABASE_URL",
       "postgresql://user:password@example.com/database"
@@ -121,6 +123,7 @@ describe("Internal Blud Browser Worker RPC", () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "");
     vi.stubEnv("KERNEL_API_KEY", "configured-kernel-key");
     vi.stubEnv("VERCEL_URL", "");
+
     session = {
       id: "wrun_internal_1",
       send: mocks.send,
@@ -194,39 +197,39 @@ describe("Internal Blud Browser Worker RPC", () => {
   it(
     "dispatches into Eve and returns a receipt bound to settled browser evidence",
     async () => {
-    const res = await post(
-      request(
-        JSON.stringify({
-          message: "Verify the page title",
-          startUrl: "https://example.com",
-          extractSchema: { title: "string" },
-          caller: "velnor",
-        })
-      )
-    );
+      const res = await post(
+        request(
+          JSON.stringify({
+            message: "Verify the page title",
+            startUrl: "https://example.com",
+            extractSchema: { title: "string" },
+            caller: "velnor",
+          })
+        )
+      );
 
-    expect(res.status).toBe(200);
-    const body = responseBodySchema.parse(await res.json());
-    expect(body.status).toBe("success");
-    expect(body.sessionRef).toBe("wrun_internal_1");
-    expect(body.executionReceipt).toMatchObject({
-      taskId: "browser-task-1",
-      state: "completed",
-      finalUrl: "https://example.com/",
-      completedAtUtc: "2026-11-18T10:00:00.000Z",
-    });
-    expect(body.executionReceipt?.evidenceSha256).toMatch(/^[a-f0-9]{64}$/);
-    expect(body.data).toEqual({ title: "Example Domain" });
-    expect(mocks.clientOptions).toContainEqual({
-      host: "http://localhost:3000",
-      auth: { bearer: serviceSecret },
-      redirect: "error",
-    });
-    expect(mocks.send).toHaveBeenCalledWith(
-      expect.stringContaining("Start URL: https://example.com"),
-      expect.objectContaining({ signal: expect.any(AbortSignal) })
-    );
-    expect(mocks.agent).toHaveBeenCalledOnce();
+      expect(res.status).toBe(200);
+      const body = responseBodySchema.parse(await res.json());
+      expect(body.status).toBe("success");
+      expect(body.sessionRef).toBe("wrun_internal_1");
+      expect(body.executionReceipt).toMatchObject({
+        taskId: "browser-task-1",
+        state: "completed",
+        finalUrl: "https://example.com/",
+        completedAtUtc: "2026-11-18T10:00:00.000Z",
+      });
+      expect(body.executionReceipt?.evidenceSha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(body.data).toEqual({ title: "Example Domain" });
+      expect(mocks.clientOptions).toContainEqual({
+        host: "http://localhost:3000",
+        auth: { bearer: serviceSecret },
+        redirect: "error",
+      });
+      expect(mocks.send).toHaveBeenCalledWith(
+        expect.stringContaining("Start URL: https://example.com"),
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+      expect(mocks.agent).toHaveBeenCalledOnce();
     }
   );
 
@@ -236,21 +239,22 @@ describe("Internal Blud Browser Worker RPC", () => {
       mocks.result.mockResolvedValue(
         successfulRuntimeResult("https://other.example/")
       );
-    const res = await post(
-      request(
-        JSON.stringify({
-          message: "Verify the page title",
-          caller: "velnor",
-        })
-      )
-    );
+      const res = await post(
+        request(
+          JSON.stringify({
+            message: "Verify the page title",
+            caller: "velnor",
+          })
+        )
+      );
 
-    expect(res.status).toBe(200);
-    const body = responseBodySchema.parse(await res.json());
-    expect(body.status).toBe("failure");
-    expect(body.error).toBe("browser_evidence_does_not_confirm_final_url");
-    expect(body.executionReceipt).toBeUndefined();
-  });
+      expect(res.status).toBe(200);
+      const body = responseBodySchema.parse(await res.json());
+      expect(body.status).toBe("failure");
+      expect(body.error).toBe("browser_evidence_does_not_confirm_final_url");
+      expect(body.executionReceipt).toBeUndefined();
+    }
+  );
 
   it("can resume only a Velnor-owned Eve session reference", async () => {
     const res = await post(
