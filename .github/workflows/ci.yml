@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main, fix/retire-fake-browser-worker-rpc]
+    branches: [main]
 
 jobs:
   check:
