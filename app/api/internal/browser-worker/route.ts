@@ -65,7 +65,7 @@ const browserToolNames = new Set([
 type RuntimeEvent = z.infer<typeof runtimeEventSchema>;
 
 function configuredServiceSecret(): string {
-  return env.BLUD_INTERNAL_KEY ?? env.VELNOR_SHARED_SECRET ?? "";
+  return env.BLUD_INTERNAL_KEY || env.VELNOR_SHARED_SECRET || "";
 }
 
 function isAuthorized(request: Request, secret: string): boolean {
