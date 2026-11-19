@@ -104,14 +104,36 @@ describe("installation secrets", () => {
     expect(mocks.put).not.toHaveBeenCalled();
   });
 
-  it("rejects a partial explicit override", async () => {
+  it("rotates one secret while preserving the other from private Blob", async () => {
+    const stored = {
+      betterAuthSecret: Buffer.alloc(32, 6).toString("base64"),
+      secretEncryptionKey: Buffer.alloc(32, 7).toString("base64"),
+      version: 1 as const,
+    };
+    const rotatedEncryptionKey = Buffer.alloc(32, 8).toString("base64");
+    mocks.get.mockResolvedValue(blobResult(stored));
+    vi.stubEnv("SECRET_ENCRYPTION_KEY", rotatedEncryptionKey);
+
+    const getInstallationSecrets = await loadInstallationSecrets();
+
+    await expect(getInstallationSecrets()).resolves.toEqual({
+      ...stored,
+      secretEncryptionKey: rotatedEncryptionKey,
+    });
+    expect(mocks.get).toHaveBeenCalledOnce();
+    expect(mocks.put).not.toHaveBeenCalled();
+  });
+
+  it("rejects a partial override when no existing private Blob record exists", async () => {
     vi.stubEnv("BETTER_AUTH_SECRET", Buffer.alloc(32, 6).toString("base64"));
+    mocks.get.mockResolvedValue(null);
 
     const getInstallationSecrets = await loadInstallationSecrets();
 
     await expect(getInstallationSecrets()).rejects.toThrow(
-      "Set both BETTER_AUTH_SECRET and SECRET_ENCRYPTION_KEY"
+      "A partial installation-secret override requires an existing private Blob secret record."
     );
+    expect(mocks.put).not.toHaveBeenCalled();
   });
 
   it("retries after a transient Blob read failure", async () => {

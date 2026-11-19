@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Database migration consistency
+        run: pnpm db:check
+
       - name: Run full check suite (oxlint, typecheck, vitest, oxfmt, knip)
         run: pnpm check
 
