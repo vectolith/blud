@@ -80,7 +80,6 @@
         "BLUD_INTERNAL_KEY",
         "GITHUB_APP_*",
         "SKIP_ENV_VALIDATION",
-        "VELNOR_SHARED_SECRET"
       ],
       "outputs": []
     },
