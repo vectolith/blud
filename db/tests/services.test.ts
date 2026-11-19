@@ -387,7 +387,9 @@ describe("database services", () => {
     await settings.selectGatewayModel(alice, "openai/test");
     expect(await settings.getGatewayModel(alice)).toBe("openai/test");
     expect(await settings.getGatewayModel(bob)).toBe("openai/gpt-6.1-sol-fast");
-  }, 15_000);
+    // Applies ~8 PGlite migrations under load; 15s is not enough on a 2-core
+    // runner once the rest of the suite is running in parallel.
+  }, 60_000);
 });
 
 async function applyInitialMigration(database: PGlite) {

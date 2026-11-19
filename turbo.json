@@ -14,9 +14,11 @@
         "KERNEL_*",
         "LINQ_*",
         "LINK_*",
-        "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
+        "SKIP_ENV_VALIDATION",
+        "STRIPE_PUBLISHABLE_KEY",
+        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
@@ -33,9 +35,11 @@
         "KERNEL_*",
         "LINQ_*",
         "LINK_*",
-        "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
+        "SKIP_ENV_VALIDATION",
+        "STRIPE_PUBLISHABLE_KEY",
+        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
@@ -57,9 +61,10 @@
         "KERNEL_*",
         "LINQ_*",
         "LINK_*",
-        "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
+        "STRIPE_PUBLISHABLE_KEY",
+        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "persistent": true
@@ -74,6 +79,12 @@
       "outputs": []
     },
     "lint:app": {
+      "env": [
+        "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
+        "SKIP_ENV_VALIDATION",
+        "VELNOR_SHARED_SECRET"
+      ],
       "outputs": []
     },
     "start:app": {
@@ -88,14 +99,16 @@
         "KERNEL_*",
         "LINQ_*",
         "LINK_*",
-        "STRIPE_PUBLISHABLE_KEY",
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
+        "STRIPE_PUBLISHABLE_KEY",
+        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "persistent": true
     },
     "test:app": {
+      "env": ["BLUD_INTERNAL_KEY", "VELNOR_SHARED_SECRET"],
       "outputs": []
     },
     "types:generate": {

@@ -2,7 +2,6 @@ import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import * as Database from "@db";
 import * as schema from "../schema";
 import {
   authorizationAttemptAad,
@@ -31,6 +30,9 @@ describe("integration credential key rotation", () => {
     // SAFETY: PGlite implements the query-builder surface exercised by these services despite using a different Drizzle driver.
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- This test swaps only the driver while retaining the shared Drizzle schema and query-builder contract.
     const database = pgliteDatabase as never;
+    // Resolve "@db" after the registry reset so the spy targets the same
+    // module instance the services import.
+    const Database = await import("@db");
     vi.spyOn(Database, "db", "get").mockReturnValue(database);
 
     await pgliteDatabase.insert(schema.user).values({
@@ -148,6 +150,9 @@ describe("integration credential key rotation", () => {
     // SAFETY: PGlite implements the query-builder surface exercised by these services despite using a different Drizzle driver.
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- This test swaps only the driver while retaining the shared Drizzle schema and query-builder contract.
     const database = pgliteDatabase as never;
+    // Resolve "@db" after the registry reset so the spy targets the same
+    // module instance the services import.
+    const Database = await import("@db");
     vi.spyOn(Database, "db", "get").mockReturnValue(database);
 
     await pgliteDatabase.insert(schema.user).values({
