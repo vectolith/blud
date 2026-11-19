@@ -5,6 +5,7 @@ import { z } from "zod";
 const applicationEnvironment = [
   "BETTER_AUTH_*",
   "BLUD_INTERNAL_KEY",
+  "GITHUB_APP_*",
   "BLOB_*",
   "DATABASE_URL",
   "*_CONNECTOR_UID",
@@ -21,6 +22,7 @@ const applicationEnvironment = [
 const runtimeEnvironment = [
   "BETTER_AUTH_*",
   "BLUD_INTERNAL_KEY",
+  "GITHUB_APP_*",
   "BLOB_*",
   "DATABASE_URL",
   "*_CONNECTOR_UID",

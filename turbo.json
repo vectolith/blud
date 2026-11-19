@@ -6,6 +6,7 @@
       "env": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "EVE_NEXT_*",
@@ -27,6 +28,7 @@
       "env": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
@@ -52,6 +54,7 @@
       "passThroughEnv": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
@@ -78,6 +81,7 @@
     "lint:app": {
       "env": [
         "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "SKIP_ENV_VALIDATION",
         "VELNOR_SHARED_SECRET"
       ],
@@ -88,6 +92,7 @@
       "passThroughEnv": [
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
+        "GITHUB_APP_*",
         "BLOB_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",

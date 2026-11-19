@@ -34,7 +34,9 @@ async function resolveInstallationSecretsWithRetry() {
 
 async function resolveInstallationSecrets() {
   const configured = configuredInstallationSecrets();
-  if (configured) return configured;
+  if (configured?.betterAuthSecret && configured.secretEncryptionKey) {
+    return installationSecretsSchema.parse({ ...configured, version: 1 });
+  }
 
   if (!env.BLOB_STORE_ID && !env.BLOB_READ_WRITE_TOKEN) {
     throw new Error(
@@ -43,7 +45,18 @@ async function resolveInstallationSecrets() {
   }
   const pathname = installationSecretsPathname();
   const existing = await readInstallationSecrets(pathname);
-  if (existing) return existing;
+  if (existing) {
+    return installationSecretsSchema.parse({
+      ...existing,
+      ...configured,
+      version: 1,
+    });
+  }
+  if (configured) {
+    throw new Error(
+      "A partial installation-secret override requires an existing private Blob secret record."
+    );
+  }
 
   const generated = installationSecretsSchema.parse({
     betterAuthSecret: randomBytes(32).toString("base64"),
@@ -71,16 +84,12 @@ function configuredInstallationSecrets() {
   const betterAuthSecret = env.BETTER_AUTH_SECRET;
   const secretEncryptionKey = env.SECRET_ENCRYPTION_KEY;
   if (!betterAuthSecret && !secretEncryptionKey) return undefined;
-  if (!betterAuthSecret || !secretEncryptionKey) {
-    throw new Error(
-      "Set both BETTER_AUTH_SECRET and SECRET_ENCRYPTION_KEY, or leave both unset for automatic private Blob provisioning."
-    );
+  const configured: Partial<InstallationSecrets> = {};
+  if (betterAuthSecret) configured.betterAuthSecret = betterAuthSecret;
+  if (secretEncryptionKey) {
+    configured.secretEncryptionKey = secretEncryptionKey;
   }
-  return installationSecretsSchema.parse({
-    betterAuthSecret,
-    secretEncryptionKey,
-    version: 1,
-  });
+  return configured;
 }
 
 async function readInstallationSecrets(pathname: string) {
