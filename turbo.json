@@ -76,11 +76,7 @@
       "outputs": []
     },
     "lint:app": {
-      "env": [
-        "BLUD_INTERNAL_KEY",
-        "GITHUB_APP_*",
-        "SKIP_ENV_VALIDATION",
-      ],
+      "env": ["BLUD_INTERNAL_KEY", "GITHUB_APP_*", "SKIP_ENV_VALIDATION"],
       "outputs": []
     },
     "start:app": {
