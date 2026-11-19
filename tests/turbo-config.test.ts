@@ -16,7 +16,6 @@ const applicationEnvironment = [
   "SECRET_ENCRYPTION_KEY",
   "SKIP_ENV_VALIDATION",
   "STRIPE_PUBLISHABLE_KEY",
-  "VELNOR_SHARED_SECRET",
   "VERCEL_*",
 ];
 const runtimeEnvironment = [
@@ -32,12 +31,12 @@ const runtimeEnvironment = [
   "NODE_ENV",
   "SECRET_ENCRYPTION_KEY",
   "STRIPE_PUBLISHABLE_KEY",
-  "VELNOR_SHARED_SECRET",
   "VERCEL_*",
 ];
 
 describe("Turbo configuration", () => {
   it("scopes application environment variables to their owning tasks", async () => {
+    const turboSource = await readFile(new URL("../turbo.json", import.meta.url), "utf8");
     const turbo = z
       .object({
         tasks: z.object({
@@ -49,12 +48,11 @@ describe("Turbo configuration", () => {
       })
       .loose()
       .parse(
-        JSON.parse(
-          await readFile(new URL("../turbo.json", import.meta.url), "utf8")
-        )
+        JSON.parse(turboSource)
       );
 
     expect(turbo).not.toHaveProperty("globalEnv");
+    expect(turboSource).not.toContain("VELNOR_SHARED_SECRET");
     expect(turbo.tasks["build:app"].env).toEqual(
       expect.arrayContaining([...applicationEnvironment, "EVE_NEXT_*"])
     );
