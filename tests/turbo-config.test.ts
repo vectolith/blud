@@ -16,7 +16,6 @@ const applicationEnvironment = [
   "SECRET_ENCRYPTION_KEY",
   "SKIP_ENV_VALIDATION",
   "STRIPE_PUBLISHABLE_KEY",
-  "VELNOR_SHARED_SECRET",
   "VERCEL_*",
 ];
 const runtimeEnvironment = [
@@ -32,7 +31,6 @@ const runtimeEnvironment = [
   "NODE_ENV",
   "SECRET_ENCRYPTION_KEY",
   "STRIPE_PUBLISHABLE_KEY",
-  "VELNOR_SHARED_SECRET",
   "VERCEL_*",
 ];
 
@@ -44,6 +42,8 @@ describe("Turbo configuration", () => {
           "build:app": z.object({ env: z.array(z.string()) }),
           "build:vercel": z.object({ env: z.array(z.string()) }),
           "dev:app": z.object({ passThroughEnv: z.array(z.string()) }),
+          "lint:app": z.object({ env: z.array(z.string()) }),
+          "test:app": z.object({ env: z.array(z.string()) }),
           "start:app": z.object({ passThroughEnv: z.array(z.string()) }),
         }),
       })
@@ -64,6 +64,8 @@ describe("Turbo configuration", () => {
     expect(turbo.tasks["build:vercel"].env).toEqual(applicationEnvironment);
     expect(turbo.tasks["dev:app"].passThroughEnv).toEqual(runtimeEnvironment);
     expect(turbo.tasks["start:app"].passThroughEnv).toEqual(runtimeEnvironment);
+    expect(turbo.tasks["lint:app"].env).not.toContain("VELNOR_SHARED_SECRET");
+    expect(turbo.tasks["test:app"].env).not.toContain("VELNOR_SHARED_SECRET");
   });
 
   it("provisions required one-click deployment configuration", async () => {

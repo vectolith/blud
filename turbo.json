@@ -18,7 +18,6 @@
         "SECRET_ENCRYPTION_KEY",
         "SKIP_ENV_VALIDATION",
         "STRIPE_PUBLISHABLE_KEY",
-        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
@@ -39,7 +38,6 @@
         "SECRET_ENCRYPTION_KEY",
         "SKIP_ENV_VALIDATION",
         "STRIPE_PUBLISHABLE_KEY",
-        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
@@ -64,7 +62,6 @@
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
         "STRIPE_PUBLISHABLE_KEY",
-        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "persistent": true
@@ -79,12 +76,7 @@
       "outputs": []
     },
     "lint:app": {
-      "env": [
-        "BLUD_INTERNAL_KEY",
-        "GITHUB_APP_*",
-        "SKIP_ENV_VALIDATION",
-        "VELNOR_SHARED_SECRET"
-      ],
+      "env": ["BLUD_INTERNAL_KEY", "GITHUB_APP_*", "SKIP_ENV_VALIDATION"],
       "outputs": []
     },
     "start:app": {
@@ -102,13 +94,12 @@
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
         "STRIPE_PUBLISHABLE_KEY",
-        "VELNOR_SHARED_SECRET",
         "VERCEL_*"
       ],
       "persistent": true
     },
     "test:app": {
-      "env": ["BLUD_INTERNAL_KEY", "VELNOR_SHARED_SECRET"],
+      "env": ["BLUD_INTERNAL_KEY"],
       "outputs": []
     },
     "types:generate": {
