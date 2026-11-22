@@ -39,16 +39,9 @@ eve add <item> --non-interactive
 
 Exit code 0 means setup completed, 1 failed, and 2 needs an answer or a prerequisite. On exit 2, run the `next.command` from the final NDJSON event. For a non-secret question, replace its `<JSON value>` answer placeholder with the answer you collected; string values need JSON quotes. Never pass a secret in `--answer`. See `docs/install-integrations.mdx` for setup prerequisites.
 
-## Use eve for Vercel operations
+## Deploy and hosting operations
 
-Use eve to link and deploy Vercel projects:
-
-```sh
-eve link --non-interactive --project <name-or-id> [--team <team-id-or-slug>]
-eve deploy --non-interactive --yes [--project <name-or-id>]
-```
-
-A setup may report `eve link` as a prerequisite; run it, then retry the continuation. When a completed setup event has `deploymentRequired: true`, run the `next` command it reports.
+BLUD's hosting configuration is being migrated to provider-neutral operations. Do not introduce platform-specific deployment assumptions into the canonical runtime or docs. Use explicit operator-managed database migrations and documented host configuration. Provider-specific adapters may remain temporarily only when required for compatibility, and must be tracked in the standalone-hosting migration plan.
 
 ## Validate the change
 
