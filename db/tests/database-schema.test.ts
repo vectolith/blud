@@ -197,6 +197,13 @@ describe("migration deployment policy", () => {
           await readFile(new URL("../../turbo.json", import.meta.url), "utf8")
         )
       );
+
+    expect(packageManifest.scripts["db:check"]).toBe("drizzle-kit check --config db/drizzle.config.ts");
+    expect(packageManifest.scripts["db:generate"]).toBe("drizzle-kit generate --config db/drizzle.config.ts");
+    expect(packageManifest.scripts["db:migrate"]).toBe("drizzle-kit migrate --config db/drizzle.config.ts");
+    expect(packageManifest.devDependencies).toHaveProperty("@next/env");
+    expect(turbo.tasks["db:migrate"].cache).toBe(false);
+    expect(turbo.tasks["db:migrate"].env).toEqual(["DATABASE_URL_UNPOOLED"]);
   });
 
   it("adopts existing tables without request-time DDL", async () => {
