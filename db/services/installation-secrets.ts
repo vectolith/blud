@@ -40,7 +40,7 @@ async function resolveInstallationSecrets() {
 
   if (!env.BLOB_STORE_ID && !env.BLOB_READ_WRITE_TOKEN) {
     throw new Error(
-      "Installation secrets are unavailable. configure a private Blob-compatible store or set both BETTER_AUTH_SECRET and SECRET_ENCRYPTION_KEY."
+      "Installation secrets are unavailable. configure BLUD's private secret store or set both BETTER_AUTH_SECRET and SECRET_ENCRYPTION_KEY."
     );
   }
   const pathname = installationSecretsPathname();
@@ -54,7 +54,7 @@ async function resolveInstallationSecrets() {
   }
   if (configured) {
     throw new Error(
-      "A partial installation-secret override requires an existing private Blob secret record."
+      "A partial installation-secret override requires an existing private secret record."
     );
   }
 
