@@ -40,7 +40,7 @@ async function resolveInstallationSecrets() {
 
   if (!env.BLOB_STORE_ID && !env.BLOB_READ_WRITE_TOKEN) {
     throw new Error(
-      "Installation secrets are unavailable. Connect a private Vercel Blob store or set both BETTER_AUTH_SECRET and SECRET_ENCRYPTION_KEY."
+      "Installation secrets are unavailable. configure a private Blob-compatible store or set both BETTER_AUTH_SECRET and SECRET_ENCRYPTION_KEY."
     );
   }
   const pathname = installationSecretsPathname();
@@ -110,7 +110,7 @@ async function readInstallationSecrets(pathname: string) {
 
 function installationSecretsPathname() {
   const scope = createHash("sha256")
-    .update(env.VERCEL_PROJECT_ID ?? "standalone")
+    .update(env.BLUD_INSTANCE_ID ?? "standalone")
     .digest("hex")
     .slice(0, 32);
   return `blud/system/${scope}/installation-secrets.v1.json`;
