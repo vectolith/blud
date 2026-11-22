@@ -1,0 +1,10 @@
+:root {
+  --blud-ink: #0b0b0c;
+  --blud-paper: #f7f6f3;
+  --blud-ember: #e4572e;
+  --blud-slate: #5a5f66;
+  --blud-line: #e2dfd8;
+  --blud-radius-card: 12px;
+  --blud-radius-control: 8px;
+  --blud-motion: 120ms ease-out;
+}
