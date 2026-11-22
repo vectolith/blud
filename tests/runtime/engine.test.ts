@@ -99,6 +99,19 @@ describe("BLUD native runtime engine", () => {
   });
 
 
+  it("rejects duplicate invocation IDs in a model batch before executing tools", async () => {
+    let executed = 0;
+    const tool = { name: "echo", description: "", inputSchema: z.object({}), async execute() { executed++; return "ok"; } };
+    const { state, dependencies } = fixture({
+      tools: [tool],
+      model: { async *run() { yield { toolCalls: [{ id: "dup", name: "echo", input: {} }, { id: "dup", name: "echo", input: {} }] }; } },
+    });
+    const result = await executeTask(task, dependencies, new AbortController().signal);
+    expect(result.status).toBe("failed");
+    expect(executed).toBe(0);
+    expect(state.events).not.toContain("tool.started");
+  });
+
   it("continues after a finish-marked tool call to consume the tool result", async () => {
     const tool = { name: "echo", description: "", inputSchema: z.object({ value: z.string() }), async execute(input: unknown) { return input; } };
     let calls = 0;
