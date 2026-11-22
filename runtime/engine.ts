@@ -75,7 +75,7 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
 
       // A response with neither a finish marker nor tool calls is still a complete
       // assistant turn. Do not make needless model calls just because tools exist.
-      if (sawFinish || pendingCalls.length === 0) break;
+      if (pendingCalls.length === 0) break;
       if (stepNumber === MAX_STEPS - 1) throw new Error("Maximum runtime step count exceeded");
       history = await dependencies.repository.readHistory(task.sessionId);
     }
