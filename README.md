@@ -6,7 +6,7 @@
 
 **BLUD — a personal AI agent built around trust, continuity and dependable action.**
 
-BLUD (pronounced *blud*, like blood) is a name for someone close: family, chosen family, a friend or someone deeply dear. Its product philosophy is commitment, loyalty, care, privacy and trust—expressed through reliable software, not artificial sentiment.
+BLUD (pronounced _blud_, like blood) is a name for someone close: family, chosen family, a friend or someone deeply dear. Its product philosophy is commitment, loyalty, care, privacy and trust—expressed through reliable software, not artificial sentiment.
 
 BLUD is an open-source, self-hostable personal agent. It can work across conversations, persistent context, browser tasks and connected services while keeping the person in control of sensitive information and consequential actions.
 
@@ -102,17 +102,17 @@ See [`.env.example`](.env.example) for the environment variable inventory.
 
 Important configuration categories:
 
-| Category | Purpose |
-| --- | --- |
-| Authentication | Authentication secret and canonical application URL |
-| Database | PostgreSQL runtime and migration connection strings |
-| Encryption | Vault encryption key and key-version/keyring configuration |
-| Browser execution | Browser provider credentials |
-| Model inference | Configured inference provider or endpoint credentials |
-| Storage | Persistent memory and browser image storage |
-| Messaging | Optional messaging connector configuration |
-| Google Workspace | Optional user-scoped Google integration |
-| Internal RPC | Optional internal route authentication |
+| Category          | Purpose                                                    |
+| ----------------- | ---------------------------------------------------------- |
+| Authentication    | Authentication secret and canonical application URL        |
+| Database          | PostgreSQL runtime and migration connection strings        |
+| Encryption        | Vault encryption key and key-version/keyring configuration |
+| Browser execution | Browser provider credentials                               |
+| Model inference   | Configured inference provider or endpoint credentials      |
+| Storage           | Persistent memory and browser image storage                |
+| Messaging         | Optional messaging connector configuration                 |
+| Google Workspace  | Optional user-scoped Google integration                    |
+| Internal RPC      | Optional internal route authentication                     |
 
 ### Database
 
@@ -142,17 +142,17 @@ These integrations are optional and require independent provider configuration, 
 
 ## Development commands
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Start the local development environment |
-| `pnpm dev:app` | Start the app with the app development command |
-| `pnpm build` | Build the application |
-| `pnpm check` | Run repository checks |
-| `pnpm test` | Run tests |
-| `pnpm lint` | Run linting |
-| `pnpm types:check` | Run TypeScript checks |
-| `pnpm db:migrate` | Apply database migrations |
-| `pnpm db:check` | Validate migration configuration |
+| Command            | Purpose                                        |
+| ------------------ | ---------------------------------------------- |
+| `pnpm dev`         | Start the local development environment        |
+| `pnpm dev:app`     | Start the app with the app development command |
+| `pnpm build`       | Build the application                          |
+| `pnpm check`       | Run repository checks                          |
+| `pnpm test`        | Run tests                                      |
+| `pnpm lint`        | Run linting                                    |
+| `pnpm types:check` | Run TypeScript checks                          |
+| `pnpm db:migrate`  | Apply database migrations                      |
+| `pnpm db:check`    | Validate migration configuration               |
 
 ## Security
 
