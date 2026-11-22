@@ -61,4 +61,4 @@ Remove hosting-platform lock-in from BLUD. A supported installation must be depl
 
 ## Status
 
-This document records the staged migration. Removing the deployment configuration alone does not remove the application's provider dependencies or establish a complete independent deployment.
+Phase 1 is in progress: the Vercel deployment configuration was removed from the migration branch, the application-origin error messaging is now platform-neutral, local development no longer recommends a Vercel-specific setup path, and database migration guidance is operator-managed. Runtime provider dependencies remain and the migration is not yet complete.
