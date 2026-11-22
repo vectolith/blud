@@ -1,23 +1,21 @@
+import type { SessionAuthContext } from "eve/context";
 import { db } from "@db";
 import { normalizeAuthPhoneNumber } from "@shared/identity/phone-number";
 import { accessScopeForUser } from "@shared/identity/access-scope";
 
-export type SendbluePrincipal = {
-  type: "user";
-  id: string;
-  attributes: { workspaceId: string };
-};
-
 /**
- * Resolve an inbound Sendblue number to a BLUD user.
+ * Resolve an inbound Sendblue number to the principal a turn runs as.
  *
  * Only a verified number is accepted: an unverified match would let anyone who can
  * spoof a sender field read someone else's workspace. Unknown numbers return
  * undefined and the channel answers with a sign-in instruction instead of a session.
+ *
+ * The principal id follows the same `better-auth:` convention the Linq channel uses,
+ * so scopeFromPrincipal derives the identical workspace for a user on either channel.
  */
 export async function resolveSendbluePrincipal(
   rawPhoneNumber: string
-): Promise<SendbluePrincipal | undefined> {
+): Promise<SessionAuthContext | undefined> {
   const phoneNumber = normalizeAuthPhoneNumber(rawPhoneNumber);
   if (!phoneNumber) return undefined;
 
@@ -25,12 +23,18 @@ export async function resolveSendbluePrincipal(
     columns: { id: true, phoneNumberVerified: true },
     where: (table, { eq }) => eq(table.phoneNumber, phoneNumber),
   });
-  if (!account || account.phoneNumberVerified !== true) return undefined;
+  if (account?.phoneNumberVerified !== true) return undefined;
 
-  const scope = accessScopeForUser(account.id);
+  const principalId = `better-auth:${account.id}`;
+  const scope = accessScopeForUser(principalId);
   return {
-    type: "user",
-    id: account.id,
-    attributes: { workspaceId: scope.workspaceId },
+    attributes: {
+      conversationChannel: "sendblue",
+      phoneNumber,
+      workspaceId: scope.workspaceId,
+    },
+    authenticator: "sendblue",
+    principalId,
+    principalType: "user",
   };
 }

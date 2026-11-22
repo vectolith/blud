@@ -1,4 +1,5 @@
 import { env } from "@shared/environment";
+import { z } from "zod";
 
 const SENDBLUE_SEND_URL = "https://api.sendblue.co/api/send-message";
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -6,6 +7,16 @@ const REQUEST_TIMEOUT_MS = 15_000;
 export type SendblueResult =
   | { ok: true; messageHandle?: string }
   | { ok: false; retryable: boolean; detail: string };
+
+const sendResponseSchema = z.object({ message_handle: z.string().optional() });
+
+/** The send-message request body Sendblue accepts. */
+interface SendblueSendPayload {
+  number: string;
+  content: string;
+  from_number?: string;
+  media_url?: string;
+}
 
 /** Every credential Sendblue needs. Missing any one of them disables the channel. */
 export function sendblueConfigured(): boolean {
@@ -42,6 +53,14 @@ export async function sendSendblueMessage(input: {
     };
   }
 
+  const payload: SendblueSendPayload = {
+    number: input.to,
+    content: input.text,
+  };
+  const fromNumber = env.SENDBLUE_FROM_NUMBER;
+  if (fromNumber) payload.from_number = fromNumber;
+  if (input.mediaUrl) payload.media_url = input.mediaUrl;
+
   let response: Response;
   try {
     response = await fetch(SENDBLUE_SEND_URL, {
@@ -51,12 +70,7 @@ export async function sendSendblueMessage(input: {
         "sb-api-secret-key": env.SENDBLUE_API_SECRET ?? "",
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        number: input.to,
-        from_number: env.SENDBLUE_FROM_NUMBER,
-        content: input.text,
-        ...(input.mediaUrl ? { media_url: input.mediaUrl } : {}),
-      }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch (error) {
@@ -75,12 +89,15 @@ export async function sendSendblueMessage(input: {
       retryable: response.status >= 500 || response.status === 429,
       detail:
         detail.slice(0, 300) ||
-        "Sendblue rejected the message (" + response.status + ").",
+        "Sendblue rejected the message (" + String(response.status) + ").",
     };
   }
 
-  const payload = (await response.json().catch(() => ({}))) as {
-    message_handle?: string;
+  const parsed = sendResponseSchema.safeParse(
+    await response.json().catch(() => null)
+  );
+  return {
+    ok: true,
+    messageHandle: parsed.success ? parsed.data.message_handle : undefined,
   };
-  return { ok: true, messageHandle: payload.message_handle };
 }

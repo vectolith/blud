@@ -1,17 +1,27 @@
 import { defineChannel, POST } from "eve/channels";
+import { z } from "zod";
 import { env } from "@shared/environment";
 import { sendSendblueMessage } from "@agent/lib/sendblue/client";
 import { resolveSendbluePrincipal } from "@agent/lib/sendblue/identity";
 import { verifySendblueWebhook } from "@agent/lib/sendblue/webhook-auth";
 
-type SendblueInbound = {
+interface SendblueInbound {
   content?: string;
   from_number?: string;
   is_outbound?: boolean;
   message_handle?: string;
   media_url?: string;
   status?: string;
-};
+}
+
+const inboundSchema = z.object({
+  content: z.string().optional(),
+  from_number: z.string().optional(),
+  is_outbound: z.boolean().optional(),
+  message_handle: z.string().optional(),
+  media_url: z.string().optional(),
+  status: z.string().optional(),
+});
 
 const MAX_INBOUND_CHARS = 8000;
 
@@ -37,12 +47,13 @@ export default defineChannel({
         return new Response(decision.error, { status: decision.status });
       }
 
-      let body: SendblueInbound;
-      try {
-        body = (await request.json()) as SendblueInbound;
-      } catch {
+      const parsed = inboundSchema.safeParse(
+        await request.json().catch(() => null)
+      );
+      if (!parsed.success) {
         return new Response("Invalid JSON", { status: 400 });
       }
+      const body: SendblueInbound = parsed.data;
 
       // Delivery receipts and any outbound echo are provider state, not user input.
       if (body.is_outbound || body.status) {
@@ -59,15 +70,17 @@ export default defineChannel({
       if (!principal) {
         await sendSendblueMessage({
           to: sender,
-          text: "This number is not linked to a BLUD account. Sign in at blud.app with this number, verify it, then text again.",
+          text: "This number is not linked to a BLUD account. Sign in with this number, verify it, then text again.",
         });
         return Response.json({ status: "unlinked" }, { status: 202 });
       }
 
-      const delivery = await from(sender).send(text, {
-        auth: { current: principal, initiator: principal },
-        ...(body.message_handle ? { idempotencyKey: body.message_handle } : {}),
-      });
+      const delivery = body.message_handle
+        ? await from(sender).send(text, {
+            auth: principal,
+            idempotencyKey: body.message_handle,
+          })
+        : await from(sender).send(text, { auth: principal });
       return Response.json(delivery, { status: 202 });
     }),
   ],
@@ -75,11 +88,12 @@ export default defineChannel({
   events: {
     async "content.completed"(event, ctx) {
       if (event.data.phase !== "reply") return;
-      const text =
-        typeof event.data.value === "string" ? event.data.value.trim() : "";
+      const value = z.string().safeParse(event.data.value);
+      if (!value.success) return;
+      const text = value.data.trim();
       if (!text) return;
 
-      const address = ctx.channel.continuation.token;
+      const address = ctx.channel.continuation?.token;
       if (!address) return;
       if (lastDelivered.get(address) === text) return;
 

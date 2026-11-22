@@ -19,13 +19,13 @@ integration set of VELNOR, Models by Vectolith or the framework it is built on.
 
 ## Colour
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| `--blud-ink` | #0B0B0C | Primary text, mark on light |
-| `--blud-paper` | #F7F6F3 | Light surface |
+| Token          | Hex     | Use                           |
+| -------------- | ------- | ----------------------------- |
+| `--blud-ink`   | #0B0B0C | Primary text, mark on light   |
+| `--blud-paper` | #F7F6F3 | Light surface                 |
 | `--blud-ember` | #E4572E | Single accent: actions, focus |
-| `--blud-slate` | #5A5F66 | Secondary text |
-| `--blud-line` | #E2DFD8 | Borders and dividers |
+| `--blud-slate` | #5A5F66 | Secondary text                |
+| `--blud-line`  | #E2DFD8 | Borders and dividers          |
 
 Ember is an accent, not a background. One ember element per view.
 
