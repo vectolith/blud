@@ -22,26 +22,6 @@
       ],
       "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
     },
-    "build:vercel": {
-      "dependsOn": ["db:migrate"],
-      "env": [
-        "BETTER_AUTH_*",
-        "BLUD_INTERNAL_KEY",
-        "GITHUB_APP_*",
-        "BLOB_*",
-        "DATABASE_URL",
-        "*_CONNECTOR_UID",
-        "KERNEL_*",
-        "LINQ_*",
-        "LINK_*",
-        "NODE_ENV",
-        "SECRET_ENCRYPTION_KEY",
-        "SKIP_ENV_VALIDATION",
-        "STRIPE_PUBLISHABLE_KEY",
-        "VERCEL_*"
-      ],
-      "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
-    },
     "db:migrate": {
       "cache": false,
       "env": ["DATABASE_URL_UNPOOLED"],
