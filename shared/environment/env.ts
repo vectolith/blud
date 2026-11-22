@@ -137,6 +137,8 @@ export const env = createEnv({
     SENDBLUE_API_SECRET: requiredValue.optional(),
     SENDBLUE_FROM_NUMBER: requiredValue.optional(),
     SENDBLUE_WEBHOOK_SECRET: requiredValue.optional(),
+    // Optional: only the Linq channel and the share-contact tool fall back to it.
+    // A Sendblue deployment sends from SENDBLUE_FROM_NUMBER instead.
     LINQ_PHONE_NUMBER: requiredValue
       .refine(
         (value) => isE164PhoneNumber(value),
