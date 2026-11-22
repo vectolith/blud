@@ -198,9 +198,15 @@ describe("migration deployment policy", () => {
         )
       );
 
-    expect(packageManifest.scripts["db:check"]).toBe("drizzle-kit check --config db/drizzle.config.ts");
-    expect(packageManifest.scripts["db:generate"]).toBe("drizzle-kit generate --config db/drizzle.config.ts");
-    expect(packageManifest.scripts["db:migrate"]).toBe("drizzle-kit migrate --config db/drizzle.config.ts");
+    expect(packageManifest.scripts["db:check"]).toBe(
+      "drizzle-kit check --config db/drizzle.config.ts"
+    );
+    expect(packageManifest.scripts["db:generate"]).toBe(
+      "drizzle-kit generate --config db/drizzle.config.ts"
+    );
+    expect(packageManifest.scripts["db:migrate"]).toBe(
+      "drizzle-kit migrate --config db/drizzle.config.ts"
+    );
     expect(packageManifest.devDependencies).toHaveProperty("@next/env");
     expect(turbo.tasks["db:migrate"].cache).toBe(false);
     expect(turbo.tasks["db:migrate"].env).toEqual(["DATABASE_URL_UNPOOLED"]);
