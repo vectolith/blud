@@ -80,6 +80,7 @@ describe("BLUD native runtime engine", () => {
     expect(result.status).toBe("completed");
     expect(state.messages).toContain("I will use a tool.");
     expect(state.messages).toContain("Done.");
+    expect(state.messages.indexOf("I will use a tool.")).toBeLessThan(state.messages.indexOf(JSON.stringify({ value: "ok" })));
     expect(seen.length).toBe(2);
     expect(seen[1].some((entry) => entry.content === "I will use a tool.")).toBe(true);
   });
