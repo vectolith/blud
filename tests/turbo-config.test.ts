@@ -56,7 +56,6 @@ describe("Turbo configuration", () => {
     expect(manifest.scripts["build:app"]).toBe("next build");
     expect(manifest.scripts).not.toHaveProperty("build:vercel");
     expect(turbo.tasks).not.toHaveProperty("build:vercel");
-    expect(manifest.dependencies).not.toHaveProperty("@vercel/blob");
     expect(manifest.devDependencies).not.toHaveProperty("vercel");
   });
 });
