@@ -22,6 +22,8 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
     for (let stepNumber = 0; stepNumber < MAX_STEPS; stepNumber += 1) {
       if (signal.aborted) throw new DOMException("Task cancelled", "AbortError");
       let sawFinish = false;
+      let sawToolCall = false;
+      let roundText = "";
       for await (const step of dependencies.model.run({
         prompt: task.prompt,
         history,
@@ -30,10 +32,12 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
       })) {
         if (signal.aborted) throw new DOMException("Task cancelled", "AbortError");
         if (step.text) {
+          roundText += step.text;
           output += step.text;
           await dependencies.emit({ type: "assistant.delta", taskId: task.id, text: step.text });
         }
         for (const call of step.toolCalls ?? []) {
+          sawToolCall = true;
           const tool = toolRegistry.get(call.name);
           if (!tool) throw new Error(`Model requested unknown tool: ${call.name}`);
           const parsedInput = tool.inputSchema.parse(call.input);
@@ -55,12 +59,18 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
         }
         if (step.finish) sawFinish = true;
       }
-      if (sawFinish || !toolRegistry.size) break;
+
+      // Persist each model round before requesting another round, so tool-use
+      // continuation receives both assistant reasoning/output and tool results.
+      if (roundText) {
+        await dependencies.repository.appendMessage(task, { role: "assistant", content: roundText });
+        history = await dependencies.repository.readHistory(task.sessionId);
+      }
+      if (sawFinish || (!sawToolCall && !toolRegistry.size)) break;
       if (stepNumber === MAX_STEPS - 1) throw new Error("Maximum runtime step count exceeded");
       history = await dependencies.repository.readHistory(task.sessionId);
     }
 
-    await dependencies.repository.appendMessage(task, { role: "assistant", content: output });
     await dependencies.repository.setStatus(task.id, "completed", { output });
     await dependencies.emit({ type: "task.completed", taskId: task.id, output });
     return { status: "completed" as const, output };
