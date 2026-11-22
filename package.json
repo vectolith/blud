@@ -72,7 +72,6 @@
     "tsx": "4.21.0",
     "turbo": "2.10.12",
     "typescript": "6.0.3",
-    "vercel": "^59.6.2",
     "vitest": "4.1.11"
   },
   "engines": {
@@ -91,7 +90,6 @@
     "bench:seed": "tsx scripts/seed-browser-benchmark-vault.ts",
     "build": "turbo run build:app",
     "build:app": "next build",
-    "build:vercel": "next build",
     "check": "turbo run lint:app types:check:app test:app format:check knip",
     "db:check": "drizzle-kit check --config db/drizzle.config.ts",
     "db:generate": "drizzle-kit generate --config db/drizzle.config.ts",

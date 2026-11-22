@@ -40,7 +40,6 @@ describe("Turbo configuration", () => {
       .object({
         tasks: z.object({
           "build:app": z.object({ env: z.array(z.string()) }),
-          "build:vercel": z.object({ env: z.array(z.string()) }),
           "dev:app": z.object({ passThroughEnv: z.array(z.string()) }),
           "lint:app": z.object({ env: z.array(z.string()) }),
           "test:app": z.object({ env: z.array(z.string()) }),
@@ -61,7 +60,6 @@ describe("Turbo configuration", () => {
     expect(turbo.tasks["build:app"].env).toHaveLength(
       applicationEnvironment.length + 1
     );
-    expect(turbo.tasks["build:vercel"].env).toEqual(applicationEnvironment);
     expect(turbo.tasks["dev:app"].passThroughEnv).toEqual(runtimeEnvironment);
     expect(turbo.tasks["start:app"].passThroughEnv).toEqual(runtimeEnvironment);
     expect(turbo.tasks["lint:app"].env).not.toContain("VELNOR_SHARED_SECRET");
