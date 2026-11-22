@@ -53,7 +53,7 @@ const secretEncryptionKeyringSchema = z
 
 const localDevelopment =
   process.env.NODE_ENV === "development" &&
-  process.env.VERCEL_ENV === undefined;
+  true;
 const explicitBetterAuthSecret = hasValue(process.env.BETTER_AUTH_SECRET);
 const explicitSecretEncryptionKey = hasValue(process.env.SECRET_ENCRYPTION_KEY);
 
@@ -143,7 +143,7 @@ export const env = createEnv({
       .default("production"),
     VERCEL_BRANCH_URL: requiredValue.optional(),
     VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
-    VERCEL_PROJECT_ID: requiredValue.optional(),
+    BLUD_INSTANCE_ID: requiredValue.optional(),
     VERCEL_PROJECT_PRODUCTION_URL: requiredValue.optional(),
     VERCEL_URL: requiredValue.optional(),
   },
