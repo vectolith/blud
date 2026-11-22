@@ -57,3 +57,27 @@ The bridge is a transport and schema contract—not model training embedded in B
 - Transport failures do not affect agent task execution; retry and dead-letter handling are isolated.
 - Core Prime independently validates, filters, evaluates, and controls training and release.
 - No automatic model promotion or unreviewed live-learning mutation occurs from raw interactions.
+
+
+## Dependency replacement inventory (verified against branch source)
+
+The following discovered paths are migration targets. This inventory is not evidence that replacements are implemented:
+
+| Capability | Current coupling discovered | Required BLUD-owned replacement |
+| --- | --- | --- |
+| Agent/model lifecycle | `agent/agent.ts`, Eve `defineAgent/defineDynamic` | Runtime loop, model selection boundary, cancellation and context lifecycle |
+| Agent modes/instructions | `agent/lib/mode.ts`, Eve context/instructions | BLUD context and instruction contracts |
+| Tool contract | `agent/tools/*`, Eve tool definitions and reexports (including `agent/tools/web_fetch.ts`) | Registry, schema, policy/permission checks, dispatch and normalized results |
+| Web tools | Eve web fetch/search/ask-question exports and implementations | Independently replaceable fetch/search adapters, BLUD tool wrappers |
+| Model routing | `web/trpc/router.ts`, `ai` Gateway and settings integration | Provider-neutral adapter/config selection with local and hosted provider options |
+| Authentication/connectors | `@vercel/connect`, `@vercel/connect/eve` in auth, Google Workspace and Linq paths | BLUD-owned authorization/token contracts; optional OAuth/provider adapters |
+| Schedule execution | `@vercel/oidc`, Eve dynamic schedules, framework routes | Durable DB job queue, worker lease/claim protocol, BLUD internal authentication |
+| Object/artifact storage | `@vercel/blob` in artifacts, secrets and browser image paths | Storage interface with local and S3-compatible implementations |
+| Environment/deployment | Vercel env names and assumptions in `shared/environment/env.ts`, origin and config | Platform-neutral configuration; generic host/origin and storage settings |
+| Telemetry/events | Eve event/hook and evlog instrumentation | BLUD event schema, audit, trace and safe redaction contracts |
+| Evaluation/build/deployment | Eve eval/build/dev/deploy scripts and `.eve` paths | Independent test/eval scripts, build and host-neutral deployment tooling |
+| Workspace/package policies | Eve and Vercel dependency entries and patches | Remove dependencies and patches only after migrated paths and tests prove parity |
+
+### Sequencing constraint
+
+Implement the runtime and normalized tool/model contracts first, then migrate tool execution and streaming, followed by scheduling/auth/storage/channel paths. Avoid mass import deletion: each migrated path must preserve its current security and behavior, with tests, before its old dependency is removed. CI and clean-install verification must run on the exact branch head.
