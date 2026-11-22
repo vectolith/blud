@@ -8,7 +8,6 @@ const applicationEnvironment = [
   "GITHUB_APP_*",
   "BLOB_*",
   "DATABASE_URL",
-  "EVE_NEXT_*",
   "*_CONNECTOR_UID",
   "KERNEL_*",
   "LINQ_*",
@@ -17,10 +16,9 @@ const applicationEnvironment = [
   "SECRET_ENCRYPTION_KEY",
   "SKIP_ENV_VALIDATION",
   "STRIPE_PUBLISHABLE_KEY",
-  "VERCEL_*",
 ];
 const runtimeEnvironment = applicationEnvironment.filter(
-  (value) => value !== "EVE_NEXT_*" && value !== "SKIP_ENV_VALIDATION"
+  (value) => value !== "SKIP_ENV_VALIDATION"
 );
 
 describe("Turbo configuration", () => {
