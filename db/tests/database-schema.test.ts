@@ -197,13 +197,6 @@ describe("migration deployment policy", () => {
           await readFile(new URL("../../turbo.json", import.meta.url), "utf8")
         )
       );
-    const vercel = z
-      .object({ buildCommand: z.string() })
-      .parse(
-        JSON.parse(
-          await readFile(new URL("../../vercel.json", import.meta.url), "utf8")
-        )
-      );
 
     expect(packageManifest.scripts["db:check"]).toBe(
       "drizzle-kit check --config db/drizzle.config.ts"
