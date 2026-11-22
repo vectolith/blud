@@ -24,6 +24,7 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
       let sawFinish = false;
       let sawToolCall = false;
       let roundText = "";
+      const pendingCalls = [];
       for await (const step of dependencies.model.run({
         prompt: task.prompt,
         history,
@@ -38,34 +39,37 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
         }
         for (const call of step.toolCalls ?? []) {
           sawToolCall = true;
-          const tool = toolRegistry.get(call.name);
-          if (!tool) throw new Error(`Model requested unknown tool: ${call.name}`);
-          const parsedInput = tool.inputSchema.parse(call.input);
-          if (!(await dependencies.policy.authorizeTool(context, tool, parsedInput))) {
-            throw new Error(`Tool permission denied: ${tool.name}`);
-          }
-          await dependencies.emit({ type: "tool.started", taskId: task.id, toolName: tool.name, invocationId: call.id });
-          try {
-            const result = await tool.execute(parsedInput, context);
-            const content = JSON.stringify(result);
-            history = [...history, { role: "tool", content }];
-            await dependencies.repository.appendMessage(task, { role: "tool", content });
-            await dependencies.emit({ type: "tool.completed", taskId: task.id, invocationId: call.id, result });
-          } catch (error) {
-            const message = error instanceof Error ? error.message : "Tool execution failed";
-            await dependencies.emit({ type: "tool.failed", taskId: task.id, invocationId: call.id, error: message });
-            throw error;
-          }
+          pendingCalls.push(call);
         }
         if (step.finish) sawFinish = true;
       }
 
-      // Persist each model round before requesting another round, so tool-use
-      // continuation receives both assistant reasoning/output and tool results.
-      if (roundText) {
-        await dependencies.repository.appendMessage(task, { role: "assistant", content: roundText });
-        history = await dependencies.repository.readHistory(task.sessionId);
+      // Persist the assistant's tool-call turn before the tool result messages.
+      if (roundText) await dependencies.repository.appendMessage(task, { role: "assistant", content: roundText });
+      history = await dependencies.repository.readHistory(task.sessionId);
+
+      for (const call of pendingCalls) {
+        if (signal.aborted) throw new DOMException("Task cancelled", "AbortError");
+        const tool = toolRegistry.get(call.name);
+        if (!tool) throw new Error(`Model requested unknown tool: ${call.name}`);
+        const parsedInput = tool.inputSchema.parse(call.input);
+        if (!(await dependencies.policy.authorizeTool(context, tool, parsedInput))) {
+          throw new Error(`Tool permission denied: ${tool.name}`);
+        }
+        await dependencies.emit({ type: "tool.started", taskId: task.id, toolName: tool.name, invocationId: call.id });
+        try {
+          const result = await tool.execute(parsedInput, context);
+          const content = JSON.stringify(result) ?? "null";
+          await dependencies.repository.appendMessage(task, { role: "tool", content });
+          history = await dependencies.repository.readHistory(task.sessionId);
+          await dependencies.emit({ type: "tool.completed", taskId: task.id, invocationId: call.id, result });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Tool execution failed";
+          await dependencies.emit({ type: "tool.failed", taskId: task.id, invocationId: call.id, error: message });
+          throw error;
+        }
       }
+
       if (sawFinish || (!sawToolCall && !toolRegistry.size)) break;
       if (stepNumber === MAX_STEPS - 1) throw new Error("Maximum runtime step count exceeded");
       history = await dependencies.repository.readHistory(task.sessionId);
