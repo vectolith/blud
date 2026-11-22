@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 export async function GET(
   request: Request,
-  context: RouteContext<"/artifacts/[artifactId]">
+  context: { params: Promise<{ artifactId: string }> }
 ) {
   const session = await getAuthSession(request.headers);
   const parsedId = z.uuid().safeParse((await context.params).artifactId);

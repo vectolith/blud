@@ -19,7 +19,7 @@ interface SendblueSendPayload {
 }
 
 /** Every credential Sendblue needs. Missing any one of them disables the channel. */
-export function sendblueConfigured(): boolean {
+function sendblueConfigured(): boolean {
   return Boolean(
     env.SENDBLUE_API_KEY && env.SENDBLUE_API_SECRET && env.SENDBLUE_FROM_NUMBER
   );
