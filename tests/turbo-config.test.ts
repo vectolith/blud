@@ -14,6 +14,7 @@ const applicationEnvironment = [
   "LINK_*",
   "NODE_ENV",
   "SECRET_ENCRYPTION_KEY",
+  "SENDBLUE_*",
   "SKIP_ENV_VALIDATION",
   "STRIPE_PUBLISHABLE_KEY",
   "VERCEL_*",
@@ -30,6 +31,7 @@ const runtimeEnvironment = [
   "LINK_*",
   "NODE_ENV",
   "SECRET_ENCRYPTION_KEY",
+  "SENDBLUE_*",
   "STRIPE_PUBLISHABLE_KEY",
   "VERCEL_*",
 ];
