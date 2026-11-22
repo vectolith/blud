@@ -4,12 +4,12 @@ import { executeTask } from "../../runtime/engine";
 import type { RuntimeDependencies, RuntimeTask } from "../../runtime/contracts";
 
 function fixture(overrides: Partial<RuntimeDependencies> = {}) {
-  const state = { status: "", messages: [] as string[], events: [] as string[] };
+  const state = { status: "", messages: [] as Array<{ role: "user" | "assistant" | "tool"; content: string }>, events: [] as string[] };
   const repository: RuntimeDependencies["repository"] = {
     async create() {},
-    async setStatus(_id, status, data) { state.status = status; if (data?.output) state.messages.push(data.output); },
-    async appendMessage(_task, message) { state.messages.push(message.content); },
-    async readHistory() { return state.messages.map((content, index) => ({ role: index === 0 ? "user" as const : "tool" as const, content })); },
+    async setStatus(_id, status, data) { state.status = status; if (data?.output) state.messages.push({ role: "assistant", content: data.output }); },
+    async appendMessage(_task, message) { state.messages.push(message); },
+    async readHistory() { return [...state.messages]; },
   };
   const dependencies: RuntimeDependencies = {
     repository,
@@ -33,10 +33,12 @@ describe("BLUD native runtime engine", () => {
     expect(state.events).toEqual(["task.started", "assistant.delta", "task.completed"]);
   });
 
-  it("rejects duplicate tool names", async () => {
+  it("marks duplicate tool names as failed", async () => {
     const tool = { name: "duplicate", description: "", inputSchema: z.object({}), async execute() { return null; } };
-    const { dependencies } = fixture({ tools: [tool, tool] });
-    await expect(executeTask(task, dependencies, new AbortController().signal)).rejects.toThrow("Duplicate tool name");
+    const { state, dependencies } = fixture({ tools: [tool, tool] });
+    const result = await executeTask(task, dependencies, new AbortController().signal);
+    expect(result.status).toBe("failed");
+    expect(state.status).toBe("failed");
   });
 
   it("denies unauthorized tool calls", async () => {
@@ -49,7 +51,7 @@ describe("BLUD native runtime engine", () => {
     const result = await executeTask(task, dependencies, new AbortController().signal);
     expect(result.status).toBe("failed");
     expect(state.status).toBe("failed");
-    expect(state.messages).not.toContain("should not run");
+    expect(state.messages.some((message) => message.content.includes("should not run"))).toBe(false);
   });
 
   it("records cancellation when the signal is aborted", async () => {
@@ -62,7 +64,7 @@ describe("BLUD native runtime engine", () => {
     expect(state.events).toContain("task.cancelled");
   });
 
-  it("persists assistant output between tool rounds", async () => {
+  it("persists assistant tool-call turn before tool results and reloads it", async () => {
     const tool = { name: "echo", description: "", inputSchema: z.object({ value: z.string() }), async execute(input: unknown) { return input; } };
     const seen: Array<Array<{ role: string; content: string }>> = [];
     const { state, dependencies } = fixture({
@@ -78,10 +80,21 @@ describe("BLUD native runtime engine", () => {
     });
     const result = await executeTask(task, dependencies, new AbortController().signal);
     expect(result.status).toBe("completed");
-    expect(state.messages).toContain("I will use a tool.");
-    expect(state.messages).toContain("Done.");
-    expect(state.messages.indexOf("I will use a tool.")).toBeLessThan(state.messages.indexOf(JSON.stringify({ value: "ok" })));
+    const assistantTurn = state.messages.find((message) => message.role === "assistant" && message.content.includes("call-1"));
+    const toolResult = state.messages.find((message) => message.role === "tool" && message.content.includes("call-1"));
+    expect(assistantTurn).toBeDefined();
+    expect(toolResult).toBeDefined();
+    expect(state.messages.findIndex((message) => message === assistantTurn)).toBeLessThan(state.messages.findIndex((message) => message === toolResult));
     expect(seen.length).toBe(2);
-    expect(seen[1].some((entry) => entry.content === "I will use a tool.")).toBe(true);
+    expect(seen[1].some((entry) => entry.content.includes("call-1"))).toBe(true);
+  });
+
+  it("does not spin on a plain assistant response when tools are registered", async () => {
+    const tool = { name: "echo", description: "", inputSchema: z.object({}), async execute() { return null; } };
+    let calls = 0;
+    const { dependencies } = fixture({ tools: [tool], model: { async *run() { calls++; yield { text: "plain answer" }; } } });
+    const result = await executeTask(task, dependencies, new AbortController().signal);
+    expect(result.status).toBe("completed");
+    expect(calls).toBe(1);
   });
 });
