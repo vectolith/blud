@@ -51,9 +51,7 @@ const secretEncryptionKeyringSchema = z
     return result.data;
   });
 
-const localDevelopment =
-  process.env.NODE_ENV === "development" &&
-  true;
+const localDevelopment = process.env.NODE_ENV === "development";
 const explicitBetterAuthSecret = hasValue(process.env.BETTER_AUTH_SECRET);
 const explicitSecretEncryptionKey = hasValue(process.env.SECRET_ENCRYPTION_KEY);
 
@@ -104,8 +102,8 @@ export const env = createEnv({
     KERNEL_API_KEY: requiredValue,
     BLUD_INTERNAL_KEY: z.string().min(32).optional(),
 
-    // Optional overrides with local defaults. Vercel deployments provision
-    // installation secrets in their connected private Blob store.
+    // Optional overrides with local defaults. Production installations must
+    // configure installation secrets or the generic durable secret store.
     BETTER_AUTH_SECRET: installationSecretWithLocalDefault(
       betterAuthSecretSchema,
       "blud-local-auth-development-secret"
@@ -141,11 +139,7 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("production"),
-    VERCEL_BRANCH_URL: requiredValue.optional(),
-    VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
     BLUD_INSTANCE_ID: requiredValue.optional(),
-    VERCEL_PROJECT_PRODUCTION_URL: requiredValue.optional(),
-    VERCEL_URL: requiredValue.optional(),
   },
   experimental__runtimeEnv: {},
   emptyStringAsUndefined: true,
