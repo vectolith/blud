@@ -22,21 +22,21 @@ run `pnpm install --frozen-lockfile && pnpm turbo run build:vercel` works.
 
 Required for the app to start:
 
-| Variable | Where it comes from |
-| --- | --- |
-| `DATABASE_URL` | Neon pooled connection string |
-| `DATABASE_URL_UNPOOLED` | Neon direct connection string |
+| Variable                | Where it comes from                                      |
+| ----------------------- | -------------------------------------------------------- |
+| `DATABASE_URL`          | Neon pooled connection string                            |
+| `DATABASE_URL_UNPOOLED` | Neon direct connection string                            |
 | `SECRET_ENCRYPTION_KEY` | `openssl rand -base64 32`. Encrypts the credential vault |
-| `BETTER_AUTH_SECRET` | `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | the public origin, e.g. `https://blud.vercel.app` |
+| `BETTER_AUTH_SECRET`    | `openssl rand -base64 32`                                |
+| `BETTER_AUTH_URL`       | the public origin, e.g. `https://blud.vercel.app`        |
 
 Required for iMessage:
 
-| Variable | Where it comes from |
-| --- | --- |
-| `SENDBLUE_API_KEY` | Sendblue dashboard, API key id |
-| `SENDBLUE_API_SECRET` | Sendblue dashboard, API secret |
-| `SENDBLUE_FROM_NUMBER` | the Sendblue line, E.164 |
+| Variable                  | Where it comes from                                      |
+| ------------------------- | -------------------------------------------------------- |
+| `SENDBLUE_API_KEY`        | Sendblue dashboard, API key id                           |
+| `SENDBLUE_API_SECRET`     | Sendblue dashboard, API secret                           |
+| `SENDBLUE_FROM_NUMBER`    | the Sendblue line, E.164                                 |
 | `SENDBLUE_WEBHOOK_SECRET` | a value you generate; Sendblue sends it on every webhook |
 
 Generate the webhook secret with `openssl rand -hex 32`, then add the same value to the Sendblue
