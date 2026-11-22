@@ -51,7 +51,7 @@ pnpm eval:ci
 
 The agent command loads `.env.local`, starts an isolated Docker Compose
 PostgreSQL service, runs migrations, executes the suite, and then stops the
-service. It requires `AI_GATEWAY_API_KEY` or `VERCEL_OIDC_TOKEN`; the behavior
+service. It requires a supported inference-provider credential (currently `AI_GATEWAY_API_KEY` or the legacy `VERCEL_OIDC_TOKEN`); the behavior
 suite forces an unusable Kernel placeholder because browser work belongs in the
 separate benchmark. Its Kernel and application callback origins are pinned to an
 unreachable loopback address so worker-routing evals cannot reach the external

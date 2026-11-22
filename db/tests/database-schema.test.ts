@@ -175,7 +175,6 @@ describe("migration deployment policy", () => {
         scripts: z.object({
           "db:check": z.string(),
           "db:generate": z.string(),
-          "build:vercel": z.string(),
           "db:migrate": z.string(),
         }),
       })
@@ -187,7 +186,6 @@ describe("migration deployment policy", () => {
     const turbo = z
       .object({
         tasks: z.object({
-          "build:vercel": z.object({ dependsOn: z.array(z.string()) }),
           "db:migrate": z.object({
             cache: z.boolean(),
             env: z.array(z.string()),
@@ -199,15 +197,7 @@ describe("migration deployment policy", () => {
           await readFile(new URL("../../turbo.json", import.meta.url), "utf8")
         )
       );
-    const vercel = z
-      .object({ buildCommand: z.string() })
-      .parse(
-        JSON.parse(
-          await readFile(new URL("../../vercel.json", import.meta.url), "utf8")
-        )
-      );
 
-    expect(packageManifest.scripts["build:vercel"]).toBe("next build");
     expect(packageManifest.scripts["db:check"]).toBe(
       "drizzle-kit check --config db/drizzle.config.ts"
     );
@@ -218,11 +208,8 @@ describe("migration deployment policy", () => {
       "drizzle-kit migrate --config db/drizzle.config.ts"
     );
     expect(packageManifest.devDependencies).toHaveProperty("@next/env");
-    expect(packageManifest.devDependencies).not.toHaveProperty("dotenv-cli");
-    expect(turbo.tasks["build:vercel"].dependsOn).toContain("db:migrate");
     expect(turbo.tasks["db:migrate"].cache).toBe(false);
     expect(turbo.tasks["db:migrate"].env).toEqual(["DATABASE_URL_UNPOOLED"]);
-    expect(vercel.buildCommand).toBe("pnpm turbo run build:vercel");
   });
 
   it("adopts existing tables without request-time DDL", async () => {

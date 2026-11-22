@@ -10,7 +10,6 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/api/auth/") ||
     // This route performs its own fail-closed service-key authentication.
     pathname === "/api/internal/browser-worker" ||
-    pathname === "/eve/v1/health" ||
     pathname.startsWith("/internal/scheduled-run/") ||
     pathname === "/eve/v1/dev/schedules/dynamic"
   ) {
