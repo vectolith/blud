@@ -127,6 +127,9 @@ export const env = createEnv({
     BLOB_STORE_ID: requiredValue.optional(),
     GOOGLE_CONNECTOR_UID: requiredValue.default("google/blud"),
     LINQ_CONNECTOR: requiredValue.optional(),
+    BLUD_ALLOW_LOCAL_PHONE_AUTH_BYPASS: z
+      .enum(["true", "false"])
+      .optional(),
     GITHUB_APP_CLIENT_ID: requiredValue.optional(),
     GITHUB_APP_CLIENT_SECRET: requiredValue.optional(),
     LINK_CLIENT_ID: requiredValue.optional(),
@@ -157,6 +160,7 @@ const authHostname = env.BETTER_AUTH_URL
 
 export const localPhoneAuthBypassEnabled =
   localDevelopment &&
+  env.BLUD_ALLOW_LOCAL_PHONE_AUTH_BYPASS === "true" &&
   (authHostname === "localhost" ||
     authHostname?.endsWith(".localhost") === true ||
     authHostname === "127.0.0.1" ||

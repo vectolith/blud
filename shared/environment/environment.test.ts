@@ -56,8 +56,8 @@ describe("environment", () => {
       BETTER_AUTH_URL: "http://localhost:3000",
       SECRET_ENCRYPTION_KEY: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
     });
-    expect(localPhoneAuthBypassEnabled).toBe(true);
-  });
+        expect(localPhoneAuthBypassEnabled).toBe(false);
+      });
 
   it.each([
     ["test-auth-secret-0123456789abcdefghijklmnop", ""],
@@ -183,18 +183,23 @@ describe("environment", () => {
     );
   });
 
-  it.each([
-    ["http://localhost:3000", "development", undefined, true],
-    ["https://blud.localhost", "development", undefined, true],
-    ["http://localhost:3000", "production", undefined, false],
-    ["http://localhost:3000", "development", "development", false],
-    ["https://preview.example.com", "development", undefined, false],
-  ] as const)(
-    "resolves local phone auth bypass for %s in %s",
-    async (url, nodeEnv, vercelEnv, expected) => {
-      vi.stubEnv("BETTER_AUTH_URL", url);
-      vi.stubEnv("NODE_ENV", nodeEnv);
-      vi.stubEnv("VERCEL_ENV", vercelEnv);
+      it.each([
+        ["http://localhost:3000", "development", undefined, "true", true],
+        ["https://blud.localhost", "development", undefined, "true", true],
+        ["http://localhost:3000", "development", undefined, undefined, false],
+        ["http://localhost:3000", "production", undefined, "true", false],
+        ["http://localhost:3000", "development", "development", "true", false],
+        ["https://preview.example.com", "development", undefined, "true", false],
+      ] as const)(
+        "resolves local phone auth bypass for %s in %s",
+        async (url, nodeEnv, vercelEnv, allowBypass, expected) => {
+          vi.stubEnv("BETTER_AUTH_URL", url);
+          vi.stubEnv("NODE_ENV", nodeEnv);
+          vi.stubEnv("VERCEL_ENV", vercelEnv);
+          vi.stubEnv(
+            "BLUD_ALLOW_LOCAL_PHONE_AUTH_BYPASS",
+            allowBypass ?? ""
+          );
 
       const { localPhoneAuthBypassEnabled } =
         await import("@shared/environment");

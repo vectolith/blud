@@ -32,7 +32,7 @@ async function initializeAuth() {
   const { betterAuthSecret } = await getInstallationSecrets();
   const { LINK_CLIENT_ID, LINK_CLIENT_SECRET, STRIPE_PUBLISHABLE_KEY } = env;
   return betterAuth({
-    appName: "Local Vault Assistant",
+    appName: "BLUD",
     baseURL: betterAuthBaseURL(),
     database: drizzleAdapter(db, {
       provider: "pg",
@@ -147,7 +147,7 @@ export async function sendPhoneCode({
       idempotencyKey: `auth-otp-${createHash("sha256")
         .update(`${to}\u0000${code}`)
         .digest("hex")}`,
-      message: `Local Vault Assistant sign-in code: ${code}. Expires in 5 minutes.`,
+      message: `BLUD sign-in code: ${code}. Expires in 5 minutes.`,
       to,
     });
   } catch (error) {
