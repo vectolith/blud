@@ -9,15 +9,40 @@ export const runtimeTaskSchema = z.object({
 });
 export type RuntimeTask = z.infer<typeof runtimeTaskSchema>;
 
-export const runtimeStatusSchema = z.enum(["queued", "running", "completed", "failed", "cancelled"]);
+export const runtimeStatusSchema = z.enum([
+  "queued",
+  "running",
+  "completed",
+  "failed",
+  "cancelled",
+]);
 export type RuntimeStatus = z.infer<typeof runtimeStatusSchema>;
 
 export const runtimeEventSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("task.started"), taskId: z.string(), sessionId: z.string() }),
+  z.object({
+    type: z.literal("task.started"),
+    taskId: z.string(),
+    sessionId: z.string(),
+  }),
   z.object({ type: z.literal("assistant.delta"), taskId: z.string(), text: z.string() }),
-  z.object({ type: z.literal("tool.started"), taskId: z.string(), toolName: z.string(), invocationId: z.string() }),
-  z.object({ type: z.literal("tool.completed"), taskId: z.string(), invocationId: z.string(), result: z.unknown() }),
-  z.object({ type: z.literal("tool.failed"), taskId: z.string(), invocationId: z.string(), error: z.string() }),
+  z.object({
+    type: z.literal("tool.started"),
+    taskId: z.string(),
+    toolName: z.string(),
+    invocationId: z.string(),
+  }),
+  z.object({
+    type: z.literal("tool.completed"),
+    taskId: z.string(),
+    invocationId: z.string(),
+    result: z.unknown(),
+  }),
+  z.object({
+    type: z.literal("tool.failed"),
+    taskId: z.string(),
+    invocationId: z.string(),
+    error: z.string(),
+  }),
   z.object({ type: z.literal("task.completed"), taskId: z.string(), output: z.string() }),
   z.object({ type: z.literal("task.failed"), taskId: z.string(), error: z.string() }),
   z.object({ type: z.literal("task.cancelled"), taskId: z.string() }),
@@ -31,21 +56,39 @@ export type RuntimeTool = {
   execute(input: unknown, context: RuntimeContext): Promise<unknown>;
 };
 
-export type RuntimeContext = Pick<RuntimeTask, "id" | "sessionId" | "workspaceId" | "userId"> & {
+export type RuntimeContext = Pick<
+  RuntimeTask,
+  "id" | "sessionId" | "workspaceId" | "userId"
+> & {
   signal: AbortSignal;
 };
 
 export type RuntimeToolCall = { id: string; name: string; input: unknown };
 export type RuntimeModelStep = { text?: string; toolCalls?: RuntimeToolCall[]; finish?: boolean };
+
 export type RuntimeModel = {
-  run(input: { prompt: string; history: Array<{ role: "user" | "assistant" | "tool"; content: string }>; tools: Array<{ name: string; description: string; schema: unknown }>; signal: AbortSignal }): AsyncIterable<RuntimeModelStep>;
+  run(input: {
+    prompt: string;
+    history: Array<{ role: "user" | "assistant" | "tool"; content: string }>;
+    tools: Array<{ name: string; description: string; schema: unknown }>;
+    signal: AbortSignal;
+  }): AsyncIterable<RuntimeModelStep>;
 };
 
 export type RuntimeRepository = {
   create(task: RuntimeTask): Promise<void>;
-  setStatus(taskId: string, status: RuntimeStatus, data?: { output?: string; error?: string }): Promise<void>;
-  appendMessage(task: RuntimeTask, message: { role: "user" | "assistant" | "tool"; content: string }): Promise<void>;
-  readHistory(sessionId: string): Promise<Array<{ role: "user" | "assistant" | "tool"; content: string }>>;
+  setStatus(
+    task: RuntimeTask,
+    status: RuntimeStatus,
+    data?: { output?: string; error?: string }
+  ): Promise<void>;
+  appendMessage(
+    task: RuntimeTask,
+    message: { role: "user" | "assistant" | "tool"; content: string }
+  ): Promise<void>;
+  readHistory(
+    task: RuntimeTask
+  ): Promise<Array<{ role: "user" | "assistant" | "tool"; content: string }>>;
 };
 
 export type RuntimePolicy = {
