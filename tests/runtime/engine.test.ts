@@ -97,4 +97,22 @@ describe("BLUD native runtime engine", () => {
     expect(result.status).toBe("completed");
     expect(calls).toBe(1);
   });
+
+
+  it("continues after a finish-marked tool call to consume the tool result", async () => {
+    const tool = { name: "echo", description: "", inputSchema: z.object({ value: z.string() }), async execute(input: unknown) { return input; } };
+    let calls = 0;
+    const { state, dependencies } = fixture({
+      tools: [tool],
+      model: { async *run() {
+        calls++;
+        if (calls === 1) yield { text: "Calling.", toolCalls: [{ id: "call-finish", name: "echo", input: { value: "ok" } }], finish: true };
+        else yield { text: "Tool result consumed.", finish: true };
+      } },
+    });
+    const result = await executeTask(task, dependencies, new AbortController().signal);
+    expect(result.status).toBe("completed");
+    expect(calls).toBe(2);
+    expect(state.messages.some((message) => message.role === "tool" && message.content.includes("call-finish"))).toBe(true);
+  });
 });
