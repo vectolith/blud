@@ -48,9 +48,15 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
       }
       history = await dependencies.repository.readHistory(task.sessionId);
 
+      const invocationIds = new Set<string>();
+      for (const call of pendingCalls) {
+        if (!call.id?.trim()) throw new Error("Tool invocation ID must be non-empty");
+        if (invocationIds.has(call.id)) throw new Error(`Duplicate tool invocation ID: ${call.id}`);
+        invocationIds.add(call.id);
+      }
+
       for (const call of pendingCalls) {
         if (signal.aborted) throw new DOMException("Task cancelled", "AbortError");
-        if (!call.id?.trim()) throw new Error("Tool invocation ID must be non-empty");
         const tool = toolRegistry.get(call.name);
         if (!tool) throw new Error(`Model requested unknown tool: ${call.name}`);
         const parsedInput = tool.inputSchema.parse(call.input);
