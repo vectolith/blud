@@ -160,13 +160,26 @@ const authHostname = env.BETTER_AUTH_URL
   ? new URL(env.BETTER_AUTH_URL).hostname
   : undefined;
 
+/**
+ * The local phone-auth bypass skips OTP delivery and accepts any well-formed
+ * number, so it must never be reachable from a deployment.
+ *
+ * Outside a deployment it stays opt-in twice over: BLUD_ALLOW_LOCAL_PHONE_AUTH_BYPASS
+ * must be "true" *and* the runtime must be a local development server. Test runs are
+ * the one exception, and they are explicit: NODE_ENV is "test" only under the test
+ * runner, never in a build or a deployment, so the integration suite can sign a phone
+ * user in deterministically instead of standing up an SMS provider.
+ */
+const testEnvironment = process.env.NODE_ENV === "test";
+
 export const localPhoneAuthBypassEnabled =
-  localDevelopment &&
   env.BLUD_ALLOW_LOCAL_PHONE_AUTH_BYPASS === "true" &&
-  (authHostname === "localhost" ||
-    authHostname?.endsWith(".localhost") === true ||
-    authHostname === "127.0.0.1" ||
-    authHostname === "[::1]");
+  (testEnvironment ||
+    (localDevelopment &&
+      (authHostname === "localhost" ||
+        authHostname?.endsWith(".localhost") === true ||
+        authHostname === "127.0.0.1" ||
+        authHostname === "[::1]")));
 
 function hasValue(value: string | undefined) {
   return value !== undefined && value.trim().length > 0;
