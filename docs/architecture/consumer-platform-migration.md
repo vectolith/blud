@@ -1,10 +1,6 @@
 # Consumer Platform Migration Plan
 
-**Status:** Architecture baseline complete; provider-independent session
-milestone implemented. Consumer sign-in UI and provider setup remain pending.
-**Target:** A consumer-facing Blud product with managed AI access, account-based
-sign-in, first-party service authorization, and an optional self-hosted edition.
-**Branch:** `architecture/consumer-platform-foundation`
+**Status:** Historical product architecture note. This document describes the consumer-product direction and deployment assumptions at the time it was written; it is not a current deployment guide. Hosting migration tracking is in `standalone-hosting-migration.md`.
 
 ## Product decision
 
