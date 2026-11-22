@@ -22,7 +22,6 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
     let output = "";
     for (let stepNumber = 0; stepNumber < MAX_STEPS; stepNumber += 1) {
       if (signal.aborted) throw new DOMException("Task cancelled", "AbortError");
-      let sawFinish = false;
       let roundText = "";
       const pendingCalls: RuntimeToolCall[] = [];
       for await (const step of dependencies.model.run({
@@ -38,7 +37,6 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
           await dependencies.emit({ type: "assistant.delta", taskId: task.id, text: step.text });
         }
         pendingCalls.push(...(step.toolCalls ?? []));
-        if (step.finish) sawFinish = true;
       }
 
       // Preserve the assistant turn and tool-call intent before tool results.
