@@ -133,6 +133,10 @@ export const env = createEnv({
     LINK_CLIENT_ID: requiredValue.optional(),
     LINK_CLIENT_SECRET: requiredValue.optional(),
     STRIPE_PUBLISHABLE_KEY: requiredValue.optional(),
+    SENDBLUE_API_KEY: requiredValue.optional(),
+    SENDBLUE_API_SECRET: requiredValue.optional(),
+    SENDBLUE_FROM_NUMBER: requiredValue.optional(),
+    SENDBLUE_WEBHOOK_SECRET: requiredValue.optional(),
     LINQ_PHONE_NUMBER: requiredValue
       .refine(
         (value) => isE164PhoneNumber(value),
