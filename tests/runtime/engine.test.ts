@@ -4,25 +4,56 @@ import { executeTask } from "../../runtime/engine";
 import type { RuntimeDependencies, RuntimeTask } from "../../runtime/contracts";
 
 function fixture(overrides: Partial<RuntimeDependencies> = {}) {
-  const state = { status: "", messages: [] as Array<{ role: "user" | "assistant" | "tool"; content: string }>, events: [] as string[] };
+  const state = {
+    status: "",
+    messages: [] as Array<{ role: "user" | "assistant" | "tool"; content: string }>,
+    events: [] as string[],
+    statusScopes: [] as Array<{ taskId: string; workspaceId: string; userId: string }>,
+    historyScopes: [] as Array<{ taskId: string; workspaceId: string; userId: string }>,
+  };
   const repository: RuntimeDependencies["repository"] = {
     async create() {},
-    async setStatus(_id, status, data) { state.status = status; if (data?.output) state.messages.push({ role: "assistant", content: data.output }); },
-    async appendMessage(_task, message) { state.messages.push(message); },
-    async readHistory() { return [...state.messages]; },
+    async setStatus(task, status, data) {
+      state.status = status;
+      state.statusScopes.push({
+        taskId: task.id,
+        workspaceId: task.workspaceId,
+        userId: task.userId,
+      });
+      if (data?.output) state.messages.push({ role: "assistant", content: data.output });
+    },
+    async appendMessage(_task, message) {
+      state.messages.push(message);
+    },
+    async readHistory(task) {
+      state.historyScopes.push({
+        taskId: task.id,
+        workspaceId: task.workspaceId,
+        userId: task.userId,
+      });
+      return [...state.messages];
+    },
   };
   const dependencies: RuntimeDependencies = {
     repository,
     model: { async *run() { yield { text: "hello", finish: true }; } },
     tools: [],
     policy: { async authorizeTool() { return true; } },
-    emit(event) { state.events.push(event.type); },
+    emit(event) {
+      state.events.push(event.type);
+    },
     ...overrides,
   };
   return { state, dependencies };
 }
 
-const task: RuntimeTask = { id: "task-1", sessionId: "session-1", workspaceId: "workspace-1", userId: "user-1", prompt: "Hello" };
+const task: RuntimeTask = {
+  id: "task-1",
+  sessionId: "session-1",
+  workspaceId: "workspace-1",
+  userId: "user-1",
+  prompt: "Hello",
+};
 
 describe("BLUD native runtime engine", () => {
   it("persists and emits a successful response", async () => {
@@ -31,22 +62,46 @@ describe("BLUD native runtime engine", () => {
     expect(result).toEqual({ status: "completed", output: "hello" });
     expect(state.status).toBe("completed");
     expect(state.events).toEqual(["task.started", "assistant.delta", "task.completed"]);
+    expect(state.historyScopes.every((scope) => scope.workspaceId === task.workspaceId)).toBe(true);
+    expect(state.historyScopes.every((scope) => scope.userId === task.userId)).toBe(true);
   });
 
   it("marks duplicate tool names as failed", async () => {
-    const tool = { name: "duplicate", description: "", inputSchema: z.object({}), async execute() { return null; } };
+    const tool = {
+      name: "duplicate",
+      description: "",
+      inputSchema: z.object({}),
+      async execute() {
+        return null;
+      },
+    };
     const { state, dependencies } = fixture({ tools: [tool, tool] });
     const result = await executeTask(task, dependencies, new AbortController().signal);
     expect(result.status).toBe("failed");
     expect(state.status).toBe("failed");
+    expect(state.statusScopes).toEqual([
+      { taskId: task.id, workspaceId: task.workspaceId, userId: task.userId },
+    ]);
   });
 
   it("denies unauthorized tool calls", async () => {
-    const tool = { name: "danger", description: "", inputSchema: z.object({}), async execute() { return "should not run"; } };
+    const tool = {
+      name: "danger",
+      description: "",
+      inputSchema: z.object({}),
+      async execute() {
+        return "should not run";
+      },
+    };
     const { state, dependencies } = fixture({
       tools: [tool],
       policy: { async authorizeTool() { return false; } },
-      model: { async *run() { yield { toolCalls: [{ id: "call-1", name: "danger", input: {} }] }; yield { finish: true }; } },
+      model: {
+        async *run() {
+          yield { toolCalls: [{ id: "call-1", name: "danger", input: {} }] };
+          yield { finish: true };
+        },
+      },
     });
     const result = await executeTask(task, dependencies, new AbortController().signal);
     expect(result.status).toBe("failed");
@@ -65,46 +120,93 @@ describe("BLUD native runtime engine", () => {
   });
 
   it("persists assistant tool-call turn before tool results and reloads it", async () => {
-    const tool = { name: "echo", description: "", inputSchema: z.object({ value: z.string() }), async execute(input: unknown) { return input; } };
+    const tool = {
+      name: "echo",
+      description: "",
+      inputSchema: z.object({ value: z.string() }),
+      async execute(input: unknown) {
+        return input;
+      },
+    };
     const seen: Array<Array<{ role: string; content: string }>> = [];
     const { state, dependencies } = fixture({
       tools: [tool],
-      model: { async *run({ history }) {
-        seen.push(history);
-        if (seen.length === 1) {
-          yield { text: "I will use a tool.", toolCalls: [{ id: "call-1", name: "echo", input: { value: "ok" } }] };
-        } else {
-          yield { text: "Done.", finish: true };
-        }
-      } },
+      model: {
+        async *run({ history }) {
+          seen.push(history);
+          if (seen.length === 1) {
+            yield {
+              text: "I will use a tool.",
+              toolCalls: [{ id: "call-1", name: "echo", input: { value: "ok" } }],
+            };
+          } else {
+            yield { text: "Done.", finish: true };
+          }
+        },
+      },
     });
     const result = await executeTask(task, dependencies, new AbortController().signal);
     expect(result.status).toBe("completed");
-    const assistantTurn = state.messages.find((message) => message.role === "assistant" && message.content.includes("call-1"));
-    const toolResult = state.messages.find((message) => message.role === "tool" && message.content.includes("call-1"));
+    const assistantTurn = state.messages.find(
+      (message) => message.role === "assistant" && message.content.includes("call-1")
+    );
+    const toolResult = state.messages.find(
+      (message) => message.role === "tool" && message.content.includes("call-1")
+    );
     expect(assistantTurn).toBeDefined();
     expect(toolResult).toBeDefined();
-    expect(state.messages.findIndex((message) => message === assistantTurn)).toBeLessThan(state.messages.findIndex((message) => message === toolResult));
+    expect(state.messages.indexOf(assistantTurn!)).toBeLessThan(state.messages.indexOf(toolResult!));
     expect(seen.length).toBe(2);
     expect(seen[1].some((entry) => entry.content.includes("call-1"))).toBe(true);
   });
 
   it("does not spin on a plain assistant response when tools are registered", async () => {
-    const tool = { name: "echo", description: "", inputSchema: z.object({}), async execute() { return null; } };
+    const tool = {
+      name: "echo",
+      description: "",
+      inputSchema: z.object({}),
+      async execute() {
+        return null;
+      },
+    };
     let calls = 0;
-    const { dependencies } = fixture({ tools: [tool], model: { async *run() { calls++; yield { text: "plain answer" }; } } });
+    const { dependencies } = fixture({
+      tools: [tool],
+      model: {
+        async *run() {
+          calls++;
+          yield { text: "plain answer" };
+        },
+      },
+    });
     const result = await executeTask(task, dependencies, new AbortController().signal);
     expect(result.status).toBe("completed");
     expect(calls).toBe(1);
   });
 
-
   it("rejects duplicate invocation IDs in a model batch before executing tools", async () => {
     let executed = 0;
-    const tool = { name: "echo", description: "", inputSchema: z.object({}), async execute() { executed++; return "ok"; } };
+    const tool = {
+      name: "echo",
+      description: "",
+      inputSchema: z.object({}),
+      async execute() {
+        executed++;
+        return "ok";
+      },
+    };
     const { state, dependencies } = fixture({
       tools: [tool],
-      model: { async *run() { yield { toolCalls: [{ id: "dup", name: "echo", input: {} }, { id: "dup", name: "echo", input: {} }] }; } },
+      model: {
+        async *run() {
+          yield {
+            toolCalls: [
+              { id: "dup", name: "echo", input: {} },
+              { id: "dup", name: "echo", input: {} },
+            ],
+          };
+        },
+      },
     });
     const result = await executeTask(task, dependencies, new AbortController().signal);
     expect(result.status).toBe("failed");
@@ -113,15 +215,31 @@ describe("BLUD native runtime engine", () => {
   });
 
   it("continues after a finish-marked tool call to consume the tool result", async () => {
-    const tool = { name: "echo", description: "", inputSchema: z.object({ value: z.string() }), async execute(input: unknown) { return input; } };
+    const tool = {
+      name: "echo",
+      description: "",
+      inputSchema: z.object({ value: z.string() }),
+      async execute(input: unknown) {
+        return input;
+      },
+    };
     let calls = 0;
     const { state, dependencies } = fixture({
       tools: [tool],
-      model: { async *run() {
-        calls++;
-        if (calls === 1) yield { text: "Calling.", toolCalls: [{ id: "call-finish", name: "echo", input: { value: "ok" } }], finish: true };
-        else yield { text: "Tool result consumed.", finish: true };
-      } },
+      model: {
+        async *run() {
+          calls++;
+          if (calls === 1) {
+            yield {
+              text: "Calling.",
+              toolCalls: [{ id: "call-finish", name: "echo", input: { value: "ok" } }],
+              finish: true,
+            };
+          } else {
+            yield { text: "Tool result consumed.", finish: true };
+          }
+        },
+      },
     });
     const result = await executeTask(task, dependencies, new AbortController().signal);
     expect(result.status).toBe("completed");
