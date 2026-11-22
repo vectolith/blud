@@ -23,7 +23,7 @@ const installationIdSchema = z.string().regex(/^[1-9]\d{0,19}$/u);
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ installationId: string }> }
+  context: RouteContext<"/api/integrations/github/installations/[installationId]/repositories">
 ) {
   const session = await getAuthSession(request.headers);
   if (!session) {
