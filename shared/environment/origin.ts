@@ -12,7 +12,7 @@ export function applicationOrigin() {
   }
 
   throw new Error(
-    "The application origin is unavailable. Set BETTER_AUTH_URL outside Vercel."
+    "The application origin is unavailable. Set BETTER_AUTH_URL to the canonical public URL."
   );
 }
 
