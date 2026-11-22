@@ -39,3 +39,21 @@ BLUD must not depend on Vercel or Eve (or another third-party agent framework) f
 ## Current reality
 
 PR #16 removed some deployment-specific scaffolding but is not a completed independence migration. Eve is still the agent framework, and Vercel integrations remain in the code and dependency graph. PR #17 is only a visual chat shell. Neither should be merged as representing a completed BLUD runtime.
+
+
+## Independent Core Prime interoperability and learning bridge
+
+BLUD and Core Prime are separate products and repositories. Neither is required for the other to operate. BLUD must remain usable without Core Prime; Core Prime must remain usable without BLUD. Integration is optional and replaceable, never a shared-runtime or shared-infrastructure dependency.
+
+When configured by an operator and subject to applicable user consent, privacy, retention, and data-governance controls, BLUD may export learning signals to a Core Prime ingestion endpoint. Signals may include provider/model provenance, prompts and responses only when eligible, tool outcomes, task-level outcome labels, corrections, and evaluation feedback. The bridge must support redaction, minimization, provenance, deduplication, opt-out, and revocation/deletion workflows as appropriate. It must not silently treat all user conversations as training data.
+
+The bridge is a transport and schema contract—not model training embedded in BLUD. Core Prime owns ingestion, dataset construction, training, evaluation, release gating, and model lifecycle. BLUD only emits eligible records through an optional adapter; failure or absence of that adapter must not block normal BLUD operation.
+
+## Learning bridge completion gates
+
+- BLUD runs with the bridge disabled or absent.
+- Bridge authorization and consent are explicit and auditable.
+- Payloads are minimized, redacted, provenance-tagged, and schema-versioned.
+- Transport failures do not affect agent task execution; retry and dead-letter handling are isolated.
+- Core Prime independently validates, filters, evaluates, and controls training and release.
+- No automatic model promotion or unreviewed live-learning mutation occurs from raw interactions.
