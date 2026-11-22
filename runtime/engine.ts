@@ -1,4 +1,4 @@
-import { runtimeTaskSchema, type RuntimeContext, type RuntimeDependencies, type RuntimeTask, type RuntimeTool } from "./contracts";
+import { runtimeTaskSchema, type RuntimeContext, type RuntimeDependencies, type RuntimeTask, type RuntimeTool, type RuntimeToolCall } from "./contracts";
 
 const MAX_STEPS = 12;
 
@@ -7,24 +7,24 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
   const context: RuntimeContext = { ...task, signal };
   const toolRegistry = new Map<string, RuntimeTool>();
   for (const tool of dependencies.tools) {
+    if (!tool.name.trim()) throw new Error("Tool names must be non-empty");
     if (toolRegistry.has(tool.name)) throw new Error(`Duplicate tool name: ${tool.name}`);
     toolRegistry.set(tool.name, tool);
   }
 
-  await dependencies.repository.create(task);
-  await dependencies.repository.appendMessage(task, { role: "user", content: task.prompt });
-  await dependencies.repository.setStatus(task.id, "running");
-  await dependencies.emit({ type: "task.started", taskId: task.id, sessionId: task.sessionId });
-
   try {
+    await dependencies.repository.create(task);
+    await dependencies.repository.appendMessage(task, { role: "user", content: task.prompt });
+    await dependencies.repository.setStatus(task.id, "running");
+    await dependencies.emit({ type: "task.started", taskId: task.id, sessionId: task.sessionId });
+
     let history = await dependencies.repository.readHistory(task.sessionId);
     let output = "";
     for (let stepNumber = 0; stepNumber < MAX_STEPS; stepNumber += 1) {
       if (signal.aborted) throw new DOMException("Task cancelled", "AbortError");
       let sawFinish = false;
-      let sawToolCall = false;
       let roundText = "";
-      const pendingCalls = [];
+      const pendingCalls: RuntimeToolCall[] = [];
       for await (const step of dependencies.model.run({
         prompt: task.prompt,
         history,
@@ -37,19 +37,22 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
           output += step.text;
           await dependencies.emit({ type: "assistant.delta", taskId: task.id, text: step.text });
         }
-        for (const call of step.toolCalls ?? []) {
-          sawToolCall = true;
-          pendingCalls.push(call);
-        }
+        pendingCalls.push(...(step.toolCalls ?? []));
         if (step.finish) sawFinish = true;
       }
 
-      // Persist the assistant's tool-call turn before the tool result messages.
-      if (roundText) await dependencies.repository.appendMessage(task, { role: "assistant", content: roundText });
+      // Preserve the assistant turn and tool-call intent before tool results.
+      if (roundText || pendingCalls.length) {
+        const content = pendingCalls.length
+          ? JSON.stringify({ text: roundText, toolCalls: pendingCalls })
+          : roundText;
+        await dependencies.repository.appendMessage(task, { role: "assistant", content });
+      }
       history = await dependencies.repository.readHistory(task.sessionId);
 
       for (const call of pendingCalls) {
         if (signal.aborted) throw new DOMException("Task cancelled", "AbortError");
+        if (!call.id?.trim()) throw new Error("Tool invocation ID must be non-empty");
         const tool = toolRegistry.get(call.name);
         if (!tool) throw new Error(`Model requested unknown tool: ${call.name}`);
         const parsedInput = tool.inputSchema.parse(call.input);
@@ -59,7 +62,7 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
         await dependencies.emit({ type: "tool.started", taskId: task.id, toolName: tool.name, invocationId: call.id });
         try {
           const result = await tool.execute(parsedInput, context);
-          const content = JSON.stringify(result) ?? "null";
+          const content = JSON.stringify({ invocationId: call.id, toolName: tool.name, result }) ?? "null";
           await dependencies.repository.appendMessage(task, { role: "tool", content });
           history = await dependencies.repository.readHistory(task.sessionId);
           await dependencies.emit({ type: "tool.completed", taskId: task.id, invocationId: call.id, result });
@@ -70,7 +73,9 @@ export async function executeTask(taskInput: RuntimeTask, dependencies: RuntimeD
         }
       }
 
-      if (sawFinish || (!sawToolCall && !toolRegistry.size)) break;
+      // A response with neither a finish marker nor tool calls is still a complete
+      // assistant turn. Do not make needless model calls just because tools exist.
+      if (sawFinish || pendingCalls.length === 0) break;
       if (stepNumber === MAX_STEPS - 1) throw new Error("Maximum runtime step count exceeded");
       history = await dependencies.repository.readHistory(task.sessionId);
     }
