@@ -34,6 +34,7 @@ describe("Turbo configuration", () => {
     }).loose().parse(JSON.parse(await readFile(new URL("../turbo.json", import.meta.url), "utf8")));
 
     expect(turbo).not.toHaveProperty("globalEnv");
+    expect(JSON.stringify(turbo)).not.toMatch(/VERCEL_|EVE_NEXT_/);
     expect(turbo.tasks["build:app"].env).toEqual(expect.arrayContaining(applicationEnvironment));
     expect(turbo.tasks["build:app"].env).toHaveLength(applicationEnvironment.length);
     expect(turbo.tasks["dev:app"].passThroughEnv).toEqual(runtimeEnvironment);
@@ -55,5 +56,6 @@ describe("Turbo configuration", () => {
     expect(manifest.scripts).not.toHaveProperty("build:vercel");
     expect(turbo.tasks).not.toHaveProperty("build:vercel");
     expect(manifest.devDependencies).not.toHaveProperty("vercel");
+    expect(JSON.stringify(manifest.scripts)).not.toMatch(/vercel/i);
   });
 });
