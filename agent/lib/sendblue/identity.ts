@@ -30,6 +30,7 @@ export async function resolveSendbluePrincipal(
   return {
     attributes: {
       conversationChannel: "sendblue",
+      conversationId: `sendblue:${phoneNumber}`,
       phoneNumber,
       workspaceId: scope.workspaceId,
     },

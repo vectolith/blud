@@ -2,9 +2,7 @@ import { defineDynamic, defineTool, toolOutput } from "eve/tools";
 import { defineState } from "eve/context";
 import { z } from "zod";
 import { resolveModeValue } from "../lib/mode";
-import { sendNativeLinqMessage } from "@agent/lib/linq/transport";
 import { scopeFromPrincipal } from "@agent/lib/principal-scope";
-import { readLinqOnboardingPhoneNumber } from "@db/services/auth/linq";
 import { getInstallationSecrets } from "@db/services/installation-secrets";
 import { bludContactUrl } from "@shared/chat/contact-card";
 import { env } from "@shared/environment";
@@ -52,40 +50,17 @@ function defineShareContact() {
         throw new Error("Contact sharing requires an authenticated user.");
       const { userId } = scopeFromPrincipal(caller);
       const channel = caller.attributes.conversationChannel;
-      if (channel !== "linq" && channel !== "eve") {
+      if (channel !== "sendblue" && channel !== "eve") {
         throw new Error(
-          "Contact sharing requires an active Linq or browser conversation."
+          "Contact sharing requires an active Sendblue or browser conversation."
         );
-      }
-      let chatId: string | undefined;
-      if (channel === "linq") {
-        // Linq uses linq:<chatId>, with optional :dm/:group on older threads.
-        const threadId = z
-          .string()
-          .regex(/^linq:([^:]+)(?::(?:dm|group))?$/)
-          .safeParse(caller.attributes.linqThreadId);
-        chatId = threadId.success ? threadId.data.split(":")[1] : undefined;
-        if (
-          !threadId.success ||
-          !chatId ||
-          chatId === "pending" ||
-          caller.attributes.conversationId !== threadId.data
-        ) {
-          throw new Error(
-            "Contact sharing requires the current authenticated Linq conversation."
-          );
-        }
       }
       let delivery = contactDelivery.get();
       if (delivery?.userId !== userId) {
-        const phone =
-          env.LINQ_PHONE_NUMBER ??
-          (env.LINQ_CONNECTOR
-            ? await readLinqOnboardingPhoneNumber(env.LINQ_CONNECTOR)
-            : undefined);
+        const phone = env.SENDBLUE_FROM_NUMBER;
         if (!phone)
           throw new Error(
-            "Blud's Linq number is unavailable. Nothing was sent."
+            "Blud's Sendblue number is unavailable. Nothing was sent."
           );
         const { betterAuthSecret } = await getInstallationSecrets();
         delivery = {
@@ -107,25 +82,6 @@ function defineShareContact() {
         contactDelivery.update(() => delivery);
       }
       if (delivery.sent) return null;
-      if (chatId) {
-        const { text: introduction, attachments } = delivery.message;
-        await sendNativeLinqMessage(
-          chatId,
-          {
-            idempotency_key: `blud-contact:${context.session.id}`,
-            parts: [
-              ...(introduction
-                ? [{ type: "text" as const, value: introduction }]
-                : []),
-              ...(attachments ?? []).map(({ url }) => ({
-                type: "media" as const,
-                url,
-              })),
-            ],
-          },
-          { signal: context.abortSignal }
-        );
-      }
       contactDelivery.update(() => ({ ...delivery, sent: true }));
       return delivery.message;
     },
@@ -140,16 +96,12 @@ function defineShareContact() {
 }
 
 export default defineDynamic((context) => {
-  const isLinq = context.channel.kind === "channel:linq";
   const send_message = defineSendMessage();
 
   const react_to_message = defineTool({
-    description: isLinq
-      ? "Add or remove a native iMessage Tapback on the user's current message. Use this instead of send_message when a reaction fully communicates a lightweight acknowledgement and words would add nothing. Supports thumbs_up, thumbs_down, heart, laugh, exclamation (emphasis), and question."
-      : "Acknowledge the user's current message with one compact reaction displayed in the conversation. Use this instead of send_message when the reaction fully communicates the response and words would add nothing. Supports thumbs_up, thumbs_down, heart, laugh, exclamation (emphasis), and question.",
-    inputSchema: isLinq
-      ? reactToMessageOutputSchema
-      : addReactionToMessageOutputSchema,
+    description:
+      "Acknowledge the user's current message with one compact reaction displayed in the conversation. Use this instead of send_message when the reaction fully communicates the response and words would add nothing. Supports thumbs_up, thumbs_down, heart, laugh, exclamation (emphasis), and question.",
+    inputSchema: addReactionToMessageOutputSchema,
     execute(reaction) {
       return reaction;
     },

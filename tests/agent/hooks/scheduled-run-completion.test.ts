@@ -53,7 +53,7 @@ const resumedAuth: SessionAuth = {
   ...workerAuth,
   current: {
     attributes: {},
-    authenticator: "linq",
+    authenticator: "sendblue",
     principalId: "user-1",
     principalType: "user",
   },

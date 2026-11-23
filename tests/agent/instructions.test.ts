@@ -19,7 +19,7 @@ describe("agent instructions", () => {
   it.each([
     ["scheduled-worker", "isolated background session"],
     ["scheduled-result", "evaluating the completed outcome"],
-    ["linq", "root coordinator"],
+    ["sendblue", "root coordinator"],
   ])("selects %s instructions for the current turn", async (role, phrase) => {
     const selected = await evaluateDynamic(
       roleInstructions,
@@ -99,7 +99,7 @@ describe("agent instructions", () => {
 
   it("shares the exact browser contract with scheduled workers", async () => {
     const selections = await Promise.all(
-      ["linq", "scheduled-worker"].map((authenticator) =>
+      ["sendblue", "scheduled-worker"].map((authenticator) =>
         evaluateDynamic(workerCoordination, dynamicContext(authenticator))
       )
     );
@@ -123,7 +123,7 @@ describe("agent instructions", () => {
   it("reports Link purchases as temporarily unavailable while Link is disabled", async () => {
     const selected = await evaluateDynamic(
       workerCoordination,
-      dynamicContext("linq")
+      dynamicContext("sendblue")
     );
     expect(selected?.content).toContain(
       "Link purchases are temporarily unavailable"

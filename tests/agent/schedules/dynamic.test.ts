@@ -40,7 +40,7 @@ vi.mock("@db/services/scheduled-agent-jobs", () => ({
   releaseScheduledReport: services.releaseReport,
   setScheduledRunSession: services.setSession,
 }));
-vi.mock("@agent/channels/linq", () => ({ default: { channel: "linq" } }));
+vi.mock("@agent/channels/sendblue", () => ({ default: { channel: "sendblue" } }));
 vi.mock("@agent/lib/schedules/request", () => ({
   postScheduledReport: requests.report,
 }));
@@ -107,10 +107,10 @@ describe("dynamic schedule dispatch", () => {
     });
   });
 
-  it("delivers recoverable Linq reports through the schedule channel handle", async () => {
+  it("delivers recoverable Sendblue reports through the schedule channel handle", async () => {
     const report = scheduledReport();
     services.listReports.mockResolvedValue([
-      { conversationChannel: "linq", runId: report.run.id },
+      { conversationChannel: "sendblue", runId: report.run.id },
     ]);
     services.claimReports.mockResolvedValue(report);
     const send = vi
@@ -175,9 +175,8 @@ describe("scheduled report delivery", () => {
     services.releaseReport.mockResolvedValue(true);
   });
 
-  it("routes Linq reports to the stored conversation", async () => {
+  it("routes Sendblue reports to the stored conversation", async () => {
     const report = scheduledReport();
-    report.job.replyAnchorMessageId = "original-message";
     services.claimReports.mockResolvedValue(report);
     const send = vi
       .fn<ReturnType<ScheduleToFn>["send"]>()
@@ -188,14 +187,13 @@ describe("scheduled report delivery", () => {
     await dispatchScheduledReport({ attachSession, to }, report.run.id);
 
     expect(to).toHaveBeenCalledWith(expect.anything(), {
-      adapterName: "linq",
-      threadId: "linq:dm:chat-1",
+      adapterName: "sendblue",
+      threadId: "sendblue:dm:chat-1",
     });
     expect(attachSession).not.toHaveBeenCalled();
     expect(send.mock.calls[0]?.[1]).toMatchObject({
       auth: {
         attributes: {
-          linqReplyAnchorMessageId: "original-message",
           scheduleId: report.job.id,
         },
         authenticator: "scheduled-result",
@@ -203,10 +201,7 @@ describe("scheduled report delivery", () => {
       turnPolicy: "queue",
     });
     expect(send.mock.calls[0]?.[0]).toContain(
-      `Reply handle: {"kind":"automation","id":"${report.job.id}"}`
-    );
-    expect(send.mock.calls[0]?.[0]).toContain(
-      "Pass this exact value as send_message.replyTo for every user-visible message about this scheduled task."
+      "This channel cannot attach native quoted replies. Omit send_message.replyTo."
     );
   });
 
@@ -318,12 +313,11 @@ function scheduledClaim(): Awaited<
       id: "00000000-0000-4000-8000-000000000001",
       lastError: null,
       lastRunAt: new Date("2026-09-02T13:00:00.000Z"),
-      conversationChannel: "linq",
-      conversationId: "linq:dm:chat-1",
+      conversationChannel: "sendblue",
+      conversationId: "sendblue:dm:chat-1",
       missedRunPolicy: "run_latest",
       nextRunAt: new Date("2026-09-03T13:00:00.000Z"),
       prompt: "Watch the price.",
-      replyAnchorMessageId: null,
       revision: 0,
       status: "active",
       timing: {
