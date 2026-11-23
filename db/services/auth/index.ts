@@ -9,7 +9,7 @@ import { account, db, session, user, verification } from "@db";
 import { betterAuthBaseURL } from "@shared/environment/origin";
 import { env, localPhoneAuthBypassEnabled } from "@shared/environment";
 import { getInstallationSecrets } from "@db/services/installation-secrets";
-import { LinqDeliveryError, linqOtpFailure, sendLinqText } from "./linq";
+import { sendSendblueMessage } from "@shared/chat/sendblue-client";
 import { isE164PhoneNumber } from "@shared/identity/phone-number";
 
 let authPromise: ReturnType<typeof initializeAuth> | undefined;
@@ -133,42 +133,22 @@ export async function sendPhoneCode({
   readonly code: string;
   readonly to: string;
 }) {
-  if (!env.LINQ_CONNECTOR) {
-    throw new APIError("SERVICE_UNAVAILABLE", {
-      code: "LINQ_NOT_CONFIGURED",
+  const result = await sendSendblueMessage({
+    text: `BLUD sign-in code: ${code}. Expires in 5 minutes.`,
+    to,
+  });
+  if (result.ok) return;
+
+  if (!result.retryable) {
+    throw new APIError("BAD_REQUEST", {
+      code: "SIGN_IN_CODE_UNDELIVERABLE",
       message:
-        "iMessage sign-in is not configured. Attach a Linq connector to this deployment.",
+        "Blud could not deliver a sign-in code to that number. Check the number and try again.",
     });
   }
 
-  try {
-    await sendLinqText({
-      connector: env.LINQ_CONNECTOR,
-      idempotencyKey: `auth-otp-${createHash("sha256")
-        .update(`${to}\u0000${code}`)
-        .digest("hex")}`,
-      message: `BLUD sign-in code: ${code}. Expires in 5 minutes.`,
-      to,
-    });
-  } catch (error) {
-    if (error instanceof LinqDeliveryError) {
-      const failure = linqOtpFailure(error);
-      throw new APIError("BAD_GATEWAY", {
-        code: failure.code,
-        linqError: {
-          code: error.code,
-          message: error.linqMessage,
-          status: error.status,
-          trace_id: error.traceId,
-        },
-        message: failure.message,
-      });
-    }
-
-    throw new APIError("BAD_GATEWAY", {
-      code: "LINQ_CONNECTOR_UNAVAILABLE",
-      message:
-        "This deployment cannot access its Linq connector. Check LINQ_CONNECTOR and the connector's Vercel project attachment.",
-    });
-  }
+  throw new APIError("BAD_GATEWAY", {
+    code: "SIGN_IN_CODE_DELIVERY_FAILED",
+    message: "Blud could not send a sign-in code right now. Try again shortly.",
+  });
 }

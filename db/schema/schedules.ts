@@ -22,10 +22,9 @@ export const scheduledAgentJobs = pgTable(
     createdByUserId: text("created_by_user_id").notNull(),
     prompt: text("prompt").notNull(),
     conversationChannel: text("conversation_channel", {
-      enum: ["eve", "linq"],
+      enum: ["eve", "sendblue"],
     }).notNull(),
     conversationId: text("conversation_id").notNull(),
-    replyAnchorMessageId: text("reply_anchor_message_id"),
     timing: jsonb("timing").notNull(),
     missedRunPolicy: text("missed_run_policy", {
       enum: ["skip", "run_latest", "catch_up"],
@@ -75,7 +74,7 @@ export const scheduledAgentJobs = pgTable(
     }).onDelete("cascade"),
     check(
       "scheduled_agent_jobs_conversation_channel_check",
-      sql`${table.conversationChannel} IN ('eve', 'linq')`
+      sql`${table.conversationChannel} IN ('eve', 'sendblue')`
     ),
     check(
       "scheduled_agent_jobs_conversation_id_check",

@@ -1,6 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
-import { isE164PhoneNumber } from "@shared/identity/phone-number";
 import { databaseUrlSchema } from "@shared/environment/database-url";
 
 export const betterAuthSecretSchema = z
@@ -126,7 +125,6 @@ export const env = createEnv({
     BLOB_READ_WRITE_TOKEN: requiredValue.optional(),
     BLOB_STORE_ID: requiredValue.optional(),
     GOOGLE_CONNECTOR_UID: requiredValue.default("google/blud"),
-    LINQ_CONNECTOR: requiredValue.optional(),
     BLUD_ALLOW_LOCAL_PHONE_AUTH_BYPASS: z.enum(["true", "false"]).optional(),
     GITHUB_APP_CLIENT_ID: requiredValue.optional(),
     GITHUB_APP_CLIENT_SECRET: requiredValue.optional(),
@@ -137,14 +135,6 @@ export const env = createEnv({
     SENDBLUE_API_SECRET: requiredValue.optional(),
     SENDBLUE_FROM_NUMBER: requiredValue.optional(),
     SENDBLUE_WEBHOOK_SECRET: requiredValue.optional(),
-    // Optional: only the Linq channel and the share-contact tool fall back to it.
-    // A Sendblue deployment sends from SENDBLUE_FROM_NUMBER instead.
-    LINQ_PHONE_NUMBER: requiredValue
-      .refine(
-        (value) => isE164PhoneNumber(value),
-        "LINQ_PHONE_NUMBER must use E.164 format"
-      )
-      .optional(),
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("production"),

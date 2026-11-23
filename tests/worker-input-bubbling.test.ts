@@ -36,7 +36,7 @@ describe("worker input bubbling", () => {
     const worker = await evaluateDynamic(
       browserAgent,
       dynamicContextFor({
-        channel: { kind: "channel:linq", metadata: {} },
+        channel: { kind: "channel:sendblue", metadata: {} },
         sessionId: "worker-test",
       })
     );

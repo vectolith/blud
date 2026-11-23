@@ -33,6 +33,7 @@ describe("scheduled agent jobs", () => {
       "0010_rapid_cerise.sql",
       "0011_faulty_unicorn.sql",
       "0012_harsh_domino.sql",
+      "0017_dashing_tarot.sql",
     ]) {
       await applyMigration(client, migration);
     }
@@ -47,12 +48,12 @@ describe("scheduled agent jobs", () => {
     const alice = { userId: "alice", workspaceId: "workspace:alice" };
     const bob = { userId: "bob", workspaceId: "workspace:bob" };
     const aliceConversation = {
-      conversationChannel: "linq" as const,
-      conversationId: "linq:chat-alice",
+      conversationChannel: "sendblue" as const,
+      conversationId: "sendblue:chat-alice",
     };
     const bobConversation = {
-      conversationChannel: "linq" as const,
-      conversationId: "linq:chat-bob",
+      conversationChannel: "sendblue" as const,
+      conversationId: "sendblue:chat-bob",
     };
     await scope.ensureScope(alice);
     await scope.ensureScope(bob);
@@ -240,7 +241,7 @@ describe("scheduled agent jobs", () => {
       await jobs.listRecoverableScheduledReports(
         new Date("2026-09-01T13:07:00.000Z")
       )
-    ).toEqual([{ conversationChannel: "linq", runId: claim.run.id }]);
+    ).toEqual([{ conversationChannel: "sendblue", runId: claim.run.id }]);
     const retriedQuestionReport = await jobs.claimScheduledReport(
       claim.run.id,
       new Date("2026-09-01T13:07:00.000Z")
@@ -454,8 +455,8 @@ describe("scheduled agent jobs", () => {
     ]);
     expect(
       await jobs.listScheduledAgentJobs(bob, {
-        conversationChannel: "linq",
-        conversationId: "linq:another-chat",
+        conversationChannel: "sendblue",
+        conversationId: "sendblue:another-chat",
       })
     ).toEqual([]);
 

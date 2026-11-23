@@ -63,7 +63,7 @@ describe("schedule tools", () => {
     ).not.toBeNull();
     const interactiveTools = await evaluateDynamic(
       schedules,
-      dynamicContext("linq")
+      dynamicContext("sendblue")
     );
     const answer = dynamicTool(interactiveTools, "schedules-answer");
     services.getInput.mockResolvedValue({
@@ -75,13 +75,13 @@ describe("schedule tools", () => {
         answer: "DCA",
         runId: "00000000-0000-4000-8000-000000000002",
       },
-      toolContext("schedules-answer", "linq")
+      toolContext("schedules-answer", "sendblue")
     );
     expect(services.getInput).toHaveBeenCalledExactlyOnceWith(
       { userId: "user-1", workspaceId: "workspace-1" },
       {
-        conversationChannel: "linq",
-        conversationId: "linq:dm:chat-1",
+        conversationChannel: "sendblue",
+        conversationId: "sendblue:dm:chat-1",
       },
       "00000000-0000-4000-8000-000000000002"
     );
@@ -132,11 +132,11 @@ describe("schedule tools", () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response("<h1>404</h1>", { status: 200 })
     );
-    const tools = await evaluateDynamic(schedules, dynamicContext("linq"));
+    const tools = await evaluateDynamic(schedules, dynamicContext("sendblue"));
     await expect(
       dynamicTool(tools, "schedules-answer").execute(
         { answer: "Beta", runId: "00000000-0000-4000-8000-000000000002" },
-        toolContext("schedules-answer", "linq")
+        toolContext("schedules-answer", "sendblue")
       )
     ).rejects.toThrow("The scheduled task could not be resumed.");
   });
@@ -167,11 +167,10 @@ describe("schedule tools", () => {
     expect(services.create).toHaveBeenCalledExactlyOnceWith(
       { userId: "user-1", workspaceId: "workspace-1" },
       {
-        conversationChannel: "linq",
-        conversationId: "linq:dm:chat-1",
+        conversationChannel: "sendblue",
+        conversationId: "sendblue:dm:chat-1",
         missedRunPolicy: "run_latest",
         prompt: "Send the morning summary.",
-        replyAnchorMessageId: "message-1",
         timing: {
           frequency: "daily",
           kind: "calendar",
@@ -196,8 +195,8 @@ describe("schedule tools", () => {
     expect(services.list).toHaveBeenCalledExactlyOnceWith(
       { userId: "user-1", workspaceId: "workspace-1" },
       {
-        conversationChannel: "linq",
-        conversationId: "linq:dm:chat-1",
+        conversationChannel: "sendblue",
+        conversationId: "sendblue:dm:chat-1",
       }
     );
     expect(result).toEqual([scheduleListSummary(job)]);
@@ -224,8 +223,8 @@ describe("schedule tools", () => {
     expect(services.update).toHaveBeenCalledExactlyOnceWith(
       { userId: "user-1", workspaceId: "workspace-1" },
       {
-        conversationChannel: "linq",
-        conversationId: "linq:dm:chat-1",
+        conversationChannel: "sendblue",
+        conversationId: "sendblue:dm:chat-1",
       },
       job.id,
       { status: "paused" }
@@ -240,7 +239,7 @@ describe("schedule tools", () => {
     expect(await evaluateDynamic(messaging, resumedWorkerContext())).toBeNull();
     const reportMessaging = await evaluateDynamic(
       messaging,
-      dynamicContext("scheduled-result", "channel:linq")
+      dynamicContext("scheduled-result", "channel:sendblue")
     );
     expect(Object.keys(reportMessaging ?? {})).toEqual(["send_message"]);
 
@@ -250,7 +249,7 @@ describe("schedule tools", () => {
     );
     const interactiveMessaging = await evaluateDynamic(
       messaging,
-      dynamicContext("test", "channel:linq")
+      dynamicContext("test", "channel:sendblue")
     );
     expect(Object.keys(debugMessaging ?? {}).toSorted()).toEqual([
       "react_to_message",
@@ -333,7 +332,7 @@ function dynamicContext(
 }
 
 function resumedWorkerContext() {
-  const context = dynamicContext("linq");
+  const context = dynamicContext("sendblue");
   return dynamicContextFor({
     auth: {
       ...context.session.auth,
@@ -352,7 +351,7 @@ function resumedWorkerContext() {
 function toolContext(
   toolName: string,
   authenticator = "test",
-  conversationChannel: "eve" | "linq" = "linq",
+  conversationChannel: "eve" | "sendblue" = "sendblue",
   attributes: Record<string, string> = {}
 ): ToolContext {
   return toolContextFor({
@@ -360,9 +359,7 @@ function toolContext(
       current: {
         attributes: {
           conversationChannel,
-          conversationId: "linq:dm:chat-1",
-          linqMessageId: "message-1",
-          linqThreadId: "linq:dm:chat-1",
+          conversationId: "sendblue:dm:chat-1",
           workspaceId: "workspace-1",
           ...attributes,
         },
@@ -379,7 +376,7 @@ function toolContext(
 }
 
 function scheduledReportToolContext() {
-  return toolContext("schedules-answer", "scheduled-result", "linq", {
+  return toolContext("schedules-answer", "scheduled-result", "sendblue", {
     scheduleId: "00000000-0000-4000-8000-000000000001",
     scheduledReportLeaseToken: "00000000-0000-4000-8000-000000000004",
     scheduledReportSequence: "1",
@@ -396,11 +393,11 @@ function inputProperties(schema: ToolDefinition["inputSchema"]) {
 
 function scheduledJob(
   conversation: {
-    conversationChannel: "eve" | "linq";
+    conversationChannel: "eve" | "sendblue";
     conversationId: string;
   } = {
-    conversationChannel: "linq",
-    conversationId: "linq:dm:chat-1",
+    conversationChannel: "sendblue",
+    conversationId: "sendblue:dm:chat-1",
   }
 ): Awaited<ReturnType<typeof listScheduledAgentJobs>>[number] {
   return {
@@ -414,7 +411,6 @@ function scheduledJob(
     missedRunPolicy: "run_latest",
     nextRunAt: new Date("2026-09-02T13:00:00.000Z"),
     prompt: "Send the morning summary.",
-    replyAnchorMessageId: null,
     revision: 0,
     status: "active",
     timing: {

@@ -9,10 +9,6 @@ import {
   taskCompletionOutputSchema,
   taskCompletionSchema,
 } from "@agent/subagents/browser-agent/lib/completion";
-import {
-  extractImageArtifactMarkdownReferences,
-  stripImageArtifactMarkdownReferences,
-} from "@agent/lib/linq-image-artifact/markdown";
 
 const artifactId = "0d01e667-d128-4bb7-a248-1ae21db72f4f";
 
@@ -38,29 +34,6 @@ describe("browser image contracts", () => {
         url: "/artifacts/206c3a7e-c0b8-4317-9e34-552cff646673",
       }).success
     ).toBe(false);
-  });
-
-  it("extracts and strips only exact artifact image markdown", () => {
-    const artifact = browserImageArtifactReferenceSchema.parse({
-      byteSize: 4,
-      filename: "product.png",
-      id: artifactId,
-      label: "Product [front]",
-      mediaType: "image/png",
-      url: browserImageArtifactUrl(artifactId),
-    });
-    const markdown = `![Product](${artifact.url})`;
-    const message = `Here it is.\n\n${markdown}\n\n${markdown}`;
-
-    expect(extractImageArtifactMarkdownReferences(message)).toEqual([
-      expect.objectContaining({ id: artifactId, url: artifact.url }),
-    ]);
-    expect(stripImageArtifactMarkdownReferences(message)).toBe("Here it is.");
-    expect(
-      stripImageArtifactMarkdownReferences(
-        "![external](https://example.com/image.png)"
-      )
-    ).toBe("![external](https://example.com/image.png)");
   });
 
   it.each([

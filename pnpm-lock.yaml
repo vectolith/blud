@@ -5,7 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  '@linqapp/chat-sdk-adapter@0.5.1': 78b56cdd08c4250ad2680c094858b28d6d6935538d8e59e6dd578f106c77b9e7
   eve@1.0.0-rc.1: 7bce4296a24b2b4d02d4758d6ddc8c89ae626c65bf6ac3b4354dee1dbbddf857
 
 importers:
@@ -27,9 +26,6 @@ importers:
       '@googleapis/people':
         specifier: ^8.0.0
         version: 8.0.0
-      '@linqapp/sdk':
-        specifier: 0.47.1
-        version: 0.47.1
       '@onkernel/browser-loop':
         specifier: 0.12.0
         version: 0.12.0(@aws-sdk/credential-provider-node@3.972.81)(@earendil-works/pi-agent-core@0.83.0(@modelcontextprotocol/sdk@1.30.0(zod@4.5.4))(ws@8.21.3)(zod@4.5.4))(@modelcontextprotocol/sdk@1.30.0(zod@4.5.4))(@smithy/signature-v4@5.7.3)(@types/node@24.13.3)(ws@8.21.3)(zod@4.5.4)
@@ -151,9 +147,6 @@ importers:
       '@electric-sql/pglite':
         specifier: ^0.5.8
         version: 0.5.8
-      '@linqapp/chat-sdk-adapter':
-        specifier: 0.5.1
-        version: 0.5.1(patch_hash=78b56cdd08c4250ad2680c094858b28d6d6935538d8e59e6dd578f106c77b9e7)(chat@4.43.0(ai@7.0.159(zod@4.5.4))(zod@4.5.4))
       '@next/env':
         specifier: 16.3.3
         version: 16.3.3
@@ -1379,11 +1372,6 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@linqapp/chat-sdk-adapter@0.5.1':
-    resolution: {integrity: sha512-3NE5yLb/ihPFd/gsUbT1SNWGftManyfzIUKUARGQqH4p8N2BRaHidIXS6xJFosw54mUGS++cFS9CoR63qTXl6w==}
-    peerDependencies:
-      chat: ^4.28.1
-
   '@linqapp/sdk@0.47.1':
     resolution: {integrity: sha512-jXBZdXccuL5Sm3s9URtxzSnhQdSFQhZ1R2W2Aw33+RhAzKIsplPmQcyBKdXhv9tY7n17xitjO6MPv+mSk0Ytcg==}
 
@@ -2456,7 +2444,9 @@ packages:
   '@smithy/core@3.33.3':
     resolution: {integrity: sha512-CsOeKq/9kA3y6VJHt+/+VTCtBaxJ4OTFpgrjIUhPpDIKxBci1k2bJaQASF2h/ELWrulGp+t97DZ0mevfAD8idg==}
     engines: {node: '>=18.0.0'}
-    deprecated: Deprecated due to a bug in custom logger data redaction. See https://github.com/aws/aws-sdk-js-v3/issues/8393.
+    deprecated: |-
+      Deprecated due to a bug in custom logger data redaction. Upgrade to the latest version. If you used a custom logger with this
+        version, review your logs and rotate any credentials or other secrets. See https://github.com/aws/aws-sdk-js-v3/issues/8393.
 
   '@smithy/credential-provider-imds@4.5.2':
     resolution: {integrity: sha512-A9uSdn72ozbRUSit0eib0TW7nXuNPlaeM0zcGkJ+nE6tFcSDbnmtwoxbTCFBukVQcszDAyvsd7+rTduPTXpygg==}
@@ -2989,6 +2979,7 @@ packages:
   acorn@8.18.0:
     resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
     engines: {node: '>=0.4.0'}
+    hasBin: true
 
   agent-base@7.1.4:
     resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
@@ -7412,15 +7403,10 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@linqapp/chat-sdk-adapter@0.5.1(patch_hash=78b56cdd08c4250ad2680c094858b28d6d6935538d8e59e6dd578f106c77b9e7)(chat@4.43.0(ai@7.0.159(zod@4.5.4))(zod@4.5.4))':
-    dependencies:
-      '@linqapp/sdk': 0.47.1
-      chat: 4.43.0(ai@7.0.159(zod@4.5.4))(zod@4.5.4)
-      standardwebhooks: 1.1.1
-
   '@linqapp/sdk@0.47.1':
     dependencies:
       standardwebhooks: 1.1.1
+    optional: true
 
   '@mermaid-js/parser@1.2.1':
     dependencies:
@@ -8169,7 +8155,8 @@ snapshots:
       '@smithy/util-buffer-from': 2.2.0
       tslib: 2.8.1
 
-  '@stablelib/base64@1.0.1': {}
+  '@stablelib/base64@1.0.1':
+    optional: true
 
   '@standard-schema/spec@1.1.0': {}
 
@@ -9589,7 +9576,8 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
-  fast-sha256@1.3.0: {}
+  fast-sha256@1.3.0:
+    optional: true
 
   fast-uri@3.1.6: {}
 
@@ -11775,6 +11763,7 @@ snapshots:
     dependencies:
       '@stablelib/base64': 1.0.1
       fast-sha256: 1.3.0
+    optional: true
 
   statuses@2.0.2: {}
 

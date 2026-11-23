@@ -6,7 +6,7 @@ import {
   finalizeScheduledReport,
   releaseScheduledReport,
 } from "@db/services/scheduled-agent-jobs";
-import linq from "../../channels/linq";
+import sendblue from "../../channels/sendblue";
 
 type ClaimedScheduledReport = NonNullable<
   Awaited<ReturnType<typeof claimScheduledReport>>
@@ -41,10 +41,10 @@ export async function dispatchScheduledReport(
   };
   try {
     const prompt = scheduledReportPrompt(claimed);
-    if (claimed.job.conversationChannel === "linq") {
+    if (claimed.job.conversationChannel === "sendblue") {
       const session = await delivery
-        .to(linq, {
-          adapterName: "linq",
+        .to(sendblue, {
+          adapterName: "sendblue",
           threadId: claimed.job.conversationId,
         })
         .send(prompt, options);
@@ -101,9 +101,8 @@ export async function dispatchScheduledReport(
 }
 
 function scheduledReportPrompt(claimed: ClaimedScheduledReport) {
-  const replyContext = claimed.job.replyAnchorMessageId
-    ? `Reply handle: {"kind":"automation","id":"${claimed.job.id}"}. Pass this exact value as send_message.replyTo for every user-visible message about this scheduled task. Omit replyTo only when the message is genuinely unrelated to the scheduled task.`
-    : "No reply handle is available for this automation. Omit send_message.replyTo.";
+  const replyContext =
+    "This channel cannot attach native quoted replies. Omit send_message.replyTo.";
   if (claimed.run.pendingInputRequests) {
     return [
       "A background scheduled run is waiting for the user before it can continue.",
@@ -140,15 +139,6 @@ function scheduledReportAttributes(
     ["scheduledRunId", claimed.run.id],
     ["workspaceId", claimed.job.workspaceId],
   ]);
-  if (
-    claimed.job.conversationChannel === "linq" &&
-    claimed.job.replyAnchorMessageId
-  ) {
-    attributes.set(
-      "linqReplyAnchorMessageId",
-      claimed.job.replyAnchorMessageId
-    );
-  }
   if (claimed.run.workerSessionId) {
     attributes.set("scheduledRunSessionId", claimed.run.workerSessionId);
   }

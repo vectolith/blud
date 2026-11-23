@@ -55,7 +55,7 @@ describe("evlog hook", () => {
     expect(capturedEvents).toHaveLength(2);
     expect(capturedEvents[0]).toMatchObject({
       agent: { name: "root" },
-      channel: { kind: "linq" },
+      channel: { kind: "sendblue" },
       message: {
         received: "email mason@example.com card 4111111111111111",
         response: "full response mason@example.com",
@@ -104,7 +104,7 @@ describe("evlog hook", () => {
 function contextFor(view: SessionView) {
   return hookContextFor({
     agentName: "root",
-    channel: { kind: "channel:linq", metadata: {} },
+    channel: { kind: "channel:sendblue", metadata: {} },
     sessionId: "session-1",
     view,
   });

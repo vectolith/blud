@@ -37,8 +37,6 @@ describe("environment", () => {
     const { env } = await import("@shared/environment");
 
     expect(env.GOOGLE_CONNECTOR_UID).toBe("google/blud");
-    expect(env.LINQ_CONNECTOR).toBeUndefined();
-    expect(env.LINQ_PHONE_NUMBER).toBeUndefined();
   });
 
   it("provides stable auth and encryption defaults in local development", async () => {
@@ -84,8 +82,6 @@ describe("environment", () => {
     const { env } = await import("@shared/environment");
 
     expect(env.GOOGLE_CONNECTOR_UID).toBe("google/custom");
-    expect(env.LINQ_CONNECTOR).toBe("linq/custom");
-    expect(env.LINQ_PHONE_NUMBER).toBe("+12025550123");
   });
 
   it("does not provide local defaults in a Vercel development environment", async () => {
@@ -154,16 +150,6 @@ describe("environment", () => {
     );
   });
 
-  it("accepts a Linq connector without a copied phone number", async () => {
-    vi.stubEnv("LINQ_CONNECTOR", "linq/blud");
-    vi.stubEnv("LINQ_PHONE_NUMBER", "");
-
-    const { env } = await import("@shared/environment");
-
-    expect(env.LINQ_CONNECTOR).toBe("linq/blud");
-    expect(env.LINQ_PHONE_NUMBER).toBeUndefined();
-  });
-
   it("accepts Vercel OIDC Blob storage without a static token", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     vi.stubEnv("BLOB_STORE_ID", "store_blud");
@@ -172,15 +158,6 @@ describe("environment", () => {
 
     expect(env.BLOB_READ_WRITE_TOKEN).toBeUndefined();
     expect(env.BLOB_STORE_ID).toBe("store_blud");
-  });
-
-  it("rejects a Linq phone number outside E.164 format", async () => {
-    vi.stubEnv("LINQ_CONNECTOR", "linq/blud");
-    vi.stubEnv("LINQ_PHONE_NUMBER", "(202) 555-0123");
-
-    await expect(import("@shared/environment")).rejects.toThrow(
-      "Invalid environment variables"
-    );
   });
 
   it.each([
