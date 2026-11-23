@@ -360,7 +360,6 @@ function toolContext(
         attributes: {
           conversationChannel,
           conversationId: "sendblue:dm:chat-1",
-          conversationId: "sendblue:dm:chat-1",
           workspaceId: "workspace-1",
           ...attributes,
         },

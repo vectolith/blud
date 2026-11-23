@@ -9,7 +9,7 @@ import { account, db, session, user, verification } from "@db";
 import { betterAuthBaseURL } from "@shared/environment/origin";
 import { env, localPhoneAuthBypassEnabled } from "@shared/environment";
 import { getInstallationSecrets } from "@db/services/installation-secrets";
-import { sendSendblueMessage } from "@agent/lib/sendblue/client";
+import { sendSendblueMessage } from "@shared/chat/sendblue-client";
 import { isE164PhoneNumber } from "@shared/identity/phone-number";
 
 let authPromise: ReturnType<typeof initializeAuth> | undefined;

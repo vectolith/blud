@@ -40,7 +40,9 @@ vi.mock("@db/services/scheduled-agent-jobs", () => ({
   releaseScheduledReport: services.releaseReport,
   setScheduledRunSession: services.setSession,
 }));
-vi.mock("@agent/channels/sendblue", () => ({ default: { channel: "sendblue" } }));
+vi.mock("@agent/channels/sendblue", () => ({
+  default: { channel: "sendblue" },
+}));
 vi.mock("@agent/lib/schedules/request", () => ({
   postScheduledReport: requests.report,
 }));

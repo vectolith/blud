@@ -1,7 +1,7 @@
 import { defineChannel, POST } from "eve/channels";
 import { z } from "zod";
 import { env } from "@shared/environment";
-import { sendSendblueMessage } from "@agent/lib/sendblue/client";
+import { sendSendblueMessage } from "@shared/chat/sendblue-client";
 import { resolveSendbluePrincipal } from "@agent/lib/sendblue/identity";
 import { verifySendblueWebhook } from "@agent/lib/sendblue/webhook-auth";
 

@@ -1,6 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
-import { isE164PhoneNumber } from "@shared/identity/phone-number";
 import { databaseUrlSchema } from "@shared/environment/database-url";
 
 export const betterAuthSecretSchema = z

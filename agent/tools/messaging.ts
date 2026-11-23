@@ -6,10 +6,7 @@ import { scopeFromPrincipal } from "@agent/lib/principal-scope";
 import { getInstallationSecrets } from "@db/services/installation-secrets";
 import { bludContactUrl } from "@shared/chat/contact-card";
 import { env } from "@shared/environment";
-import {
-  addReactionToMessageOutputSchema,
-  reactToMessageOutputSchema,
-} from "@shared/chat/reaction";
+import { addReactionToMessageOutputSchema } from "@shared/chat/reaction";
 import { sendMessageOutputSchema } from "@shared/chat/message-delivery";
 
 const contactDelivery = defineState<{

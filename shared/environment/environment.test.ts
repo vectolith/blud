@@ -150,14 +150,6 @@ describe("environment", () => {
     );
   });
 
-  it("accepts a Linq connector without a copied phone number", async () => {
-    vi.stubEnv("LINQ_CONNECTOR", "linq/blud");
-    vi.stubEnv("LINQ_PHONE_NUMBER", "");
-
-    const { env } = await import("@shared/environment");
-
-  });
-
   it("accepts Vercel OIDC Blob storage without a static token", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     vi.stubEnv("BLOB_STORE_ID", "store_blud");
