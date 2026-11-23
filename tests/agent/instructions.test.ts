@@ -58,7 +58,7 @@ describe("agent instructions", () => {
   it("avoids tool approval loops and keeps Link purchases unavailable", async () => {
     const selected = await evaluateDynamic(
       executionSafety,
-      dynamicContext("linq-message")
+      dynamicContext("sendblue-message")
     );
     expect(selected?.content).toContain(
       "Tools run without a separate Eve approval step"
@@ -73,7 +73,7 @@ describe("agent instructions", () => {
   it("treats personal information as recalled context instead of a read tool", async () => {
     const selected = await evaluateDynamic(
       roleInstructions,
-      dynamicContext("linq-message")
+      dynamicContext("sendblue-message")
     );
     expect(selected?.content).toContain(
       "never call `personal_info__update` to read it"
@@ -141,7 +141,7 @@ describe("agent instructions", () => {
   it("keeps resumed scheduled turns in worker mode", async () => {
     const selected = await evaluateDynamic(
       roleInstructions,
-      dynamicContext("linq-message", "scheduled-worker")
+      dynamicContext("sendblue-message", "scheduled-worker")
     );
     expect(selected?.content).toContain("isolated background session");
   });
@@ -169,7 +169,7 @@ function dynamicContext(
               principalType: "user",
             },
     },
-    channel: { kind: "channel:linq", metadata: {} },
+    channel: { kind: "channel:sendblue", metadata: {} },
     sessionId: "session-1",
   });
 }

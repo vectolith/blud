@@ -59,12 +59,12 @@ describe("session ownership hook", () => {
     const handler = sessionOwner.events["delivery.consumed"];
     expect(handler).toBeDefined();
 
-    await handler?.(consumed, contextFor("channel:linq"));
+    await handler?.(consumed, contextFor("channel:sendblue"));
 
     expect(mocks.ensureScope).toHaveBeenCalledWith(scope);
     expect(mocks.claimSession).toHaveBeenCalledWith(scope, "session-1");
     expect(mocks.saveChat).toHaveBeenCalledWith(scope, {
-      channel: "channel:linq",
+      channel: "channel:sendblue",
       sessionId: "session-1",
     });
     expect(mocks.ensureScope.mock.invocationCallOrder[0]).toBeLessThan(

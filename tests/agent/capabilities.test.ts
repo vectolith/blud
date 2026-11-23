@@ -28,7 +28,7 @@ const groupedTools = [calendar, contacts, gmail, messaging, schedules, vault];
 
 describe("authored mode capability matrix", () => {
   it("gives interactive turns the authored coordinator capabilities", async () => {
-    expect(await authoredCapabilities("linq-message")).toEqual([
+    expect(await authoredCapabilities("sendblue-message")).toEqual([
       "browser-agent",
       "calendar-check-availability",
       "calendar-create-event",
@@ -142,7 +142,7 @@ function dynamicContext(authenticator: string) {
       },
       initiator: null,
     },
-    channel: { kind: "channel:linq", metadata: {} },
+    channel: { kind: "channel:sendblue", metadata: {} },
     sessionId: "session-1",
   });
 }
