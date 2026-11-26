@@ -50,9 +50,7 @@ const secretEncryptionKeyringSchema = z
     return result.data;
   });
 
-const localDevelopment =
-  process.env.NODE_ENV === "development" &&
-  process.env.VERCEL_ENV === undefined;
+const localDevelopment = process.env.NODE_ENV === "development";
 const explicitBetterAuthSecret = hasValue(process.env.BETTER_AUTH_SECRET);
 const explicitSecretEncryptionKey = hasValue(process.env.SECRET_ENCRYPTION_KEY);
 
@@ -103,8 +101,8 @@ export const env = createEnv({
     KERNEL_API_KEY: requiredValue,
     BLUD_INTERNAL_KEY: z.string().min(32).optional(),
 
-    // Optional overrides with local defaults. Vercel deployments provision
-    // installation secrets in their connected private Blob store.
+    // Optional overrides with local defaults. A deployment that leaves these
+    // unset reads them from the object store instead.
     BETTER_AUTH_SECRET: installationSecretWithLocalDefault(
       betterAuthSecretSchema,
       "blud-local-auth-development-secret"
@@ -122,8 +120,7 @@ export const env = createEnv({
     SECRET_ENCRYPTION_KEYRING: secretEncryptionKeyringSchema,
 
     // Optional
-    BLOB_READ_WRITE_TOKEN: requiredValue.optional(),
-    BLOB_STORE_ID: requiredValue.optional(),
+    BLUD_INSTALLATION_ID: requiredValue.optional(),
     GOOGLE_CONNECTOR_UID: requiredValue.default("google/blud"),
     BLUD_ALLOW_LOCAL_PHONE_AUTH_BYPASS: z.enum(["true", "false"]).optional(),
     GITHUB_APP_CLIENT_ID: requiredValue.optional(),
@@ -138,11 +135,12 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("production"),
-    VERCEL_BRANCH_URL: requiredValue.optional(),
-    VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
-    VERCEL_PROJECT_ID: requiredValue.optional(),
-    VERCEL_PROJECT_PRODUCTION_URL: requiredValue.optional(),
-    VERCEL_URL: requiredValue.optional(),
+    S3_ACCESS_KEY_ID: requiredValue.optional(),
+    S3_BUCKET: requiredValue.optional(),
+    S3_ENDPOINT: requiredValue.optional(),
+    S3_FORCE_PATH_STYLE: z.enum(["true", "false"]).optional(),
+    S3_REGION: requiredValue.optional(),
+    S3_SECRET_ACCESS_KEY: requiredValue.optional(),
   },
   experimental__runtimeEnv: {},
   emptyStringAsUndefined: true,

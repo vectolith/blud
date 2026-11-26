@@ -78,13 +78,7 @@ describe("local development", supervisorTestOptions, () => {
     expect(result.stderr).toContain(
       "KERNEL_API_KEY is required for manual local development."
     );
-    expect(result.stderr).toContain(
-      "Deploy with Vercel button in README.md; its Kernel Marketplace integration supplies the credentials automatically."
-    );
-    expect(result.stderr).toContain(
-      "pnpm exec vercel integration add kernel --plan FREE"
-    );
-    expect(result.stderr).toContain("create a key at https://kernel.sh");
+    expect(result.stderr).toContain("Create a key at https://kernel.sh");
   });
 
   it("does not advance when interrupted startup exits cleanly", async () => {

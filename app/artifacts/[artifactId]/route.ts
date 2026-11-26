@@ -1,9 +1,9 @@
-import { get } from "@vercel/blob";
 import { z } from "zod";
 import { getAuthSession } from "@db/services/auth/session";
 import { readReadyBrowserImageArtifact } from "@db/services/browser-images";
 import { accessScopeForUser } from "@shared/identity/access-scope";
 import { env } from "@shared/environment";
+import { readObject } from "@shared/storage/object-store";
 
 export const runtime = "nodejs";
 
@@ -18,13 +18,12 @@ export async function GET(
   const scope = accessScopeForUser(`better-auth:${session.user.id}`);
   const opened = await openArtifact(scope, parsedId.data, {
     ifNoneMatch: request.headers.get("if-none-match") ?? undefined,
-    signal: request.signal,
   });
   if (!opened) return notFound();
 
   const headers = privateImageHeaders();
-  headers.set("etag", opened.result.blob.etag);
-  if (opened.result.statusCode === 304) {
+  headers.set("etag", opened.etag);
+  if (opened.notModified) {
     return new Response(null, { headers, status: 304 });
   }
 
@@ -34,32 +33,41 @@ export async function GET(
     "content-disposition",
     contentDisposition(opened.artifact.filename)
   );
-  return new Response(opened.result.stream, { headers, status: 200 });
+  return new Response(opened.body as unknown as BodyInit, {
+    headers,
+    status: 200,
+  });
 }
 
 async function openArtifact(
   scope: ReturnType<typeof accessScopeForUser>,
   artifactId: string,
-  options: { readonly ifNoneMatch?: string; readonly signal?: AbortSignal }
+  options: { readonly ifNoneMatch?: string }
 ) {
   const artifact = await readReadyBrowserImageArtifact(scope, artifactId);
   const byteSize = artifact?.byteSize;
   const filename = artifact?.filename;
   const mediaType = artifact?.mediaType;
   if (!artifact || !byteSize || !filename || !mediaType) return undefined;
-  if (!env.BLOB_STORE_ID && !env.BLOB_READ_WRITE_TOKEN) return undefined;
-  const result = await get(artifact.storagePathname, {
-    access: "private",
-    abortSignal: options.signal,
-    ifNoneMatch: options.ifNoneMatch,
-  });
-  if (!result) return undefined;
-  if (
-    result.statusCode === 200 &&
-    (result.blob.size !== byteSize || result.blob.contentType !== mediaType)
-  )
-    return undefined;
-  return { artifact: { ...artifact, byteSize, filename, mediaType }, result };
+  const stored = await readObject(env, artifact.storagePathname);
+  if (!stored) return undefined;
+  if (stored.contentLength !== byteSize) return undefined;
+  if (stored.contentType && stored.contentType !== mediaType) return undefined;
+
+  const etag =
+    stored.etag ?? `"${artifact.storagePathname.split("/").at(-1) ?? ""}"`;
+  const notModified =
+    options.ifNoneMatch !== undefined &&
+    options.ifNoneMatch
+      .split(",")
+      .map((value) => value.trim())
+      .includes(etag);
+  return {
+    artifact: { ...artifact, byteSize, filename, mediaType },
+    body: stored.body,
+    etag,
+    notModified,
+  };
 }
 
 function notFound() {

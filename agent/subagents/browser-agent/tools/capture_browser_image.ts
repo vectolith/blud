@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { del, put } from "@vercel/blob";
+import { removeObject, writeObject } from "@shared/storage/object-store";
 import { defineTool, toolOutput } from "eve/tools";
 import { z } from "zod";
 import { requireWorkerScope } from "@agent/subagents/browser-agent/lib/access";
@@ -298,19 +298,16 @@ async function persistCapturedImage(
     throw new Error("The captured resource is not a supported browser image.");
   const contentHash = createHash("sha256").update(input.bytes).digest("hex");
   const storagePathname = `${reservation.storagePathname}/${contentHash}`;
-  if (!env.BLOB_STORE_ID && !env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error("Browser image storage is not configured.");
-  }
-
-  await put(storagePathname, Buffer.from(input.bytes), {
-    access: "private",
-    abortSignal: signal,
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    cacheControlMaxAge: 30 * 24 * 60 * 60,
+  const written = await writeObject(env, storagePathname, input.bytes, {
+    cacheControl: "private, max-age=2592000",
     contentType: mediaType,
-    maximumSizeInBytes: maximumBrowserImageBytes,
+    signal,
   });
+  if (!written.ok) {
+    throw new Error(
+      "Object storage rejected the browser image (HTTP " + written.status + ")."
+    );
+  }
   try {
     const finalized = await finalizeBrowserImageArtifact(scope, reservation, {
       byteSize: input.bytes.byteLength,
@@ -321,11 +318,11 @@ async function persistCapturedImage(
       storagePathname,
     });
     if (finalized.storagePathname !== storagePathname) {
-      await del(storagePathname).catch(() => undefined);
+      await removeObject(env, storagePathname).catch(() => undefined);
     }
     return finalized.image;
   } catch (error) {
-    await del(storagePathname).catch(() => undefined);
+    await removeObject(env, storagePathname).catch(() => undefined);
     throw error;
   }
 }

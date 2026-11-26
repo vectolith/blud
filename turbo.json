@@ -7,7 +7,7 @@
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
         "GITHUB_APP_*",
-        "BLOB_*",
+        "S3_*",
         "DATABASE_URL",
         "EVE_NEXT_*",
         "*_CONNECTOR_UID",
@@ -18,8 +18,7 @@
         "SECRET_ENCRYPTION_KEY",
         "SENDBLUE_*",
         "SKIP_ENV_VALIDATION",
-        "STRIPE_PUBLISHABLE_KEY",
-        "VERCEL_*"
+        "STRIPE_PUBLISHABLE_KEY"
       ],
       "outputs": [".next/**", "!.next/cache/**", "next-env.d.ts"]
     },
@@ -34,7 +33,7 @@
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
         "GITHUB_APP_*",
-        "BLOB_*",
+        "S3_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
         "KERNEL_*",
@@ -43,8 +42,7 @@
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
         "SENDBLUE_*",
-        "STRIPE_PUBLISHABLE_KEY",
-        "VERCEL_*"
+        "STRIPE_PUBLISHABLE_KEY"
       ],
       "persistent": true
     },
@@ -67,7 +65,7 @@
         "BETTER_AUTH_*",
         "BLUD_INTERNAL_KEY",
         "GITHUB_APP_*",
-        "BLOB_*",
+        "S3_*",
         "DATABASE_URL",
         "*_CONNECTOR_UID",
         "KERNEL_*",
@@ -76,8 +74,7 @@
         "NODE_ENV",
         "SECRET_ENCRYPTION_KEY",
         "SENDBLUE_*",
-        "STRIPE_PUBLISHABLE_KEY",
-        "VERCEL_*"
+        "STRIPE_PUBLISHABLE_KEY"
       ],
       "persistent": true
     },

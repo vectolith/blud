@@ -1,15 +1,8 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { createHash } from "node:crypto";
-import {
-  copyFile,
-  mkdir,
-  mkdtemp,
-  readFile,
-  rm,
-  writeFile,
-} from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
-import { basename, dirname, join } from "node:path";
+import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import nextEnvironment from "@next/env";
 import { z } from "zod";
@@ -230,35 +223,6 @@ async function installBenchmarkContext(worktree: string) {
 }
 
 async function refreshGatewayEnvironment() {
-  const commonGitDirectory = (
-    await output(
-      "git",
-      ["rev-parse", "--path-format=absolute", "--git-common-dir"],
-      { cwd: repositoryRoot }
-    )
-  ).trim();
-  const projectFile = join(
-    dirname(commonGitDirectory),
-    ".vercel",
-    "project.json"
-  );
-  const project = z
-    .object({ orgId: z.string().min(1), projectId: z.string().min(1) })
-    .parse(JSON.parse(await readFile(projectFile, "utf8")));
-
-  await run(
-    "node_modules/eve/bin/eve.js",
-    [
-      "link",
-      "--non-interactive",
-      "--project",
-      project.projectId,
-      "--team",
-      project.orgId,
-    ],
-    { cwd: repositoryRoot }
-  );
-
   return {
     ...loadEnvConfig(repositoryRoot, true, console, true).combinedEnv,
     NODE_ENV: "development" as const,

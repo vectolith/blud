@@ -160,9 +160,7 @@ function requireKernelApiKey() {
   throw new Error(
     [
       "KERNEL_API_KEY is required for manual local development.",
-      "For the simplest setup, use the Deploy with Vercel button in README.md; its Kernel Marketplace integration supplies the credentials automatically.",
-      "For an existing linked Vercel project, run pnpm exec vercel integration add kernel --plan FREE.",
-      "Otherwise create a key at https://kernel.sh, set KERNEL_API_KEY in .env.local, and run pnpm dev again.",
+      "Create a key at https://kernel.sh, set KERNEL_API_KEY in .env.local, and run pnpm dev again.",
     ].join("\n")
   );
 }
