@@ -1,28 +1,28 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { get, put } from "@vercel/blob";
-import { z } from "zod";
 import type { InstallationSecrets } from "@db/services/installation-secrets";
 
 const mocks = vi.hoisted(() => ({
-  get: vi.fn<typeof get>(),
-  put: vi.fn<typeof put>(),
+  readObject: vi.fn(),
+  writeObject: vi.fn(),
 }));
 
-vi.mock("@vercel/blob", () => ({
-  get: mocks.get,
-  put: mocks.put,
+vi.mock("@shared/storage/object-store", () => ({
+  objectStoreConfigured: () => true,
+  readObject: mocks.readObject,
+  writeObject: mocks.writeObject,
 }));
 
 beforeEach(() => {
   vi.resetModules();
   vi.clearAllMocks();
   vi.stubEnv("BETTER_AUTH_SECRET", "");
-  vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
-  vi.stubEnv("BLOB_STORE_ID", "store_blud");
-  vi.stubEnv("DATABASE_URL", "postgresql://user:password@example.com/database");
-  vi.stubEnv("KERNEL_API_KEY", "test-kernel-key");
   vi.stubEnv("SECRET_ENCRYPTION_KEY", "");
-  vi.stubEnv("VERCEL_PROJECT_ID", "prj_blud");
+  vi.stubEnv("BLUD_INSTALLATION_ID", "installation-test");
+  vi.stubEnv("S3_ACCESS_KEY_ID", "key");
+  vi.stubEnv("S3_BUCKET", "bucket");
+  vi.stubEnv("S3_ENDPOINT", "https://s3.example.com");
+  vi.stubEnv("S3_REGION", "auto");
+  vi.stubEnv("S3_SECRET_ACCESS_KEY", "secret");
 });
 
 afterEach(() => {
@@ -30,17 +30,9 @@ afterEach(() => {
 });
 
 describe("installation secrets", () => {
-  it("atomically creates and caches independent secrets in private Blob", async () => {
-    mocks.get.mockResolvedValue(null);
-    mocks.put.mockResolvedValue({
-      contentDisposition: "attachment",
-      contentType: "application/json",
-      downloadUrl:
-        "https://store.private.blob.vercel-storage.com/blud/system/installation-secrets.v1.json?download=1",
-      etag: "etag-created",
-      pathname: "blud/system/installation-secrets.v1.json",
-      url: "https://store.private.blob.vercel-storage.com/blud/system/installation-secrets.v1.json",
-    });
+  it("atomically creates and caches independent secrets in the object store", async () => {
+    mocks.readObject.mockResolvedValue(undefined);
+    mocks.writeObject.mockResolvedValue(undefined);
 
     const getInstallationSecrets = await loadInstallationSecrets();
     const [first, second] = await Promise.all([
@@ -52,23 +44,23 @@ describe("installation secrets", () => {
     expect(first.betterAuthSecret).not.toBe(first.secretEncryptionKey);
     expect(Buffer.from(first.betterAuthSecret, "base64")).toHaveLength(32);
     expect(Buffer.from(first.secretEncryptionKey, "base64")).toHaveLength(32);
-    expect(mocks.get).toHaveBeenCalledOnce();
-    expect(mocks.put).toHaveBeenCalledOnce();
-    const call = mocks.put.mock.calls[0];
+    expect(mocks.readObject).toHaveBeenCalledOnce();
+    expect(mocks.writeObject).toHaveBeenCalledOnce();
+
+    const call = mocks.writeObject.mock.calls[0];
     if (!call) throw new Error("Expected an installation secrets upload.");
-    const [pathname, body, options] = call;
+    const [environment, pathname, body, options] = call;
+    expect(environment.S3_BUCKET).toBe("bucket");
     expect(pathname).toMatch(
       /^blud\/system\/[a-f0-9]{32}\/installation-secrets\.v1\.json$/u
     );
-    const serialized = z.string().parse(body);
+    const serialized = Buffer.from(body).toString("utf8");
     expect(JSON.parse(serialized)).toEqual(first);
     expect(options).toMatchObject({
-      access: "private",
-      addRandomSuffix: false,
-      allowOverwrite: false,
+      cacheControl: "private, max-age=31536000, immutable",
+      contentType: "application/json",
+      createOnly: true,
     });
-    expect(options).not.toHaveProperty("storeId");
-    expect(options).not.toHaveProperty("token");
   });
 
   it("reads the winning value when another runtime creates it first", async () => {
@@ -77,18 +69,18 @@ describe("installation secrets", () => {
       secretEncryptionKey: Buffer.alloc(32, 3).toString("base64"),
       version: 1 as const,
     };
-    mocks.get
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(blobResult(winner));
-    mocks.put.mockRejectedValue(new Error("pathname already exists"));
+    mocks.readObject
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(objectResult(winner));
+    mocks.writeObject.mockRejectedValue(new Error("PreconditionFailed"));
 
     const getInstallationSecrets = await loadInstallationSecrets();
 
     await expect(getInstallationSecrets()).resolves.toEqual(winner);
-    expect(mocks.get).toHaveBeenCalledTimes(2);
+    expect(mocks.readObject).toHaveBeenCalledTimes(2);
   });
 
-  it("preserves explicit overrides without accessing Blob", async () => {
+  it("preserves explicit overrides without accessing the object store", async () => {
     const configured = {
       betterAuthSecret: Buffer.alloc(32, 4).toString("base64"),
       secretEncryptionKey: Buffer.alloc(32, 5).toString("base64"),
@@ -100,18 +92,18 @@ describe("installation secrets", () => {
     const getInstallationSecrets = await loadInstallationSecrets();
 
     await expect(getInstallationSecrets()).resolves.toEqual(configured);
-    expect(mocks.get).not.toHaveBeenCalled();
-    expect(mocks.put).not.toHaveBeenCalled();
+    expect(mocks.readObject).not.toHaveBeenCalled();
+    expect(mocks.writeObject).not.toHaveBeenCalled();
   });
 
-  it("rotates one secret while preserving the other from private Blob", async () => {
+  it("rotates one secret while preserving the other from the object store", async () => {
     const stored = {
       betterAuthSecret: Buffer.alloc(32, 6).toString("base64"),
       secretEncryptionKey: Buffer.alloc(32, 7).toString("base64"),
       version: 1 as const,
     };
     const rotatedEncryptionKey = Buffer.alloc(32, 8).toString("base64");
-    mocks.get.mockResolvedValue(blobResult(stored));
+    mocks.readObject.mockResolvedValue(objectResult(stored));
     vi.stubEnv("SECRET_ENCRYPTION_KEY", rotatedEncryptionKey);
 
     const getInstallationSecrets = await loadInstallationSecrets();
@@ -120,57 +112,49 @@ describe("installation secrets", () => {
       ...stored,
       secretEncryptionKey: rotatedEncryptionKey,
     });
-    expect(mocks.get).toHaveBeenCalledOnce();
-    expect(mocks.put).not.toHaveBeenCalled();
+    expect(mocks.readObject).toHaveBeenCalledOnce();
+    expect(mocks.writeObject).not.toHaveBeenCalled();
   });
 
-  it("rejects a partial override when no existing private Blob record exists", async () => {
+  it("rejects a partial override when no existing object-store record exists", async () => {
     vi.stubEnv("BETTER_AUTH_SECRET", Buffer.alloc(32, 6).toString("base64"));
-    mocks.get.mockResolvedValue(null);
+    mocks.readObject.mockResolvedValue(undefined);
 
     const getInstallationSecrets = await loadInstallationSecrets();
 
     await expect(getInstallationSecrets()).rejects.toThrow(
-      "A partial installation-secret override requires an existing private Blob secret record."
+      "A partial installation-secret override requires an existing object-store secret record."
     );
-    expect(mocks.put).not.toHaveBeenCalled();
+    expect(mocks.writeObject).not.toHaveBeenCalled();
   });
 
-  it("retries after a transient Blob read failure", async () => {
-    mocks.get
-      .mockRejectedValueOnce(new Error("Blob temporarily unavailable"))
-      .mockResolvedValueOnce(null);
-    mocks.put.mockResolvedValue({
-      contentDisposition: "attachment",
-      contentType: "application/json",
-      downloadUrl:
-        "https://store.private.blob.vercel-storage.com/installation-secrets.json?download=1",
-      etag: "etag-retry",
-      pathname: "installation-secrets.json",
-      url: "https://store.private.blob.vercel-storage.com/installation-secrets.json",
-    });
+  it("retries after a transient object-store read failure", async () => {
+    mocks.readObject
+      .mockRejectedValueOnce(new Error("Object store temporarily unavailable"))
+      .mockResolvedValueOnce(undefined);
+    mocks.writeObject.mockResolvedValue(undefined);
 
     const getInstallationSecrets = await loadInstallationSecrets();
 
     await expect(getInstallationSecrets()).rejects.toThrow(
-      "Blob temporarily unavailable"
+      "Object store temporarily unavailable"
     );
     await expect(getInstallationSecrets()).resolves.toMatchObject({
       version: 1,
     });
-    expect(mocks.get).toHaveBeenCalledTimes(2);
-    expect(mocks.put).toHaveBeenCalledOnce();
+    expect(mocks.readObject).toHaveBeenCalledTimes(2);
+    expect(mocks.writeObject).toHaveBeenCalledOnce();
   });
 
   it("rejects malformed installation-secret storage", async () => {
-    mocks.get.mockResolvedValue(blobResult({ version: 1 }));
+    mocks.readObject.mockResolvedValue(objectResult({ version: 1 }));
 
     const getInstallationSecrets = await loadInstallationSecrets();
 
     await expect(getInstallationSecrets()).rejects.toThrow(
       "Invalid input: expected string"
     );
-    expect(mocks.put).not.toHaveBeenCalled();
+    expect(mocks.writeObject).not.toHaveBeenCalled();
   });
 });
 
@@ -182,25 +166,12 @@ async function loadInstallationSecrets() {
 type InstallationSecretsFixture = Partial<InstallationSecrets> &
   Pick<InstallationSecrets, "version">;
 
-function blobResult(value: InstallationSecretsFixture) {
-  const body = JSON.stringify(value);
-  const stream = new Response(body).body;
-  if (!stream) throw new Error("Expected a response body.");
+function objectResult(value: InstallationSecretsFixture) {
+  const body = new TextEncoder().encode(JSON.stringify(value));
   return {
-    blob: {
-      cacheControl: "public, max-age=31536000",
-      contentDisposition: "attachment",
-      contentType: "application/json",
-      downloadUrl:
-        "https://store.private.blob.vercel-storage.com/blud/system/installation-secrets.v1.json?download=1",
-      etag: "etag-winner",
-      pathname: "blud/system/installation-secrets.v1.json",
-      size: Buffer.byteLength(body),
-      uploadedAt: new Date("2026-08-31T00:00:00.000Z"),
-      url: "https://store.private.blob.vercel-storage.com/blud/system/installation-secrets.v1.json",
-    },
-    headers: new Headers(),
-    statusCode: 200 as const,
-    stream,
+    body,
+    contentLength: body.byteLength,
+    contentType: "application/json",
+    etag: "etag-winner",
   };
 }

@@ -1,0 +1,61 @@
+# Render blueprint for BLUD.
+# New + > Blueprint, point it at vectolith/blud, then fill the values marked
+# sync: false in the Render dashboard. No Vercel project is involved.
+services:
+  - type: web
+    name: blud
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /api/health
+    buildCommand: pnpm install --frozen-lockfile && pnpm db:migrate && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: blud-postgres
+          property: connectionString
+      - key: DATABASE_URL_UNPOOLED
+        fromDatabase:
+          name: blud-postgres
+          property: connectionString
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      - key: SECRET_ENCRYPTION_KEY
+        generateValue: true
+      # Public origin of this service, e.g. https://blud.onrender.com
+      - key: BETTER_AUTH_URL
+        sync: false
+      # Internal scheduler/shared-key auth (replaces Vercel OIDC).
+      - key: BLUD_INTERNAL_KEY
+        generateValue: true
+      # Object storage (replaces @vercel/blob). Any S3-compatible provider:
+      # Cloudflare R2, Backblaze B2, MinIO, or AWS S3.
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      # iMessage channel.
+      - key: SENDBLUE_API_KEY
+        sync: false
+      - key: SENDBLUE_API_SECRET
+        sync: false
+      - key: SENDBLUE_FROM_NUMBER
+        sync: false
+      - key: SENDBLUE_WEBHOOK_SECRET
+        generateValue: true
+
+databases:
+  - name: blud-postgres
+    plan: free
+    databaseName: blud
+    user: blud

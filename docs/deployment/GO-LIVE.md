@@ -6,17 +6,18 @@ HTTPS origin, a Postgres database, and the environment below. Nothing else is mi
 
 ## 1. Host and database (one-time, needs your account login)
 
-The repository is already configured for Vercel (`vercel.json`, `buildCommand: pnpm turbo run
-build:vercel`), which is the deployment the code was written against. Any Node 24 host that can
-run `pnpm install --frozen-lockfile && pnpm turbo run build:vercel` works.
+The repository ships a Render blueprint (`render.yaml`) that provisions the web service and a
+Postgres instance together. Any Node 24 host that can run `pnpm install --frozen-lockfile && pnpm
+db:migrate && pnpm build` followed by `pnpm start` works the same way.
 
-1. Import `vectolith/blud` at vercel.com (free Hobby tier is enough for a beta).
-2. Create a free Postgres database at neon.tech and copy two connection strings:
-   - pooled, for `DATABASE_URL`
-   - direct/unpooled, for `DATABASE_URL_UNPOOLED` (used by `db:migrate`, which runs before the
-     build, so the schema is created on first deploy)
-3. Set the environment variables in section 2 on the deployment.
-4. Deploy. The first deploy runs the migration and then builds.
+1. In Render: **New +** -> **Blueprint**, point it at `vectolith/blud`, apply. This creates
+   `blud` (web, free plan) and `blud-postgres` (free plan).
+2. `DATABASE_URL` and `DATABASE_URL_UNPOOLED` are wired from the database automatically.
+   `db:migrate` runs before the build, so the schema is created on first deploy.
+3. Fill the `sync: false` values from section 2 in the service's Environment tab.
+4. Deploy. `/api/health` is the health check; it answers 503 when the database is unreachable.
+
+Render's free Postgres is deleted after 30 days; move to a paid plan before a real beta.
 
 ## 2. Environment
 
@@ -24,8 +25,8 @@ Required for the app to start:
 
 | Variable                | Where it comes from                                      |
 | ----------------------- | -------------------------------------------------------- |
-| `DATABASE_URL`          | Neon pooled connection string                            |
-| `DATABASE_URL_UNPOOLED` | Neon direct connection string                            |
+| `DATABASE_URL`          | provided by the `blud-postgres` blueprint database       |
+| `DATABASE_URL_UNPOOLED` | same database, used by `db:migrate` at build time        |
 | `SECRET_ENCRYPTION_KEY` | `openssl rand -base64 32`. Encrypts the credential vault |
 | `BETTER_AUTH_SECRET`    | `openssl rand -base64 32`                                |
 | `BETTER_AUTH_URL`       | the public origin, e.g. `https://blud.vercel.app`        |
@@ -41,6 +42,20 @@ Required for iMessage:
 
 Generate the webhook secret with `openssl rand -hex 32`, then add the same value to the Sendblue
 webhook configuration so inbound requests carry it.
+
+Required for artifacts and scheduler callbacks:
+
+| Variable               | Where it comes from                                           |
+| ---------------------- | ------------------------------------------------------------- |
+| `S3_ENDPOINT`          | S3-compatible storage endpoint (R2, B2, MinIO, AWS S3)        |
+| `S3_REGION`            | that provider's region, `auto` for R2                         |
+| `S3_BUCKET`            | bucket that holds browser artifacts and installation secrets  |
+| `S3_ACCESS_KEY_ID`     | access key with read/write on that bucket                     |
+| `S3_SECRET_ACCESS_KEY` | matching secret                                               |
+| `BLUD_INTERNAL_KEY`    | `openssl rand -hex 32`. Authenticates scheduled-run callbacks |
+
+When the `S3_*` values are unset the app falls back to an in-process object store, which is fine for
+local development and loses data on restart.
 
 ## 3. Point the provider at the deployment
 
