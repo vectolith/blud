@@ -1,11 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
-import { get, put } from "@vercel/blob";
 import { z } from "zod";
 import {
   betterAuthSecretSchema,
   env,
   secretEncryptionKeySchema,
 } from "@shared/environment";
+import { objectStoreConfigured, readObject, writeObject } from "@shared/storage/object-store";
 
 const installationSecretsSchema = z.object({
   betterAuthSecret: betterAuthSecretSchema,
@@ -38,9 +38,9 @@ async function resolveInstallationSecrets() {
     return installationSecretsSchema.parse({ ...configured, version: 1 });
   }
 
-  if (!env.BLOB_STORE_ID && !env.BLOB_READ_WRITE_TOKEN) {
+  if (!objectStoreConfigured(env)) {
     throw new Error(
-      "Installation secrets are unavailable. Connect a private Vercel Blob store or set both BETTER_AUTH_SECRET and SECRET_ENCRYPTION_KEY."
+      "Installation secrets are unavailable. Configure S3_ENDPOINT, S3_BUCKET, S3_REGION, S3_ACCESS_KEY_ID, and S3_SECRET_ACCESS_KEY, or set both BETTER_AUTH_SECRET and SECRET_ENCRYPTION_KEY."
     );
   }
   const pathname = installationSecretsPathname();
@@ -54,7 +54,7 @@ async function resolveInstallationSecrets() {
   }
   if (configured) {
     throw new Error(
-      "A partial installation-secret override requires an existing private Blob secret record."
+      "A partial installation-secret override requires an existing object-store secret record."
     );
   }
 
@@ -64,14 +64,16 @@ async function resolveInstallationSecrets() {
     version: 1,
   });
   try {
-    await put(pathname, JSON.stringify(generated), {
-      access: "private",
-      addRandomSuffix: false,
-      allowOverwrite: false,
-      cacheControlMaxAge: 365 * 24 * 60 * 60,
-      contentType: "application/json",
-      maximumSizeInBytes: maximumInstallationSecretsBytes,
-    });
+    await writeObject(
+      env,
+      pathname,
+      Buffer.from(JSON.stringify(generated), "utf8"),
+      {
+        cacheControl: "private, max-age=31536000, immutable",
+        contentType: "application/json",
+        createOnly: true,
+      }
+    );
     return generated;
   } catch (error) {
     const winner = await readInstallationSecrets(pathname);
@@ -93,25 +95,19 @@ function configuredInstallationSecrets() {
 }
 
 async function readInstallationSecrets(pathname: string) {
-  const result = await get(pathname, {
-    access: "private",
-    useCache: false,
-  });
-  if (!result) return undefined;
-  if (result.statusCode !== 200) {
-    throw new Error("The installation secrets Blob returned no content.");
+  const stored = await readObject(env, pathname);
+  if (!stored) return undefined;
+  if (stored.contentLength > maximumInstallationSecretsBytes) {
+    throw new Error("The installation secrets object is unexpectedly large.");
   }
-  if (result.blob.size > maximumInstallationSecretsBytes) {
-    throw new Error("The installation secrets Blob is unexpectedly large.");
-  }
-  const value: unknown = await new Response(result.stream).json();
+  const value: unknown = JSON.parse(Buffer.from(stored.body).toString("utf8"));
   return installationSecretsSchema.parse(value);
 }
 
 function installationSecretsPathname() {
   const scope = createHash("sha256")
-    .update(env.VERCEL_PROJECT_ID ?? "standalone")
+    .update(env.BLUD_INSTALLATION_ID ?? process.env.HOSTNAME ?? "standalone")
     .digest("hex")
     .slice(0, 32);
-  return `blud/system/${scope}/installation-secrets.v1.json`;
+  return "blud/system/" + scope + "/installation-secrets.v1.json";
 }

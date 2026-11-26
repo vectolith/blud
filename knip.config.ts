@@ -33,7 +33,6 @@ export default {
     "@trpc/client",
     "@trpc/react-query",
     // Invoked as a CLI.
-    "vercel",
   ],
   ignoreIssues: {
     // Headless messaging mode retains shared web/trpc/auth/component primitives without mounting web UI pages.

@@ -6,34 +6,7 @@ import {
   type MemoryScopeContext,
 } from "eve/memory";
 import { z } from "zod";
-import type { env } from "@shared/environment";
 import { resolveModeValue } from "@agent/lib/mode";
-
-export function resolveProfileMemoryBackend(
-  environment: Pick<
-    typeof env,
-    "BLOB_READ_WRITE_TOKEN" | "BLOB_STORE_ID" | "NODE_ENV" | "VERCEL_ENV"
-  >
-) {
-  if (environment.NODE_ENV !== "production") {
-    return { kind: "automatic" as const };
-  }
-
-  if (environment.BLOB_STORE_ID) {
-    return {
-      kind: "vercel-blob" as const,
-      options: { storeId: environment.BLOB_STORE_ID },
-    };
-  }
-
-  return environment.VERCEL_ENV === undefined &&
-    environment.BLOB_READ_WRITE_TOKEN
-    ? {
-        kind: "vercel-blob" as const,
-        options: { token: environment.BLOB_READ_WRITE_TOKEN },
-      }
-    : { kind: "automatic" as const };
-}
 
 export function resolveProfileMemoryScope(context: MemoryScopeContext) {
   const caller = context.session.auth.current;

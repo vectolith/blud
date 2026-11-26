@@ -7,7 +7,6 @@ minimumReleaseAgeExclude:
   # Eve 0.44.4's current official scaffold resolves the matching AI SDK release cohort.
   - "@ai-sdk/*"
   - ai
-  - "@vercel/*"
   - "@onkernel/*"
   - eve
   # These browser and rendering transitive releases are locked by the current Eve UI scaffold.
@@ -25,3 +24,4 @@ allowBuilds:
   sharp: true
 patchedDependencies:
   eve@1.0.0-rc.1: patches/eve@1.0.0-rc.1.patch
+packageImportMethod: hardlink

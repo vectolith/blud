@@ -1,5 +1,4 @@
 import { defineChannel, POST } from "eve/channels";
-import { localDev, routeAuth, vercelOidc } from "eve/channels/auth";
 import { parseAnswers, SessionNotActiveError } from "eve/client";
 import {
   APPROVE_OPTION_ID,
@@ -8,6 +7,9 @@ import {
   type Interaction,
 } from "eve/events";
 import { z } from "zod";
+import {
+  internalRequestAuthorized,
+} from "@agent/lib/schedules/request";
 import { dispatchScheduledReport } from "@agent/lib/schedules/report";
 import {
   claimScheduledAgentRunInput,
@@ -25,7 +27,6 @@ const respondSchema = z.strictObject({
   leaseToken: z.uuid(),
   runId: z.uuid(),
 });
-const internalRouteAuth = [vercelOidc(), localDev()];
 
 export default defineChannel({
   audience({ caller }) {
@@ -51,8 +52,7 @@ export default defineChannel({
     POST(
       "/internal/scheduled-run/report",
       async (request, { attachSession, to, waitUntil }) => {
-        const auth = await routeAuth(request, internalRouteAuth);
-        if (auth instanceof Response) return auth;
+        if (!internalRequestAuthorized(request)) return unauthorized();
         const parsed = reportSchema.safeParse(await request.json());
         if (parsed.success) {
           waitUntil(
@@ -65,8 +65,7 @@ export default defineChannel({
     POST(
       "/internal/scheduled-run/respond",
       async (request, { attachSession }) => {
-        const auth = await routeAuth(request, internalRouteAuth);
-        if (auth instanceof Response) return auth;
+        if (!internalRequestAuthorized(request)) return unauthorized();
         const input = respondSchema.parse(await request.json());
         const claimed = await claimScheduledAgentRunInput(
           input.runId,
@@ -127,6 +126,10 @@ export default defineChannel({
     ),
   ],
 });
+
+function unauthorized() {
+  return new Response(null, { status: 401 });
+}
 
 const approvalAliases = new Map([
   ["approve", APPROVE_OPTION_ID],
