@@ -5,7 +5,11 @@ import {
   env,
   secretEncryptionKeySchema,
 } from "@shared/environment";
-import { objectStoreConfigured, readObject, writeObject } from "@shared/storage/object-store";
+import {
+  objectStoreConfigured,
+  readObject,
+  writeObject,
+} from "@shared/storage/object-store";
 
 const installationSecretsSchema = z.object({
   betterAuthSecret: betterAuthSecretSchema,

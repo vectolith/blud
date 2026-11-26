@@ -39,8 +39,9 @@ export function hmac(key: string | Uint8Array, value: string) {
 
 /** Percent-encode one key segment the way SigV4 canonicalisation expects. */
 export function encodeS3Segment(segment: string) {
-  return encodeURIComponent(segment).replace(/['()*!]/gu, (character) =>
-    "%" + character.charCodeAt(0).toString(16).toUpperCase()
+  return encodeURIComponent(segment).replace(
+    /['()*!]/gu,
+    (character) => "%" + character.charCodeAt(0).toString(16).toUpperCase()
   );
 }
 
@@ -90,9 +91,14 @@ export function signedHeaders(
     .map((name) => name.toLowerCase())
     .sort();
   const lookup = Object.fromEntries(
-    Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value.trim()])
+    Object.entries(headers).map(([name, value]) => [
+      name.toLowerCase(),
+      value.trim(),
+    ])
   );
-  const canonicalHeaders = names.map((name) => name + ":" + lookup[name] + "\n").join("");
+  const canonicalHeaders = names
+    .map((name) => name + ":" + lookup[name] + "\n")
+    .join("");
   const canonicalRequest = [
     input.method,
     url.pathname,
@@ -110,7 +116,10 @@ export function signedHeaders(
     sha256Hex(canonicalRequest),
   ].join("\n");
   const signingKey = hmac(
-    hmac(hmac(hmac("AWS4" + config.secretAccessKey, short), config.region), "s3"),
+    hmac(
+      hmac(hmac("AWS4" + config.secretAccessKey, short), config.region),
+      "s3"
+    ),
     "aws4_request"
   );
   const signature = createHmac("sha256", signingKey)

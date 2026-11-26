@@ -85,7 +85,11 @@ export async function readObject(
   if (response.status === 404) return undefined;
   if (!response.ok) {
     throw new Error(
-      "The object store returned HTTP " + response.status + " for " + pathname + "."
+      "The object store returned HTTP " +
+        response.status +
+        " for " +
+        pathname +
+        "."
     );
   }
   const body = new Uint8Array(await response.arrayBuffer());
@@ -104,7 +108,11 @@ export async function removeObject(
   const response = await deleteObject(requireConfig(environment), pathname);
   if (!response.ok && response.status !== 404) {
     throw new Error(
-      "The object store returned HTTP " + response.status + " while deleting " + pathname + "."
+      "The object store returned HTTP " +
+        response.status +
+        " while deleting " +
+        pathname +
+        "."
     );
   }
 }

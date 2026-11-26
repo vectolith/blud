@@ -7,9 +7,7 @@ import {
   type Interaction,
 } from "eve/events";
 import { z } from "zod";
-import {
-  internalRequestAuthorized,
-} from "@agent/lib/schedules/request";
+import { internalRequestAuthorized } from "@agent/lib/schedules/request";
 import { dispatchScheduledReport } from "@agent/lib/schedules/report";
 import {
   claimScheduledAgentRunInput,

@@ -39,9 +39,7 @@ export function s3MemoryBackend(
     write: async (input: MemoryDocumentWriteInput): Promise<MemoryDocument> => {
       const target = pathname(input.key);
       const current = await readObject(environment, target);
-      const currentVersion = current
-        ? parseVersion(current.body)
-        : null;
+      const currentVersion = current ? parseVersion(current.body) : null;
       if (input.expectedVersion === null) {
         if (currentVersion !== null) {
           throw new MemoryDocumentConflictError(input.key);
@@ -62,7 +60,9 @@ export function s3MemoryBackend(
       );
       if (!response.ok) {
         throw new Error(
-          "The object store rejected the memory write (HTTP " + response.status + ")."
+          "The object store rejected the memory write (HTTP " +
+            response.status +
+            ")."
         );
       }
       return { content: written.content, version: written.version };

@@ -51,10 +51,14 @@ async function openArtifact(
   if (stored.contentLength !== byteSize) return undefined;
   if (stored.contentType && stored.contentType !== mediaType) return undefined;
 
-  const etag = stored.etag ?? `"${artifact.storagePathname.split("/").at(-1) ?? ""}"`;
+  const etag =
+    stored.etag ?? `"${artifact.storagePathname.split("/").at(-1) ?? ""}"`;
   const notModified =
     options.ifNoneMatch !== undefined &&
-    options.ifNoneMatch.split(",").map((value) => value.trim()).includes(etag);
+    options.ifNoneMatch
+      .split(",")
+      .map((value) => value.trim())
+      .includes(etag);
   return {
     artifact: { ...artifact, byteSize, filename, mediaType },
     body: stored.body,
