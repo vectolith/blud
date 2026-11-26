@@ -158,7 +158,7 @@ export async function putObject(
     payloadHash: sha256Hex(body),
   });
   return fetch(url, {
-    body,
+    body: body as unknown as BodyInit,
     headers,
     method: "PUT",
     redirect: "error",

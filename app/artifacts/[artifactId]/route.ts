@@ -33,7 +33,10 @@ export async function GET(
     "content-disposition",
     contentDisposition(opened.artifact.filename)
   );
-  return new Response(opened.body, { headers, status: 200 });
+  return new Response(opened.body as unknown as BodyInit, {
+    headers,
+    status: 200,
+  });
 }
 
 async function openArtifact(

@@ -8,7 +8,6 @@ import { describe, expect, it } from "vitest";
 import personalInfoMemory from "@agent/memory/personal_info";
 import {
   preserveProfileMemoryCancellation,
-  resolveProfileMemoryBackend,
   resolveProfileMemoryScope,
 } from "@agent/lib/profile-memory";
 import { accessScopeForUser } from "@shared/identity/access-scope";
@@ -16,47 +15,6 @@ import { accessScopeForUser } from "@shared/identity/access-scope";
 const derivedWorkspaceId = accessScopeForUser("better-auth:user").workspaceId;
 
 describe("profile memory", () => {
-  it("uses an explicit Blob backend for an attached store in production", () => {
-    expect(
-      resolveProfileMemoryBackend({
-        BLOB_READ_WRITE_TOKEN: undefined,
-        BLOB_STORE_ID: "store-id",
-        NODE_ENV: "production",
-        VERCEL_ENV: "production",
-      })
-    ).toEqual({
-      kind: "vercel-blob",
-      options: { storeId: "store-id" },
-    });
-    expect(
-      resolveProfileMemoryBackend({
-        BLOB_READ_WRITE_TOKEN: "blob-token",
-        BLOB_STORE_ID: undefined,
-        NODE_ENV: "production",
-        VERCEL_ENV: undefined,
-      })
-    ).toEqual({
-      kind: "vercel-blob",
-      options: { token: "blob-token" },
-    });
-    expect(
-      resolveProfileMemoryBackend({
-        BLOB_READ_WRITE_TOKEN: "blob-token",
-        BLOB_STORE_ID: undefined,
-        NODE_ENV: "production",
-        VERCEL_ENV: "production",
-      })
-    ).toEqual({ kind: "automatic" });
-    expect(
-      resolveProfileMemoryBackend({
-        BLOB_READ_WRITE_TOKEN: "blob-token",
-        BLOB_STORE_ID: "store-id",
-        NODE_ENV: "development",
-        VERCEL_ENV: undefined,
-      })
-    ).toEqual({ kind: "automatic" });
-  });
-
   it("shares the canonical workspace across verified authenticators", () => {
     const workspaceId = derivedWorkspaceId;
     expect(

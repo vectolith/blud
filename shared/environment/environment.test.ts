@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const requiredEnvironment = {
   BETTER_AUTH_SECRET: "test-auth-secret-0123456789abcdefghijklmnop",
   BETTER_AUTH_URL: "https://example.com",
-  BLOB_READ_WRITE_TOKEN: "vercel_blob_rw_test",
+  S3_BUCKET: "blud-artifacts",
   DATABASE_URL: "postgresql://user:password@example.com/database",
   KERNEL_API_KEY: "test-kernel-key",
   SECRET_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString("base64"),
@@ -84,13 +84,12 @@ describe("environment", () => {
     expect(env.GOOGLE_CONNECTOR_UID).toBe("google/custom");
   });
 
-  it("does not provide local defaults in a Vercel development environment", async () => {
+  it("does not provide local defaults outside test mode", async () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "");
     vi.stubEnv("BETTER_AUTH_URL", "");
     vi.stubEnv("SECRET_ENCRYPTION_KEY", "");
     vi.stubEnv("NODE_ENV", "development");
-    vi.stubEnv("VERCEL_ENV", "development");
-    vi.stubEnv("VERCEL_URL", "blud-preview.vercel.app");
+    vi.stubEnv("NODE_ENV", "production");
 
     const { env } = await import("@shared/environment");
 
@@ -150,14 +149,18 @@ describe("environment", () => {
     );
   });
 
-  it("accepts Vercel OIDC Blob storage without a static token", async () => {
-    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
-    vi.stubEnv("BLOB_STORE_ID", "store_blud");
+  it("accepts S3-compatible object storage configuration", async () => {
+    vi.stubEnv("S3_ENDPOINT", "https://account.r2.cloudflarestorage.com");
+    vi.stubEnv("S3_BUCKET", "blud-artifacts");
+    vi.stubEnv("S3_ACCESS_KEY_ID", "access-key");
+    vi.stubEnv("S3_SECRET_ACCESS_KEY", "secret-key");
 
     const { env } = await import("@shared/environment");
 
-    expect(env.BLOB_READ_WRITE_TOKEN).toBeUndefined();
-    expect(env.BLOB_STORE_ID).toBe("store_blud");
+    expect(env.S3_ENDPOINT).toBe("https://account.r2.cloudflarestorage.com");
+    expect(env.S3_BUCKET).toBe("blud-artifacts");
+    expect(env.S3_ACCESS_KEY_ID).toBe("access-key");
+    expect(env.S3_SECRET_ACCESS_KEY).toBe("secret-key");
   });
 
   it.each([

@@ -6,7 +6,7 @@ const testEnvironment = {
   BETTER_AUTH_URL: "https://example.com",
   // The integration suite signs phone users in without an SMS provider.
   BLUD_ALLOW_LOCAL_PHONE_AUTH_BYPASS: "true",
-  BLOB_READ_WRITE_TOKEN: "vercel_blob_rw_test",
+  S3_BUCKET: "blud-artifacts-test",
   DATABASE_URL: "postgresql://user:password@example.com/database",
   KERNEL_API_KEY: "test-kernel-key",
   SECRET_ENCRYPTION_KEY: "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=",

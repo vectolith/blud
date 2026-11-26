@@ -6,7 +6,7 @@ const applicationEnvironment = [
   "BETTER_AUTH_*",
   "BLUD_INTERNAL_KEY",
   "GITHUB_APP_*",
-  "BLOB_*",
+  "S3_*",
   "DATABASE_URL",
   "*_CONNECTOR_UID",
   "KERNEL_*",
@@ -16,13 +16,12 @@ const applicationEnvironment = [
   "SENDBLUE_*",
   "SKIP_ENV_VALIDATION",
   "STRIPE_PUBLISHABLE_KEY",
-  "VERCEL_*",
 ];
 const runtimeEnvironment = [
   "BETTER_AUTH_*",
   "BLUD_INTERNAL_KEY",
   "GITHUB_APP_*",
-  "BLOB_*",
+  "S3_*",
   "DATABASE_URL",
   "*_CONNECTOR_UID",
   "KERNEL_*",
@@ -31,7 +30,6 @@ const runtimeEnvironment = [
   "SECRET_ENCRYPTION_KEY",
   "SENDBLUE_*",
   "STRIPE_PUBLISHABLE_KEY",
-  "VERCEL_*",
 ];
 
 describe("Turbo configuration", () => {

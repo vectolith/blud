@@ -42,9 +42,9 @@ vi.mock("@db/services/browser-images", () => ({
   finalizeBrowserImageArtifact: mocks.persist,
   reserveBrowserImageArtifact: mocks.reserve,
 }));
-vi.mock("@vercel/blob", () => ({
-  del: mocks.del,
-  put: mocks.put,
+vi.mock("@shared/storage/object-store", () => ({
+  removeObject: mocks.del,
+  writeObject: mocks.put,
 }));
 vi.mock("@agent/subagents/browser-agent/lib/kernel", () => ({
   kernel: {
