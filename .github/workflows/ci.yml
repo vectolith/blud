@@ -9,8 +9,16 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: blud-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
+    timeout-minutes: 20
     name: Lint, Typecheck & Unit Tests
     runs-on: ubuntu-latest
     steps:
