@@ -117,7 +117,8 @@
     "dev:eve": "eve dev",
     "start:eve": "eve start",
     "test:runtime": "node --experimental-strip-types scripts/run-runtime-smoke.ts",
-    "security:rewrap-keys": "tsx scripts/rewrap-encryption-keys.ts"
+    "security:rewrap-keys": "tsx scripts/rewrap-encryption-keys.ts",
+    "test:app": "vitest run"
   },
   "version": "0.0.0",
   "type": "module"
