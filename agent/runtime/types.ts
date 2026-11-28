@@ -1,5 +1,11 @@
 /** BLUD-owned orchestration contracts. Provider adapters are deliberately outside the runtime core. */
-export type TaskState = "queued" | "running" | "waiting_approval" | "completed" | "failed" | "cancelled";
+export type TaskState =
+  | "queued"
+  | "running"
+  | "waiting_approval"
+  | "completed"
+  | "failed"
+  | "cancelled";
 export type TaskEvent = {
   taskId: string;
   sequence: number;
@@ -23,7 +29,11 @@ export type TaskStore = {
   create(task: TaskRecord): Promise<void>;
   read(id: string, workspaceId: string): Promise<TaskRecord | null>;
   transition(
-    id: string, workspaceId: string, from: TaskState[], to: TaskState, patch?: Partial<TaskRecord>,
+    id: string,
+    workspaceId: string,
+    from: TaskState[],
+    to: TaskState,
+    patch?: Partial<TaskRecord>,
   ): Promise<boolean>;
   appendEvent(event: TaskEvent): Promise<void>;
   events(id: string, workspaceId: string): Promise<TaskEvent[]>;
