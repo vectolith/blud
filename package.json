@@ -83,7 +83,7 @@
   "scripts": {
     "bench:ab": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/run-browser-ab.ts",
     "bench:browser": "eve eval browser",
-    "bench:compare": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/compare-browser-benchmarks.ts",
+    "bench:compare": "node --experimental-strip-types scripts/compare-browser-benchmarks.ts",
     "bench:dashboard": "portless --name eve-browser-bench next dev evals/browser/dashboard",
     "bench:seed": "tsx scripts/seed-browser-benchmark-vault.ts",
     "build": "turbo run build:app",
