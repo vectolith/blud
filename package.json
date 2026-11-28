@@ -73,7 +73,7 @@
     "vitest": "4.1.11"
   },
   "engines": {
-    "node": "24.x"
+    "node": "24.x || 26.x"
   },
   "exports": {
     "./browser-benchmark-dashboard": "./evals/browser/dashboard/index.ts"
@@ -83,7 +83,7 @@
   "scripts": {
     "bench:ab": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/run-browser-ab.ts",
     "bench:browser": "eve eval browser",
-    "bench:compare": "node --experimental-strip-types scripts/compare-browser-benchmarks.ts",
+    "bench:compare": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/compare-browser-benchmarks.ts",
     "bench:dashboard": "portless --name eve-browser-bench next dev evals/browser/dashboard",
     "bench:seed": "tsx scripts/seed-browser-benchmark-vault.ts",
     "build": "turbo run build:app",
@@ -110,7 +110,6 @@
     "start": "turbo run start:app",
     "start:app": "next start",
     "test": "turbo run test:app",
-    "test:app": "vitest run",
     "types:check": "turbo run types:check:app",
     "types:generate": "next typegen",
     "types:check:app": "next typegen && tsc --noEmit -p tsconfig.json",
