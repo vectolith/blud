@@ -32,4 +32,3 @@ This audit is an implementation gate, not a claim that BLUD is already independe
 - Deployment-neutral smoke tests pass.
 - Dependency and source scans demonstrate that Eve and Vercel are not foundational runtime/build/deploy dependencies.
 - Evidence and remaining optional integrations are documented honestly.
-
