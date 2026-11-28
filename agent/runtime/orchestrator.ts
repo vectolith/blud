@@ -34,51 +34,93 @@ export class Orchestrator {
         attempts: task.attempts + 1,
         updatedAt,
       })
-    ) throw new Error("Task transition conflict");
+    ) {
+      throw new Error("Task transition conflict");
+    }
 
     const controller = new AbortController();
     this.active.set(id, controller);
-    const running = { ...task, state: "running" as const, attempts: task.attempts + 1, updatedAt };
+    const running = {
+      ...task,
+      state: "running" as const,
+      attempts: task.attempts + 1,
+      updatedAt,
+    };
 
     try {
       await this.store.appendEvent({
-        taskId: id, sequence: 0, type: "started", at: updatedAt, data: { attempt: running.attempts },
+        taskId: id,
+        sequence: 0,
+        type: "started",
+        at: updatedAt,
+        data: { attempt: running.attempts },
       });
       const result = await this.execute({
         task: running,
         signal: controller.signal,
-        emit: async (type, data) => this.store.appendEvent({
-          taskId: id, sequence: 0, type, at: new Date().toISOString(), data,
-        }),
+        emit: async (type, data) =>
+          this.store.appendEvent({
+            taskId: id,
+            sequence: 0,
+            type,
+            at: new Date().toISOString(),
+            data,
+          }),
       });
 
       if (controller.signal.aborted) {
-        if (!await this.store.transition(id, workspaceId, ["running"], "cancelled", {
-          updatedAt: new Date().toISOString(),
-        })) throw new Error("Cancellation transition conflict");
+        if (
+          !await this.store.transition(id, workspaceId, ["running"], "cancelled", {
+            updatedAt: new Date().toISOString(),
+          })
+        ) {
+          throw new Error("Cancellation transition conflict");
+        }
         await this.store.appendEvent({
-          taskId: id, sequence: 0, type: "cancelled", at: new Date().toISOString(), data: {},
+          taskId: id,
+          sequence: 0,
+          type: "cancelled",
+          at: new Date().toISOString(),
+          data: {},
         });
         return;
       }
 
-      if (!await this.store.transition(id, workspaceId, ["running"], "completed", {
-        result, updatedAt: new Date().toISOString(),
-      })) throw new Error("Completion transition conflict");
+      if (
+        !await this.store.transition(id, workspaceId, ["running"], "completed", {
+          result,
+          updatedAt: new Date().toISOString(),
+        })
+      ) {
+        throw new Error("Completion transition conflict");
+      }
       await this.store.appendEvent({
-        taskId: id, sequence: 0, type: "completed", at: new Date().toISOString(), data: { resultPersisted: true },
+        taskId: id,
+        sequence: 0,
+        type: "completed",
+        at: new Date().toISOString(),
+        data: { resultPersisted: true },
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown execution failure";
       const state: TaskState = controller.signal.aborted
         ? "cancelled"
-        : running.attempts < this.maxAttempts ? "queued" : "failed";
+        : running.attempts < this.maxAttempts
+          ? "queued"
+          : "failed";
       const transition = await this.store.transition(id, workspaceId, ["running"], state, {
-        error: message, updatedAt: new Date().toISOString(),
+        error: message,
+        updatedAt: new Date().toISOString(),
       });
-      if (transition) await this.store.appendEvent({
-        taskId: id, sequence: 0, type: state, at: new Date().toISOString(), data: { error: message },
-      });
+      if (transition) {
+        await this.store.appendEvent({
+          taskId: id,
+          sequence: 0,
+          type: state,
+          at: new Date().toISOString(),
+          data: { error: message },
+        });
+      }
       if (state === "failed") throw error;
       if (!transition) throw new Error("Failure state transition conflict", { cause: error });
     } finally {
@@ -96,15 +138,27 @@ export class Orchestrator {
       return true;
     }
     const cancelled = await this.store.transition(
-      id, workspaceId, ["queued", "waiting_approval"], "cancelled", { updatedAt: new Date().toISOString() },
+      id,
+      workspaceId,
+      ["queued", "waiting_approval"],
+      "cancelled",
+      { updatedAt: new Date().toISOString() },
     );
-    if (cancelled) await this.store.appendEvent({
-      taskId: id, sequence: 0, type: "cancelled", at: new Date().toISOString(), data: {},
-    });
+    if (cancelled) {
+      await this.store.appendEvent({
+        taskId: id,
+        sequence: 0,
+        type: "cancelled",
+        at: new Date().toISOString(),
+        data: {},
+      });
+    }
     return cancelled;
   }
 
   async recover(_workspaceId: string, _limit = 100): Promise<never> {
-    throw new Error("Recovery is not implemented: refusing to report recovered work until lease-safe recovery exists");
+    throw new Error(
+      "Recovery is not implemented: refusing to report recovered work until lease-safe recovery exists",
+    );
   }
 }
