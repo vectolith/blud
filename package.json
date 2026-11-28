@@ -51,7 +51,7 @@
     "@electric-sql/pglite": "^0.5.8",
     "@next/env": "16.3.3",
     "@oxlint/plugins": "1.80.0",
-    "@types/node": "24.13.3",
+    "@types/node": "26.6.10",
     "@types/pg": "^8.23.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
