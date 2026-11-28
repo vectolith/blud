@@ -19,21 +19,25 @@ concurrency:
 jobs:
   check:
     timeout-minutes: 20
-    name: Lint, Typecheck & Unit Tests
+    name: Lint, Typecheck & Unit Tests (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [24, 26]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Enable Corepack & pnpm
         run: |
           corepack enable
           corepack prepare pnpm@11.24.0 --activate
 
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v7
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          node-version: "24"
+          node-version: ${{ matrix.node-version }}
           cache: "pnpm"
 
       - name: Install dependencies
