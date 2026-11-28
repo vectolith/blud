@@ -21,21 +21,26 @@ export const postgresTaskStore: TaskStore = {
     });
   },
   async read(id, workspaceId) {
-    const rows = await db.select().from(runtimeTasks)
-      .where(and(eq(runtimeTasks.id, id), eq(runtimeTasks.workspaceId, workspaceId))).limit(1);
+    const rows = await db
+      .select()
+      .from(runtimeTasks)
+      .where(and(eq(runtimeTasks.id, id), eq(runtimeTasks.workspaceId, workspaceId)))
+      .limit(1);
     const r = rows[0];
-    return r ? {
-      id: r.id,
-      workspaceId: r.workspaceId,
-      ownerId: r.ownerId,
-      state: r.state as TaskState,
-      attempts: r.attempts,
-      payload: r.payload,
-      result: r.result ?? undefined,
-      error: r.error ?? undefined,
-      createdAt: r.createdAt.toISOString(),
-      updatedAt: r.updatedAt.toISOString(),
-    } : null;
+    return r
+      ? {
+          id: r.id,
+          workspaceId: r.workspaceId,
+          ownerId: r.ownerId,
+          state: r.state as TaskState,
+          attempts: r.attempts,
+          payload: r.payload,
+          result: r.result ?? undefined,
+          error: r.error ?? undefined,
+          createdAt: r.createdAt.toISOString(),
+          updatedAt: r.updatedAt.toISOString(),
+        }
+      : null;
   },
   async transition(id, workspaceId, from, to, patch = {}) {
     const values: Record<string, unknown> = {
@@ -45,21 +50,32 @@ export const postgresTaskStore: TaskStore = {
     if (patch.attempts !== undefined) values.attempts = patch.attempts;
     if (patch.result !== undefined) values.result = patch.result;
     if (patch.error !== undefined) values.error = patch.error;
-    const rows = await db.update(runtimeTasks).set(values)
-      .where(and(
-        eq(runtimeTasks.id, id),
-        eq(runtimeTasks.workspaceId, workspaceId),
-        inArray(runtimeTasks.state, from),
-      )).returning({ id: runtimeTasks.id });
+    const rows = await db
+      .update(runtimeTasks)
+      .set(values)
+      .where(
+        and(
+          eq(runtimeTasks.id, id),
+          eq(runtimeTasks.workspaceId, workspaceId),
+          inArray(runtimeTasks.state, from),
+        ),
+      )
+      .returning({ id: runtimeTasks.id });
     return rows.length === 1;
   },
   async appendEvent(event) {
     await db.transaction(async (tx) => {
-      const task = await tx.select({ workspaceId: runtimeTasks.workspaceId })
-        .from(runtimeTasks).where(eq(runtimeTasks.id, event.taskId)).for("update").limit(1);
+      const task = await tx
+        .select({ workspaceId: runtimeTasks.workspaceId })
+        .from(runtimeTasks)
+        .where(eq(runtimeTasks.id, event.taskId))
+        .for("update")
+        .limit(1);
       if (!task[0]) throw new Error("Task not found");
-      const last = await tx.select({ sequence: sql<number>`max(${runtimeTaskEvents.sequence})` })
-        .from(runtimeTaskEvents).where(eq(runtimeTaskEvents.taskId, event.taskId));
+      const last = await tx
+        .select({ sequence: sql<number>`max(${runtimeTaskEvents.sequence})` })
+        .from(runtimeTaskEvents)
+        .where(eq(runtimeTaskEvents.taskId, event.taskId));
       const seq = (last[0]?.sequence ?? 0) + 1;
       await tx.insert(runtimeTaskEvents).values({
         id: nanoid(),
@@ -73,11 +89,17 @@ export const postgresTaskStore: TaskStore = {
     });
   },
   async events(id, workspaceId) {
-    const rows = await db.select().from(runtimeTaskEvents)
+    const rows = await db
+      .select()
+      .from(runtimeTaskEvents)
       .where(and(eq(runtimeTaskEvents.taskId, id), eq(runtimeTaskEvents.workspaceId, workspaceId)))
       .orderBy(asc(runtimeTaskEvents.sequence));
     return rows.map((r) => ({
-      taskId: r.taskId, sequence: r.sequence, type: r.type, at: r.at.toISOString(), data: r.data,
+      taskId: r.taskId,
+      sequence: r.sequence,
+      type: r.type,
+      at: r.at.toISOString(),
+      data: r.data,
     }));
   },
 };
